@@ -42,7 +42,7 @@ async function registerDevice(): Promise<DeviceStatus> {
 		};
 	}
 
-	const data = await response.json();
+	const data = await response.json() as { registered: boolean; approved: boolean };
 	return {
 		deviceId,
 		registered: data.registered,

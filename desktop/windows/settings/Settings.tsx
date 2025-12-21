@@ -138,10 +138,57 @@ function LogsTab() {
   )
 }
 
+function DeviceStatusBadge({ status }: { status: DeviceStatus | null }) {
+  if (!status) {
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+        Checking...
+      </span>
+    )
+  }
+
+  if (status.error) {
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+        Error
+      </span>
+    )
+  }
+
+  if (!status.registered) {
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+        Not Registered
+      </span>
+    )
+  }
+
+  if (!status.approved) {
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+        Pending Approval
+      </span>
+    )
+  }
+
+  return (
+    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+      Connected
+    </span>
+  )
+}
+
 function GeneralTab() {
   const [serverUrl, setServerUrl] = useState('')
   const [config, setConfig] = useState<ScreenCaptureConfig | null>(null)
+  const [deviceStatus, setDeviceStatus] = useState<DeviceStatus | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isRegistering, setIsRegistering] = useState(false)
+
+  const checkDeviceStatus = useCallback(async () => {
+    const status = await window.electron.registerDevice()
+    setDeviceStatus(status)
+  }, [])
 
   useEffect(() => {
     async function load() {
@@ -152,12 +199,20 @@ function GeneralTab() {
       setServerUrl(url)
       setConfig(captureConfig)
       setIsLoading(false)
+      checkDeviceStatus()
     }
     load()
-  }, [])
+  }, [checkDeviceStatus])
 
   const handleServerUrlBlur = async () => {
     await window.electron.setServerUrl(serverUrl)
+    checkDeviceStatus()
+  }
+
+  const handleRegister = async () => {
+    setIsRegistering(true)
+    await checkDeviceStatus()
+    setIsRegistering(false)
   }
 
   const handleIntervalChange = async (minutes: number) => {
@@ -185,7 +240,7 @@ function GeneralTab() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold mb-4">General Settings</h2>
+        <h2 className="text-lg font-semibold mb-4">Server Connection</h2>
 
         <div className="space-y-4">
           <div>
@@ -200,6 +255,40 @@ function GeneralTab() {
               className="w-full px-3 py-2 rounded-md border bg-[var(--background-color-three)] focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="http://localhost:3000"
             />
+          </div>
+
+          <div className="flex items-center justify-between p-3 rounded-md bg-[var(--background-color-three)]">
+            <div className="flex items-center gap-3">
+              <div>
+                <div className="font-medium flex items-center gap-2">
+                  Device Status
+                  <DeviceStatusBadge status={deviceStatus} />
+                </div>
+                {deviceStatus?.deviceId && (
+                  <div className="text-xs text-[var(--text-color-secondary)] font-mono mt-0.5">
+                    {deviceStatus.deviceId.slice(0, 8)}...
+                  </div>
+                )}
+                {deviceStatus?.error && (
+                  <div className="text-xs text-red-500 mt-0.5">
+                    {deviceStatus.error}
+                  </div>
+                )}
+                {deviceStatus?.registered && !deviceStatus.approved && (
+                  <div className="text-xs text-[var(--text-color-secondary)] mt-0.5">
+                    Approve this device on the server dashboard
+                  </div>
+                )}
+              </div>
+            </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleRegister}
+              disabled={isRegistering}
+            >
+              {isRegistering ? 'Checking...' : 'Refresh'}
+            </Button>
           </div>
         </div>
       </div>
