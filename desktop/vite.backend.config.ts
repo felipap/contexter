@@ -4,15 +4,15 @@ import path from 'node:path';
 export default defineConfig({
 	build: {
 		lib: {
-			entry: path.resolve(__dirname, 'backend/preload.ts'),
+			entry: path.resolve(__dirname, 'backend/main.ts'),
 			formats: ['cjs'],
-			fileName: () => 'preload.js',
+			fileName: () => 'main.js',
 		},
 		outDir: 'dist/backend',
-		emptyOutDir: false,
+		emptyOutDir: true,
 		sourcemap: true,
 		rollupOptions: {
-			external: ['electron'],
+			external: ['electron', 'electron-store', 'node:path', 'node:fs', 'node:os', 'node:child_process'],
 		},
 		target: 'node20',
 		minify: false,

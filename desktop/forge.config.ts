@@ -25,12 +25,12 @@ const config: ForgeConfig = {
       build: [
         {
           // `entry` is just an alias for `build.lib.entry` in the corresponding file of `config`.
-          entry: 'src/main.ts',
-          config: 'vite.main.config.ts',
+          entry: 'backend/main.ts',
+          config: 'vite.backend.config.ts',
           target: 'main',
         },
         {
-          entry: 'src/preload.ts',
+          entry: 'backend/preload.ts',
           config: 'vite.preload.config.ts',
           target: 'preload',
         },
@@ -38,7 +38,7 @@ const config: ForgeConfig = {
       renderer: [
         {
           name: 'main_window',
-          config: 'vite.renderer.config.ts',
+          config: 'vite.window.config.ts',
         },
       ],
     }),
@@ -57,3 +57,4 @@ const config: ForgeConfig = {
 };
 
 export default config;
+

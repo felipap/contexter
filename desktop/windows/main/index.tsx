@@ -26,8 +26,9 @@
  * ```
  */
 
-import './index.css';
+import '../shared/css/tailwind.css';
 
 console.log(
-  '👋 This message is being logged by "renderer.ts", included via Vite',
+  '👋 This message is being logged by "index.tsx", included via Vite',
 );
+
