@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { ApiRequestLog, ScreenCaptureConfig } from '../electron'
+import { ApiRequestLog, ScreenCaptureConfig, DeviceStatus } from '../electron'
 import { Button } from '../shared/ui/Button'
 
 type Tab = 'general' | 'logs'

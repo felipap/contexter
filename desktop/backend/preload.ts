@@ -11,4 +11,6 @@ contextBridge.exposeInMainWorld('electron', {
   }) => ipcRenderer.invoke('set-screen-capture-config', config),
   getServerUrl: () => ipcRenderer.invoke('get-server-url'),
   setServerUrl: (url: string) => ipcRenderer.invoke('set-server-url', url),
+  getDeviceId: () => ipcRenderer.invoke('get-device-id'),
+  registerDevice: () => ipcRenderer.invoke('register-device'),
 })

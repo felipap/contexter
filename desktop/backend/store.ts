@@ -1,4 +1,5 @@
 import Store from "electron-store";
+import { randomUUID } from "crypto";
 
 export type ApiRequestLog = {
   id: string;
@@ -11,54 +12,32 @@ export type ApiRequestLog = {
   error?: string;
 };
 
-export type AuthState = {
-  sessionToken: string | null;
-  userId: string | null;
-  userEmail: string | null;
-};
-
 type StoreSchema = {
+  deviceId: string;
   serverUrl: string;
   screenCapture: {
     enabled: boolean;
     intervalMinutes: number;
   };
   requestLogs: ApiRequestLog[];
-  auth: AuthState;
 };
 
 const MAX_LOGS = 100;
 
 export const store = new Store<StoreSchema>({
   defaults: {
+    deviceId: randomUUID(),
     serverUrl: "http://localhost:3000",
     screenCapture: {
       enabled: true,
       intervalMinutes: 5,
     },
     requestLogs: [],
-    auth: {
-      sessionToken: null,
-      userId: null,
-      userEmail: null,
-    },
   },
 });
 
-export function getAuthState(): AuthState {
-  return store.get("auth");
-}
-
-export function setAuthState(auth: AuthState): void {
-  store.set("auth", auth);
-}
-
-export function clearAuth(): void {
-  store.set("auth", {
-    sessionToken: null,
-    userId: null,
-    userEmail: null,
-  });
+export function getDeviceId(): string {
+  return store.get("deviceId");
 }
 
 export function addRequestLog(log: Omit<ApiRequestLog, "id">): void {

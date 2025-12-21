@@ -2,7 +2,53 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import { createMainWindow } from './windows/settings';
 import { initTray, destroyTray } from './tray';
 import { startScreenCapture, stopScreenCapture, restartScreenCapture } from './screen-capture';
-import { store, getRequestLogs, clearRequestLogs } from './store';
+import { store, getRequestLogs, clearRequestLogs, getDeviceId } from './store';
+
+export type DeviceStatus = {
+	deviceId: string;
+	registered: boolean;
+	approved: boolean;
+	error?: string;
+};
+
+async function registerDevice(): Promise<DeviceStatus> {
+	const serverUrl = store.get('serverUrl');
+	const deviceId = getDeviceId();
+
+	let response: Response;
+	try {
+		response = await fetch(`${serverUrl}/api/devices/register`, {
+			method: 'POST',
+			headers: {
+				'x-device-id': deviceId,
+				'x-device-name': `Context Desktop (${process.platform})`,
+			},
+		});
+	} catch (error) {
+		return {
+			deviceId,
+			registered: false,
+			approved: false,
+			error: error instanceof Error ? error.message : 'Network error',
+		};
+	}
+
+	if (!response.ok) {
+		return {
+			deviceId,
+			registered: false,
+			approved: false,
+			error: `Server returned ${response.status}`,
+		};
+	}
+
+	const data = await response.json();
+	return {
+		deviceId,
+		registered: data.registered,
+		approved: data.approved,
+	};
+}
 
 function registerIpcHandlers(): void {
 	ipcMain.handle('get-request-logs', () => {
@@ -29,6 +75,14 @@ function registerIpcHandlers(): void {
 
 	ipcMain.handle('set-server-url', (_event, url: string) => {
 		store.set('serverUrl', url);
+	});
+
+	ipcMain.handle('get-device-id', () => {
+		return getDeviceId();
+	});
+
+	ipcMain.handle('register-device', async () => {
+		return registerDevice();
 	});
 }
 

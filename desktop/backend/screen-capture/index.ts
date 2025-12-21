@@ -1,5 +1,5 @@
 import { desktopCapturer, screen } from "electron";
-import { store, addRequestLog } from "../store";
+import { store, addRequestLog, getDeviceId } from "../store";
 
 let captureInterval: NodeJS.Timeout | null = null;
 let nextCaptureTime: Date | null = null;
@@ -45,6 +45,7 @@ async function captureScreen(): Promise<Buffer | null> {
 
 async function uploadScreenshot(imageBuffer: Buffer): Promise<void> {
   const serverUrl = store.get("serverUrl");
+  const deviceId = getDeviceId();
   const path = "/api/screenshots";
   const uploadUrl = `${serverUrl}${path}`;
 
@@ -60,6 +61,9 @@ async function uploadScreenshot(imageBuffer: Buffer): Promise<void> {
     response = await fetch(uploadUrl, {
       method: "POST",
       body: formData,
+      headers: {
+        "x-device-id": deviceId,
+      },
     });
   } catch (error) {
     addRequestLog({

@@ -1,38 +1,38 @@
-"use client";
+"use client"
 
-import { signIn, useSession } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { signIn, useSession } from "@/lib/auth-client"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 
 function Page() {
-  const router = useRouter();
-  const { data: session, isPending } = useSession();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const router = useRouter()
+  const { data: session, isPending } = useSession()
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (session) {
-      router.push("/dashboard");
+      router.push("/dashboard")
     }
-  }, [session, router]);
+  }, [session, router])
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+    e.preventDefault()
+    setError("")
+    setLoading(true)
 
     const result = await signIn.email({
       email,
       password,
-    });
+    })
 
     if (result.error) {
-      setError(result.error.message || "Failed to sign in");
-      setLoading(false);
+      setError(result.error.message || "Failed to sign in")
+      setLoading(false)
     } else {
-      router.push("/dashboard");
+      router.push("/dashboard")
     }
   }
 
@@ -41,7 +41,7 @@ function Page() {
       <div className="flex min-h-screen items-center justify-center">
         <p className="text-zinc-500">Loading...</p>
       </div>
-    );
+    )
   }
 
   return (
@@ -97,17 +97,13 @@ function Page() {
 
         <p className="mt-4 text-center text-sm text-zinc-500">
           Don&apos;t have an account?{" "}
-          <a
-            href="/sign-up"
-            className="text-zinc-900 hover:underline dark:text-white"
-          >
+          <a href="/sign-up" className="text-zinc-900 hover:underline dark:text-white">
             Sign up
           </a>
         </p>
       </div>
     </div>
-  );
+  )
 }
 
-export default Page;
-
+export default Page

@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "better-auth": "^1.4.7",
@@ -19,6 +20,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "prettier": "^3",
     "@types/node": "^20",
     "@types/pg": "^8.16.0",
     "@types/react": "^19",

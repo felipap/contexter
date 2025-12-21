@@ -1,36 +1,36 @@
-"use client";
+"use client"
 
-import { useSession, signOut } from "@/lib/auth-client";
-import { useEffect, useState } from "react";
+import { useSession, signOut } from "@/lib/auth-client"
+import { useEffect, useState } from "react"
 
 type DashboardStats = {
-  totalScreenshots: number;
-  totalStorageBytes: number;
+  totalScreenshots: number
+  totalStorageBytes: number
   recentScreenshots: {
-    id: string;
-    width: number;
-    height: number;
-    sizeBytes: number;
-    capturedAt: string;
-  }[];
-};
+    id: string
+    width: number
+    height: number
+    sizeBytes: number
+    capturedAt: string
+  }[]
+}
 
 async function fetchDashboardStats(): Promise<DashboardStats> {
-  const response = await fetch("/api/dashboard");
+  const response = await fetch("/api/dashboard")
   if (!response.ok) {
-    throw new Error("Failed to fetch dashboard stats");
+    throw new Error("Failed to fetch dashboard stats")
   }
-  return response.json();
+  return response.json()
 }
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) {
-    return "0 Bytes";
+    return "0 Bytes"
   }
-  const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  const k = 1024
+  const sizes = ["Bytes", "KB", "MB", "GB"]
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
 }
 
 function StatCard({ label, value }: { label: string; value: string }) {
@@ -39,30 +39,30 @@ function StatCard({ label, value }: { label: string; value: string }) {
       <p className="text-sm text-zinc-500 dark:text-zinc-400">{label}</p>
       <p className="mt-2 text-3xl font-semibold tracking-tight">{value}</p>
     </div>
-  );
+  )
 }
 
 function Page() {
-  const { data: session, isPending } = useSession();
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: session, isPending } = useSession()
+  const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (session) {
       fetchDashboardStats()
         .then(setStats)
         .catch((err) => setError(err.message))
-        .finally(() => setLoading(false));
+        .finally(() => setLoading(false))
     }
-  }, [session]);
+  }, [session])
 
   if (isPending) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <p className="text-zinc-500">Loading...</p>
       </div>
-    );
+    )
   }
 
   if (!session) {
@@ -77,7 +77,7 @@ function Page() {
           Sign In
         </a>
       </div>
-    );
+    )
   }
 
   return (
@@ -164,8 +164,7 @@ function Page() {
         ) : null}
       </main>
     </div>
-  );
+  )
 }
 
-export default Page;
-
+export default Page

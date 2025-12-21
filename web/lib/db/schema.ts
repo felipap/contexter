@@ -1,4 +1,13 @@
-import { pgTable, text, timestamp, integer, uuid } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer, uuid, boolean } from "drizzle-orm/pg-core"
+
+export const devices = pgTable("devices", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  deviceId: text("device_id").notNull().unique(),
+  name: text("name"),
+  approved: boolean("approved").default(false).notNull(),
+  lastSeenAt: timestamp("last_seen_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+})
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
@@ -8,7 +17,7 @@ export const users = pgTable("users", {
   image: text("image"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+})
 
 export const sessions = pgTable("sessions", {
   id: text("id").primaryKey(),
@@ -21,7 +30,7 @@ export const sessions = pgTable("sessions", {
   userAgent: text("user_agent"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+})
 
 export const accounts = pgTable("accounts", {
   id: text("id").primaryKey(),
@@ -38,7 +47,7 @@ export const accounts = pgTable("accounts", {
   idToken: text("id_token"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+})
 
 export const verifications = pgTable("verifications", {
   id: text("id").primaryKey(),
@@ -47,18 +56,17 @@ export const verifications = pgTable("verifications", {
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+})
 
 export const screenshots = pgTable("screenshots", {
   id: uuid("id").defaultRandom().primaryKey(),
-  userId: text("user_id")
+  deviceId: uuid("device_id")
     .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
+    .references(() => devices.id, { onDelete: "cascade" }),
   data: text("data").notNull(),
   width: integer("width").notNull(),
   height: integer("height").notNull(),
   sizeBytes: integer("size_bytes").notNull(),
   capturedAt: timestamp("captured_at").defaultNow().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
+})
