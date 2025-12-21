@@ -1,0 +1,15 @@
+{
+  "workbench.colorTheme": "Cursor Dark",
+  "search.exclude": {
+    "dist": true,
+    "dist-electron": true,
+    "tsconfig.tsbuildinfo": true,
+    "package-lock.json": true,
+    "node_modules": true
+  },
+  "files.exclude": {
+    "**/Info.plist": true,
+    "**/tsconfig.tsbuildinfo": true,
+    "**/package-lock.json": true
+  }
+}
