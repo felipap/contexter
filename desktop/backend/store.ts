@@ -11,6 +11,12 @@ export type ApiRequestLog = {
   error?: string;
 };
 
+export type AuthState = {
+  sessionToken: string | null;
+  userId: string | null;
+  userEmail: string | null;
+};
+
 type StoreSchema = {
   serverUrl: string;
   screenCapture: {
@@ -18,6 +24,7 @@ type StoreSchema = {
     intervalMinutes: number;
   };
   requestLogs: ApiRequestLog[];
+  auth: AuthState;
 };
 
 const MAX_LOGS = 100;
@@ -30,8 +37,29 @@ export const store = new Store<StoreSchema>({
       intervalMinutes: 5,
     },
     requestLogs: [],
+    auth: {
+      sessionToken: null,
+      userId: null,
+      userEmail: null,
+    },
   },
 });
+
+export function getAuthState(): AuthState {
+  return store.get("auth");
+}
+
+export function setAuthState(auth: AuthState): void {
+  store.set("auth", auth);
+}
+
+export function clearAuth(): void {
+  store.set("auth", {
+    sessionToken: null,
+    userId: null,
+    userEmail: null,
+  });
+}
 
 export function addRequestLog(log: Omit<ApiRequestLog, "id">): void {
   const logs = store.get("requestLogs");
