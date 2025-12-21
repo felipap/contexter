@@ -1,0 +1,14 @@
+{
+  "extends": "../main/tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../backend/scripts",
+    "rootDir": "..",
+    "module": "CommonJS"
+  },
+  "include": [
+    "**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
