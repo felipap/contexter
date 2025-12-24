@@ -1,223 +1,41 @@
-import { useState, useEffect, useCallback } from 'react'
-import { ApiRequestLog, ScreenCaptureConfig, DeviceStatus } from '../electron'
-import { Button } from '../shared/ui/Button'
+import { useState, useEffect } from 'react'
+import { ScreenCaptureConfig } from '../electron'
+import { LogsTab } from './logs/LogsTab'
 
 type Tab = 'general' | 'logs'
 
-function formatTimestamp(timestamp: number): string {
-  const date = new Date(timestamp)
-  return date.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-  })
-}
-
-function formatDate(timestamp: number): string {
-  const date = new Date(timestamp)
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-  })
-}
-
-function StatusBadge({ status }: { status: 'success' | 'error' }) {
-  if (status === 'success') {
-    return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-        Success
-      </span>
-    )
-  }
-  return (
-    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
-      Error
-    </span>
-  )
-}
-
-function LogsTab() {
-  const [logs, setLogs] = useState<ApiRequestLog[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-
-  const fetchLogs = useCallback(async () => {
-    const result = await window.electron.getRequestLogs()
-    setLogs(result)
-    setIsLoading(false)
-  }, [])
-
-  useEffect(() => {
-    fetchLogs()
-    const interval = setInterval(fetchLogs, 2000)
-    return () => clearInterval(interval)
-  }, [fetchLogs])
-
-  const handleClear = async () => {
-    await window.electron.clearRequestLogs()
-    setLogs([])
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12 text-[var(--text-color-secondary)]">
-        Loading logs...
-      </div>
-    )
-  }
-
-  return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold">Request Logs</h2>
-        <Button variant="secondary" size="sm" onClick={handleClear} disabled={logs.length === 0}>
-          Clear Logs
-        </Button>
-      </div>
-
-      {logs.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center text-[var(--text-color-secondary)] py-12">
-          <div className="text-4xl mb-3 opacity-40">📋</div>
-          <p>No requests logged yet</p>
-          <p className="text-sm mt-1">Requests to the context server will appear here</p>
-        </div>
-      ) : (
-        <div className="flex-1 overflow-auto -mx-4 px-4">
-          <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-[var(--background-color-one)]">
-              <tr className="text-left text-[var(--text-color-secondary)] border-b">
-                <th className="pb-2 font-medium">Time</th>
-                <th className="pb-2 font-medium">Method</th>
-                <th className="pb-2 font-medium">Path</th>
-                <th className="pb-2 font-medium">Status</th>
-                <th className="pb-2 font-medium text-right">Duration</th>
-              </tr>
-            </thead>
-            <tbody>
-              {logs.map((log, index) => {
-                const showDate = index === 0 ||
-                  formatDate(log.timestamp) !== formatDate(logs[index - 1].timestamp)
-
-                return (
-                  <tr key={log.id} className="border-b border-[var(--border-color-one)] hover:bg-[var(--background-color-three)]">
-                    <td className="py-2.5 font-mono text-xs">
-                      {showDate && (
-                        <span className="text-[var(--text-color-secondary)] mr-1.5">
-                          {formatDate(log.timestamp)}
-                        </span>
-                      )}
-                      {formatTimestamp(log.timestamp)}
-                    </td>
-                    <td className="py-2.5">
-                      <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-[var(--background-color-three)]">
-                        {log.method}
-                      </span>
-                    </td>
-                    <td className="py-2.5 font-mono text-xs text-[var(--text-color-secondary)]">
-                      {log.path}
-                    </td>
-                    <td className="py-2.5">
-                      <StatusBadge status={log.status} />
-                      {log.error && (
-                        <span className="ml-2 text-xs text-red-500 dark:text-red-400">
-                          {log.error}
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-2.5 text-right font-mono text-xs text-[var(--text-color-secondary)]">
-                      {log.duration}ms
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  )
-}
-
-function DeviceStatusBadge({ status }: { status: DeviceStatus | null }) {
-  if (!status) {
-    return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-        Checking...
-      </span>
-    )
-  }
-
-  if (status.error) {
-    return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
-        Error
-      </span>
-    )
-  }
-
-  if (!status.registered) {
-    return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
-        Not Registered
-      </span>
-    )
-  }
-
-  if (!status.approved) {
-    return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
-        Pending Approval
-      </span>
-    )
-  }
-
-  return (
-    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-      Connected
-    </span>
-  )
-}
-
 function GeneralTab() {
   const [serverUrl, setServerUrl] = useState('')
+  const [deviceSecret, setDeviceSecret] = useState('')
   const [config, setConfig] = useState<ScreenCaptureConfig | null>(null)
-  const [deviceStatus, setDeviceStatus] = useState<DeviceStatus | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [isRegistering, setIsRegistering] = useState(false)
-
-  const checkDeviceStatus = useCallback(async () => {
-    const status = await window.electron.registerDevice()
-    setDeviceStatus(status)
-  }, [])
 
   useEffect(() => {
     async function load() {
-      const [url, captureConfig] = await Promise.all([
+      const [url, secret, captureConfig] = await Promise.all([
         window.electron.getServerUrl(),
+        window.electron.getDeviceSecret(),
         window.electron.getScreenCaptureConfig(),
       ])
       setServerUrl(url)
+      setDeviceSecret(secret)
       setConfig(captureConfig)
       setIsLoading(false)
-      checkDeviceStatus()
     }
     load()
-  }, [checkDeviceStatus])
+  }, [])
 
   const handleServerUrlBlur = async () => {
     await window.electron.setServerUrl(serverUrl)
-    checkDeviceStatus()
   }
 
-  const handleRegister = async () => {
-    setIsRegistering(true)
-    await checkDeviceStatus()
-    setIsRegistering(false)
+  const handleDeviceSecretBlur = async () => {
+    await window.electron.setDeviceSecret(deviceSecret)
   }
 
   const handleIntervalChange = async (minutes: number) => {
     await window.electron.setScreenCaptureConfig({ intervalMinutes: minutes })
-    setConfig(prev => prev ? { ...prev, intervalMinutes: minutes } : null)
+    setConfig((prev) => (prev ? { ...prev, intervalMinutes: minutes } : null))
   }
 
   const handleToggleEnabled = async () => {
@@ -226,7 +44,7 @@ function GeneralTab() {
     }
     const newEnabled = !config.enabled
     await window.electron.setScreenCaptureConfig({ enabled: newEnabled })
-    setConfig(prev => prev ? { ...prev, enabled: newEnabled } : null)
+    setConfig((prev) => (prev ? { ...prev, enabled: newEnabled } : null))
   }
 
   if (isLoading) {
@@ -257,38 +75,21 @@ function GeneralTab() {
             />
           </div>
 
-          <div className="flex items-center justify-between p-3 rounded-md bg-[var(--background-color-three)]">
-            <div className="flex items-center gap-3">
-              <div>
-                <div className="font-medium flex items-center gap-2">
-                  Device Status
-                  <DeviceStatusBadge status={deviceStatus} />
-                </div>
-                {deviceStatus?.deviceId && (
-                  <div className="text-xs text-[var(--text-color-secondary)] font-mono mt-0.5">
-                    {deviceStatus.deviceId.slice(0, 8)}...
-                  </div>
-                )}
-                {deviceStatus?.error && (
-                  <div className="text-xs text-red-500 mt-0.5">
-                    {deviceStatus.error}
-                  </div>
-                )}
-                {deviceStatus?.registered && !deviceStatus.approved && (
-                  <div className="text-xs text-[var(--text-color-secondary)] mt-0.5">
-                    Approve this device on the server dashboard
-                  </div>
-                )}
-              </div>
-            </div>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleRegister}
-              disabled={isRegistering}
-            >
-              {isRegistering ? 'Checking...' : 'Refresh'}
-            </Button>
+          <div>
+            <label className="block text-sm font-medium mb-1.5">
+              Device Secret
+            </label>
+            <input
+              type="password"
+              value={deviceSecret}
+              onChange={(e) => setDeviceSecret(e.target.value)}
+              onBlur={handleDeviceSecretBlur}
+              className="w-full px-3 py-2 rounded-md border bg-[var(--background-color-three)] focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter the secret from your server"
+            />
+            <p className="text-xs text-[var(--text-color-secondary)] mt-1">
+              Must match DEVICE_SECRET on the server
+            </p>
           </div>
         </div>
       </div>
@@ -344,7 +145,7 @@ function GeneralTab() {
 function TabButton({
   active,
   onClick,
-  children
+  children,
 }: {
   active: boolean
   onClick: () => void
@@ -371,10 +172,16 @@ export function Settings() {
     <div className="h-screen flex flex-col bg-[var(--background-color-one)]">
       <div className="flex-shrink-0 border-b px-4 pt-2">
         <div className="flex gap-2">
-          <TabButton active={activeTab === 'general'} onClick={() => setActiveTab('general')}>
+          <TabButton
+            active={activeTab === 'general'}
+            onClick={() => setActiveTab('general')}
+          >
             General
           </TabButton>
-          <TabButton active={activeTab === 'logs'} onClick={() => setActiveTab('logs')}>
+          <TabButton
+            active={activeTab === 'logs'}
+            onClick={() => setActiveTab('logs')}
+          >
             Logs
           </TabButton>
         </div>

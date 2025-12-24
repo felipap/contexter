@@ -1,5 +1,5 @@
 import { desktopCapturer, screen } from "electron";
-import { store, addRequestLog, getDeviceId } from "../store";
+import { store, addRequestLog, getDeviceId, getDeviceSecret } from "../store";
 import { startAnimating, stopAnimating } from "../tray/animate";
 
 let captureInterval: NodeJS.Timeout | null = null;
@@ -47,6 +47,7 @@ async function captureScreen(): Promise<Buffer | null> {
 async function uploadScreenshot(imageBuffer: Buffer): Promise<void> {
   const serverUrl = store.get("serverUrl");
   const deviceId = getDeviceId();
+  const deviceSecret = getDeviceSecret();
   const path = "/api/screenshots";
   const uploadUrl = `${serverUrl}${path}`;
 
@@ -64,6 +65,7 @@ async function uploadScreenshot(imageBuffer: Buffer): Promise<void> {
       body: formData,
       headers: {
         "x-device-id": deviceId,
+        Authorization: `Bearer ${deviceSecret}`,
       },
     });
   } catch (error) {

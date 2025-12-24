@@ -14,13 +14,6 @@ export interface ScreenCaptureConfig {
 	intervalMinutes: number;
 }
 
-export interface DeviceStatus {
-	deviceId: string;
-	registered: boolean;
-	approved: boolean;
-	error?: string;
-}
-
 interface ElectronAPI {
 	platform: string;
 	getRequestLogs: () => Promise<ApiRequestLog[]>;
@@ -30,7 +23,8 @@ interface ElectronAPI {
 	getServerUrl: () => Promise<string>;
 	setServerUrl: (url: string) => Promise<void>;
 	getDeviceId: () => Promise<string>;
-	registerDevice: () => Promise<DeviceStatus>;
+	getDeviceSecret: () => Promise<string>;
+	setDeviceSecret: (secret: string) => Promise<void>;
 }
 
 declare global {

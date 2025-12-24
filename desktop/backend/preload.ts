@@ -12,5 +12,6 @@ contextBridge.exposeInMainWorld('electron', {
   getServerUrl: () => ipcRenderer.invoke('get-server-url'),
   setServerUrl: (url: string) => ipcRenderer.invoke('set-server-url', url),
   getDeviceId: () => ipcRenderer.invoke('get-device-id'),
-  registerDevice: () => ipcRenderer.invoke('register-device'),
+  getDeviceSecret: () => ipcRenderer.invoke('get-device-secret'),
+  setDeviceSecret: (secret: string) => ipcRenderer.invoke('set-device-secret', secret),
 })

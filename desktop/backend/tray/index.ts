@@ -4,11 +4,8 @@ import {
   captureNow,
   formatTimeUntilNextCapture,
   isScreenCaptureRunning,
-  startScreenCapture,
-  stopScreenCapture,
 } from '../screen-capture'
 import { showMainWindow } from '../windows/settings'
-import { store } from '../store'
 
 let tray: Tray | null = null
 let updateInterval: NodeJS.Timeout | null = null
@@ -59,23 +56,6 @@ function updateTrayMenu(): void {
       enabled: isCapturing,
       click: () => {
         captureNow()
-      },
-    },
-    { type: 'separator' },
-
-    // Actions
-    {
-      label: isCapturing ? 'Pause Screen Capture' : 'Resume Screen Capture',
-      click: () => {
-        const config = store.get('screenCapture')
-        if (isCapturing) {
-          stopScreenCapture()
-          store.set('screenCapture', { ...config, enabled: false })
-        } else {
-          store.set('screenCapture', { ...config, enabled: true })
-          startScreenCapture()
-        }
-        updateTrayMenu()
       },
     },
     { type: 'separator' },
