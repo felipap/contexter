@@ -1,0 +1,68 @@
+name: Build and Release
+permissions:
+  contents: write
+
+on:
+  push:
+    tags:
+      - '*.*.*' # Only trigger on version tags like 1.0.0
+
+jobs:
+  release:
+    runs-on: macos-14
+    timeout-minutes: 15
+    env:
+      CSC_IDENTITY: ${{ secrets.MACOS_CERTIFICATE_ID }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Import code signing certificate
+        uses: apple-actions/import-codesign-certs@v1
+        with:
+          p12-file-base64: ${{ secrets.CERTIFICATE_P12 }}
+          p12-password: ${{ secrets.CERTIFICATE_PASSWORD }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Xcode Command Line Tools
+        run: xcode-select --install || true
+
+      - name: Build Electron app
+        run: pnpm run build
+
+      - name: Package Electron app
+        run: pnpm run pack
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: 'Yap ${{ github.ref_name }}'
+          files: |
+            dist-electron/**/*.dmg
+            dist-electron/**/*.zip
+            dist-electron/**/*.app
+            dist-electron/latest-mac.yml
+          draft: false
+          generate_release_notes: true
+          # prerelease: false
+          # body_path: CHANGELOG.md

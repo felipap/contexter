@@ -3,8 +3,15 @@
 ## Now
 
 - [ ] Fix CI/CD
+- [ ] Make packing work
 - [ ] Fix notarization
 - [ ] Feat: implement an onboarding with info
+- [ ] Feat: blur the texts in screenshots
+- [ ] Feat: desktop icon
+- [ ] Feat: whitelist or blacklist messages from particular numbers
+- [ ] Feat: Allow expire data after certain time
+- [ ] Feat: _Don't_ auto upload data when starting the app
+- [ ] Think about real-time authentication of features
 
 ## Done
 
