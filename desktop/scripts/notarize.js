@@ -29,7 +29,7 @@ exports.default = async function notarizing(context) {
   return await notarize({
     tool: 'notarytool',
     teamId: process.env.APPLE_TEAM_ID,
-    appBundleId: 'com.felipap.vlogger',
+    appBundleId: 'com.felipap.contexter',
     appPath: `${appOutDir}/${appName}.app`,
     appleId: process.env.APPLE_ID,
     appleIdPassword: process.env.APPLE_APP_SPECIFIC_PASSWORD,

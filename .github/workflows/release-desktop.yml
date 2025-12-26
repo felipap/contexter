@@ -61,7 +61,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          name: 'Yap ${{ github.ref_name }}'
+          name: 'Context ${{ github.ref_name }}'
           files: |
             desktop/dist-electron/**/*.dmg
             desktop/dist-electron/**/*.zip
