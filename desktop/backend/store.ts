@@ -20,6 +20,14 @@ type StoreSchema = {
     enabled: boolean
     intervalMinutes: number
   }
+  imessageExport: {
+    enabled: boolean
+    intervalMinutes: number
+  }
+  contactsSync: {
+    enabled: boolean
+    intervalMinutes: number
+  }
   requestLogs: ApiRequestLog[]
 }
 
@@ -33,6 +41,14 @@ export const store = new Store<StoreSchema>({
     screenCapture: {
       enabled: true,
       intervalMinutes: 5,
+    },
+    imessageExport: {
+      enabled: false,
+      intervalMinutes: 5,
+    },
+    contactsSync: {
+      enabled: false,
+      intervalMinutes: 60,
     },
     requestLogs: [],
   },

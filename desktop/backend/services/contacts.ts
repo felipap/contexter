@@ -1,0 +1,107 @@
+import { store } from '../store'
+import { startAnimating, stopAnimating } from '../tray/animate'
+import { fetchContacts, uploadContacts } from '../sources/contacts'
+import type { Service } from './index'
+
+let syncInterval: NodeJS.Timeout | null = null
+let nextSyncTime: Date | null = null
+
+async function syncAndUpload(): Promise<void> {
+  console.log('[contacts] Syncing...')
+
+  const contacts = fetchContacts()
+
+  if (contacts.length === 0) {
+    console.log('[contacts] No contacts to sync')
+    return
+  }
+
+  startAnimating('old')
+  try {
+    await uploadContacts(contacts)
+  } catch (error) {
+    console.error('[contacts] Failed to upload:', error)
+  } finally {
+    stopAnimating()
+  }
+}
+
+function scheduleNextSync(): void {
+  const config = store.get('contactsSync')
+  const intervalMs = config.intervalMinutes * 60 * 1000
+
+  nextSyncTime = new Date(Date.now() + intervalMs)
+
+  syncInterval = setTimeout(async () => {
+    await syncAndUpload()
+    scheduleNextSync()
+  }, intervalMs)
+}
+
+async function start(): Promise<void> {
+  if (syncInterval) {
+    console.log('[contacts] Already running')
+    return
+  }
+
+  const config = store.get('contactsSync')
+  if (!config.enabled) {
+    console.log('[contacts] Disabled')
+    return
+  }
+
+  console.log('[contacts] Starting...')
+
+  // Do initial sync, but don't let failures prevent scheduling
+  try {
+    await syncAndUpload()
+  } catch (error) {
+    console.error('[contacts] Initial sync failed:', error)
+  }
+
+  scheduleNextSync()
+}
+
+function stop(): void {
+  if (syncInterval) {
+    clearTimeout(syncInterval)
+    syncInterval = null
+    nextSyncTime = null
+    console.log('[contacts] Stopped')
+  }
+}
+
+function restart(): void {
+  stop()
+  start()
+}
+
+function isRunning(): boolean {
+  return syncInterval !== null
+}
+
+async function runNow(): Promise<void> {
+  await syncAndUpload()
+}
+
+function getNextRunTime(): Date | null {
+  return nextSyncTime
+}
+
+function getTimeUntilNextRun(): number {
+  if (!nextSyncTime) {
+    return 0
+  }
+  return Math.max(0, nextSyncTime.getTime() - Date.now())
+}
+
+export const contactsService: Service = {
+  name: 'contacts',
+  start,
+  stop,
+  restart,
+  isRunning,
+  runNow,
+  getNextRunTime,
+  getTimeUntilNextRun,
+}

@@ -1,20 +1,29 @@
-import { app, Menu, Tray, nativeImage } from 'electron'
+import { app, Menu, MenuItemConstructorOptions, Tray, nativeImage } from 'electron'
 import path from 'path'
-import {
-  captureNow,
-  formatTimeUntilNextCapture,
-  isScreenCaptureRunning,
-} from '../screen-capture'
+import { SERVICES, Service } from '../services'
 import { showMainWindow } from '../windows/settings'
 
 let tray: Tray | null = null
 let updateInterval: NodeJS.Timeout | null = null
+
+const SERVICE_LABELS: Record<string, string> = {
+  screenshots: 'Screenshots',
+  imessage: 'iMessage',
+  contacts: 'Contacts',
+}
 
 export function getAssetsPath(name: string): string {
   const base = app.isPackaged
     ? path.join(process.resourcesPath, 'assets')
     : path.join(__dirname, '../../../assets')
   return path.join(base, name)
+}
+
+function formatTimeUntilNextRun(ms: number): string {
+  const totalSeconds = Math.floor(ms / 1000)
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+  return `${minutes}m ${seconds}s`
 }
 
 function createTrayIcon(): Tray {
@@ -31,36 +40,47 @@ function createTrayIcon(): Tray {
   return tray
 }
 
+function buildServiceMenuItems(service: Service): MenuItemConstructorOptions[] {
+  const label = SERVICE_LABELS[service.name] || service.name
+  const isRunning = service.isRunning()
+  const timeUntilNext = formatTimeUntilNextRun(service.getTimeUntilNextRun())
+
+  return [
+    {
+      label,
+      enabled: false,
+    },
+    {
+      label: isRunning ? `  Next: ${timeUntilNext}` : '  Not running',
+      enabled: false,
+    },
+    {
+      label: '  Run Now',
+      enabled: isRunning,
+      click: () => {
+        service.runNow()
+      },
+    },
+  ]
+}
+
 function updateTrayMenu(): void {
   if (!tray) {
     return
   }
 
-  const isCapturing = isScreenCaptureRunning()
-  const timeUntilNext = formatTimeUntilNextCapture()
+  const serviceMenuItems: MenuItemConstructorOptions[] = []
+
+  for (const service of SERVICES) {
+    if (serviceMenuItems.length > 0) {
+      serviceMenuItems.push({ type: 'separator' })
+    }
+    serviceMenuItems.push(...buildServiceMenuItems(service))
+  }
 
   const contextMenu = Menu.buildFromTemplate([
-    // Screen Capture Section
-    {
-      label: 'Screen Capture',
-      enabled: false,
-    },
-    {
-      label: isCapturing
-        ? `  Next capture: ${timeUntilNext}`
-        : '  No capture scheduled',
-      enabled: false,
-    },
-    {
-      label: '  Capture Now',
-      enabled: isCapturing,
-      click: () => {
-        captureNow()
-      },
-    },
+    ...serviceMenuItems,
     { type: 'separator' },
-
-    // Window and app controls
     {
       label: 'Settings',
       accelerator: 'CmdOrCtrl+,',
@@ -80,7 +100,6 @@ function updateTrayMenu(): void {
 }
 
 function startTrayUpdates(): void {
-  // Update the tray menu every second to show countdown
   updateInterval = setInterval(() => {
     updateTrayMenu()
   }, 1000)
