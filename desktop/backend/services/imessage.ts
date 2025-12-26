@@ -1,12 +1,75 @@
 import { IMessageSDK } from '@photon-ai/imessage-kit'
-import { store } from '../store'
+import { store, addRequestLog, getDeviceId, getDeviceSecret } from '../store'
 import { startAnimating, stopAnimating } from '../tray/animate'
 import {
   createIMessageSDK,
   fetchMessages,
-  uploadMessages,
+  type Message,
 } from '../sources/imessage'
 import type { Service } from './index'
+
+async function uploadMessages(messages: Message[]): Promise<void> {
+  if (messages.length === 0) {
+    return
+  }
+
+  const serverUrl = store.get('serverUrl')
+  const deviceId = getDeviceId()
+  const deviceSecret = getDeviceSecret()
+  const path = '/api/messages'
+  const uploadUrl = `${serverUrl}${path}`
+
+  const startTime = Date.now()
+
+  let response: Response
+  try {
+    response = await fetch(uploadUrl, {
+      method: 'POST',
+      body: JSON.stringify({ messages }),
+      headers: {
+        'Content-Type': 'application/json',
+        'x-device-id': deviceId,
+        Authorization: `Bearer ${deviceSecret}`,
+      },
+    })
+  } catch (error) {
+    addRequestLog({
+      timestamp: startTime,
+      method: 'POST',
+      path,
+      status: 'error',
+      duration: Date.now() - startTime,
+      error: error instanceof Error ? error.message : 'Network error',
+    })
+    throw error
+  }
+
+  const duration = Date.now() - startTime
+
+  if (!response.ok) {
+    addRequestLog({
+      timestamp: startTime,
+      method: 'POST',
+      path,
+      status: 'error',
+      statusCode: response.status,
+      duration,
+      error: `${response.status} ${response.statusText}`,
+    })
+    throw new Error(`Upload failed: ${response.status} ${response.statusText}`)
+  }
+
+  addRequestLog({
+    timestamp: startTime,
+    method: 'POST',
+    path,
+    status: 'success',
+    statusCode: response.status,
+    duration,
+  })
+
+  console.log(`Uploaded ${messages.length} messages successfully`)
+}
 
 let sdk: IMessageSDK | null = null
 let exportInterval: NodeJS.Timeout | null = null
