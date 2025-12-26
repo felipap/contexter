@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { MainTab } from './main/MainTab'
-import { LogsTab } from './logs/LogsTab'
+import { LogsTab } from './log-viewer/LogsTab'
 
 type Tab = 'general' | 'logs'
 
