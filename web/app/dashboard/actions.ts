@@ -1,15 +1,17 @@
 "use server"
 
 import { db } from "@/db"
-import { Screenshots } from "@/db/schema"
+import { DEFAULT_USER_ID, iMessages, Screenshots } from "@/db/schema"
 import { clearAuthCookie, isAuthenticated } from "@/lib/admin-auth"
-import { sql } from "drizzle-orm"
+import { eq, sql } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
 export type DashboardStats = {
   totalScreenshots: number
   totalStorageBytes: number
+  totalMessages: number
+  totalChats: number
 }
 
 export async function getDashboardStats(): Promise<DashboardStats> {
@@ -17,16 +19,31 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     throw new Error("Unauthorized")
   }
 
-  const [countResult] = await db
+  const [screenshotStats] = await db
     .select({
       count: sql<number>`count(*)::int`,
       totalBytes: sql<number>`coalesce(sum(${Screenshots.sizeBytes}), 0)::int`,
     })
     .from(Screenshots)
 
+  const [messageStats] = await db
+    .select({
+      count: sql<number>`count(*)::int`,
+    })
+    .from(iMessages)
+    .where(eq(iMessages.userId, DEFAULT_USER_ID))
+
+  const [chatStats] = await db.execute<{ count: number }>(sql`
+    SELECT COUNT(DISTINCT COALESCE(chat_id, contact))::int as count
+    FROM imessages
+    WHERE user_id = ${DEFAULT_USER_ID}
+  `)
+
   return {
-    totalScreenshots: countResult.count,
-    totalStorageBytes: countResult.totalBytes,
+    totalScreenshots: screenshotStats.count,
+    totalStorageBytes: screenshotStats.totalBytes,
+    totalMessages: messageStats.count,
+    totalChats: chatStats.count,
   }
 }
 export async function logout(): Promise<void> {

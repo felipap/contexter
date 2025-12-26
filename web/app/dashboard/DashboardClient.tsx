@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react"
 import { getDashboardStats, logout, type DashboardStats } from "./actions"
+import { RecentChats } from "./RecentChats"
+import { RecentMessages } from "./RecentMessages"
 import { RecentScreenshots } from "./RecentScreenshots"
 
 function formatBytes(bytes: number): string {
@@ -60,17 +62,27 @@ export function DashboardClient() {
           <p className="text-red-500">{error}</p>
         ) : stats ? (
           <div className="space-y-8">
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <StatCard
                 label="Total Screenshots"
                 value={stats.totalScreenshots.toLocaleString()}
               />
               <StatCard
-                label="Total Storage"
+                label="Screenshot Storage"
                 value={formatBytes(stats.totalStorageBytes)}
+              />
+              <StatCard
+                label="Total Messages"
+                value={stats.totalMessages.toLocaleString()}
+              />
+              <StatCard
+                label="Total Chats"
+                value={stats.totalChats.toLocaleString()}
               />
             </div>
 
+            <RecentChats />
+            <RecentMessages />
             <RecentScreenshots />
           </div>
         ) : null}
