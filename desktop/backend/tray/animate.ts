@@ -23,7 +23,7 @@ let animationInterval: NodeJS.Timeout | null = null
 
 async function animateOnce(animationName: AnimationName): Promise<void> {
   if (animationInterval) {
-    console.warn('Animation already in progress')
+    // console.warn('Animation already in progress')
     return
   }
 
@@ -58,18 +58,25 @@ async function animateOnce(animationName: AnimationName): Promise<void> {
   setTrayIcon('tray-default.png')
 }
 
-export async function startAnimating(animationName: AnimationName) {
+export function startAnimating(animationName: AnimationName): () => void {
   if (!ANIMATION_NAMES.includes(animationName)) {
     throw new Error(`Invalid animation: ${animationName}`)
   }
 
   shouldStop = false
 
-  while (!shouldStop) {
-    await animateOnce(animationName)
+  // Run animation loop in background (non-blocking)
+  const runLoop = async () => {
+    while (!shouldStop) {
+      await animateOnce(animationName)
+    }
+    setTrayIcon('tray-default.png')
   }
+  runLoop()
 
-  setTrayIcon('tray-default.png')
+  return () => {
+    stopAnimating()
+  }
 }
 
 export function stopAnimating() {

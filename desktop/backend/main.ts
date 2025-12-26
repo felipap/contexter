@@ -1,142 +1,38 @@
-import { app, BrowserWindow, ipcMain, shell, systemPreferences } from 'electron'
-import * as fs from 'fs'
-import * as os from 'os'
-import * as path from 'path'
-import { createMainWindow } from './windows/settings'
+import { app } from 'electron'
+import { createMainWindow, getMainWindow } from './windows/settings'
 import { initTray, destroyTray } from './tray'
-import {
-  SERVICES,
-  startAllServices,
-  stopAllServices,
-  getService,
-} from './services'
-import {
-  store,
-  getRequestLogs,
-  clearRequestLogs,
-  getDeviceId,
-  getDeviceSecret,
-  setDeviceSecret,
-} from './store'
+import { startAllServices, stopAllServices } from './services'
+import { registerIpcHandlers } from './ipc'
 
-function registerIpcHandlers(): void {
-  ipcMain.handle('get-request-logs', () => {
-    return getRequestLogs()
-  })
+app.setAboutPanelOptions({
+  applicationName: `Contexter ${app.isPackaged ? '' : '(dev)'}`,
+  copyright: 'Copyright © 2025',
+  version: app.getVersion(),
+})
 
-  ipcMain.handle('clear-request-logs', () => {
-    clearRequestLogs()
-  })
-
-  ipcMain.handle('get-screen-capture-config', () => {
-    return store.get('screenCapture')
-  })
-
-  ipcMain.handle(
-    'set-screen-capture-config',
-    (_event, config: { enabled?: boolean; intervalMinutes?: number }) => {
-      const current = store.get('screenCapture')
-      store.set('screenCapture', { ...current, ...config })
-      getService('screenshots')?.restart()
-    },
-  )
-
-  ipcMain.handle('get-server-url', () => {
-    return store.get('serverUrl')
-  })
-
-  ipcMain.handle('set-server-url', (_event, url: string) => {
-    store.set('serverUrl', url)
-  })
-
-  ipcMain.handle('get-device-id', () => {
-    return getDeviceId()
-  })
-
-  ipcMain.handle('get-device-secret', () => {
-    return getDeviceSecret()
-  })
-
-  ipcMain.handle('set-device-secret', (_event, secret: string) => {
-    setDeviceSecret(secret)
-  })
-
-  ipcMain.handle('get-imessage-export-config', () => {
-    return store.get('imessageExport')
-  })
-
-  ipcMain.handle(
-    'set-imessage-export-config',
-    (_event, config: { enabled?: boolean; intervalMinutes?: number }) => {
-      const current = store.get('imessageExport')
-      store.set('imessageExport', { ...current, ...config })
-      getService('imessage')?.restart()
-    },
-  )
-
-  ipcMain.handle('get-contacts-sync-config', () => {
-    return store.get('contactsSync')
-  })
-
-  ipcMain.handle(
-    'set-contacts-sync-config',
-    (_event, config: { enabled?: boolean; intervalMinutes?: number }) => {
-      const current = store.get('contactsSync')
-      store.set('contactsSync', { ...current, ...config })
-      getService('contacts')?.restart()
-    },
-  )
-
-  ipcMain.handle('get-services-status', () => {
-    return SERVICES.map((s) => ({
-      name: s.name,
-      isRunning: s.isRunning(),
-      nextRunTime: s.getNextRunTime()?.toISOString() ?? null,
-      timeUntilNextRun: s.getTimeUntilNextRun(),
-    }))
-  })
-
-  ipcMain.handle('run-service-now', async (_event, name: string) => {
-    const service = getService(name)
-    if (service) {
-      await service.runNow()
-    }
-  })
-
-  ipcMain.handle('check-full-disk-access', () => {
-    const chatDbPath = path.join(
-      os.homedir(),
-      'Library',
-      'Messages',
-      'chat.db',
-    )
-    try {
-      fs.accessSync(chatDbPath, fs.constants.R_OK)
-      return { hasAccess: true }
-    } catch {
-      return { hasAccess: false }
-    }
-  })
-
-  ipcMain.handle('open-full-disk-access-settings', () => {
-    shell.openExternal(
-      'x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles',
-    )
-  })
-
-  ipcMain.handle('check-screen-recording-access', () => {
-    const status = systemPreferences.getMediaAccessStatus('screen')
-    return { hasAccess: status === 'granted' }
-  })
-
-  ipcMain.handle('open-screen-recording-settings', () => {
-    shell.openExternal(
-      'x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture',
-    )
-  })
+// Prevent multiple instances of the app
+const gotTheLock = app.requestSingleInstanceLock()
+if (!gotTheLock) {
+  console.log('Another instance is already running. Quitting.')
+  app.quit()
+  process.exit(0)
 }
 
-app.on('ready', () => {
+app.on('second-instance', () => {
+  // Someone tried to run a second instance, focus our window instead
+  const win = getMainWindow()
+  if (!win) {
+    createMainWindow()
+    return
+  }
+  if (win.isMinimized()) {
+    win.restore()
+  }
+  win.show()
+  win.focus()
+})
+
+app.whenReady().then(() => {
   registerIpcHandlers()
   createMainWindow()
   initTray()
@@ -144,15 +40,25 @@ app.on('ready', () => {
 })
 
 app.on('window-all-closed', () => {
+  // On macOS, keep the app running even when all windows are closed
+  // The tray will remain available
   if (process.platform !== 'darwin') {
     app.quit()
   }
 })
 
 app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
+  // On macOS, when the dock icon is clicked, show the main window
+  const win = getMainWindow()
+  if (!win) {
     createMainWindow()
+    return
   }
+  if (win.isMinimized()) {
+    win.restore()
+  }
+  win.show()
+  win.focus()
 })
 
 app.on('before-quit', () => {

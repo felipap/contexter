@@ -56,7 +56,6 @@ function buildServiceMenuItems(service: Service): MenuItemConstructorOptions[] {
     },
     {
       label: '  Run Now',
-      enabled: isRunning,
       click: () => {
         service.runNow()
       },

@@ -1,19 +1,20 @@
 import { IMessageSDK } from '@photon-ai/imessage-kit'
-import { store } from '../store'
-import { startAnimating, stopAnimating } from '../tray/animate'
+import { apiRequest } from '../lib/contexter-api'
+import { catchAndComplain } from '../lib/utils'
 import {
   createIMessageSDK,
   fetchMessages,
   type Message,
 } from '../sources/imessage'
-import { apiRequest } from '../lib/contexter-api'
+import { store } from '../store'
+import { startAnimating } from '../tray/animate'
 import type { Service } from './index'
 
 async function uploadMessages(
   messages: Message[],
-): Promise<{ error: string } | void> {
+): Promise<{ error: string } | {}> {
   if (messages.length === 0) {
-    return
+    return {}
   }
 
   const res = await apiRequest({
@@ -25,6 +26,7 @@ async function uploadMessages(
   }
 
   console.log(`Uploaded ${messages.length} messages successfully`)
+  return {}
 }
 
 let sdk: IMessageSDK | null = null
@@ -36,6 +38,7 @@ async function exportAndUpload(): Promise<void> {
   console.log('[imessage] Exporting messages...')
 
   if (!sdk) {
+    console.debug('[imessage] SDK not initialized')
     return
   }
 
@@ -53,15 +56,19 @@ async function exportAndUpload(): Promise<void> {
     messages[0].date,
   )
 
-  startAnimating('old')
-  try {
-    await uploadMessages(messages)
-    lastExportedMessageDate = latestDate
-  } catch (error) {
-    console.error('[imessage] Failed to upload messages:', error)
-  } finally {
+  console.debug('[imessage] Found', messages.length, 'new messages')
+
+  const stopAnimating = startAnimating('old')
+
+  const res = await catchAndComplain(uploadMessages(messages))
+  if ('error' in res) {
+    console.error('[imessage] uploadMessages THREW:', res.error)
     stopAnimating()
+    return
   }
+
+  stopAnimating()
+  lastExportedMessageDate = latestDate
 }
 
 function scheduleNextExport(): void {

@@ -74,12 +74,14 @@ export function MainTab() {
         </div>
       </div>
 
-      {SERVICES.map((service) => (
-        <div key={service.name} className="border-t pt-6">
-          <h2 className="text-lg font-semibold mb-4">{service.label}</h2>
-          <ServiceSection service={service} />
+      <div>
+        <h2 className="text-lg font-semibold mb-4">Data Sources</h2>
+        <div className="space-y-2">
+          {SERVICES.map((service) => (
+            <ServiceSection key={service.name} service={service} />
+          ))}
         </div>
-      ))}
+      </div>
     </div>
   )
 }
