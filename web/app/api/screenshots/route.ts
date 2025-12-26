@@ -3,25 +3,11 @@ import { db } from "@/db"
 import { Screenshots } from "@/db/schema"
 import { resizeScreenshot } from "@/lib/image-resize"
 import { config } from "@/lib/config"
+import { validateDeviceAuth } from "@/lib/device-auth"
 import sharp from "sharp"
 
-function validateAuth(request: NextRequest): boolean {
-  const expected = process.env.DEVICE_SECRET
-  if (!expected) {
-    return true
-  }
-
-  const authHeader = request.headers.get("authorization")
-  if (!authHeader?.startsWith("Bearer ")) {
-    return false
-  }
-
-  const token = authHeader.slice(7)
-  return token === expected
-}
-
 export async function POST(request: NextRequest) {
-  if (!validateAuth(request)) {
+  if (!validateDeviceAuth(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 

@@ -1,21 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/db"
 import { Messages } from "@/db/schema"
-
-function validateAuth(request: NextRequest): boolean {
-  const expected = process.env.DEVICE_SECRET
-  if (!expected) {
-    return true
-  }
-
-  const authHeader = request.headers.get("authorization")
-  if (!authHeader?.startsWith("Bearer ")) {
-    return false
-  }
-
-  const token = authHeader.slice(7)
-  return token === expected
-}
+import { validateDeviceAuth } from "@/lib/device-auth"
 
 type MessagePayload = {
   id: string
@@ -28,7 +14,7 @@ type MessagePayload = {
 }
 
 export async function POST(request: NextRequest) {
-  if (!validateAuth(request)) {
+  if (!validateDeviceAuth(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
@@ -63,4 +49,3 @@ export async function POST(request: NextRequest) {
     total: messages.length,
   })
 }
-
