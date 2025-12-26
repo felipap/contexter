@@ -1,5 +1,16 @@
+// Data is stored at ~/Library/Application Support/Context/data.json (prod)
+// or ~/Library/Application Support/ContextDev/data.json (dev)
+
+import { app } from 'electron'
 import Store from 'electron-store'
 import { randomUUID } from 'crypto'
+import { debug } from '../lib/logger'
+
+// Set the app name so that data is stored in ~/Library/Application Support/ContextDev
+// in dev mode. The original appName comes from package.json.
+app.setName(`Context${app.isPackaged ? '' : 'Dev'}`)
+
+debug('Store path:', app.getPath('userData'))
 
 export type ApiRequestLog = {
   id: string
