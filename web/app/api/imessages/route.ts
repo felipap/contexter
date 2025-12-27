@@ -4,9 +4,8 @@ import { and, eq, gte, sql } from "drizzle-orm"
 import { NextRequest } from "next/server"
 import { z } from "zod"
 import { logRead, logWrite } from "@/lib/activity-log"
-import { protectApiRead, protectApiWrite } from "../lib"
 
-export const GET = protectApiRead(async (request: NextRequest) => {
+export async function GET(request: NextRequest) {
   console.log("GET /api/imessages")
 
   const { searchParams } = new URL(request.url)
@@ -53,9 +52,9 @@ export const GET = protectApiRead(async (request: NextRequest) => {
     messages,
     count: messages.length,
   })
-})
+}
 
-export const POST = protectApiWrite(async (request: NextRequest) => {
+export async function POST(request: NextRequest) {
   console.log("POST /api/imessages")
 
   const json = await request.json()
@@ -136,7 +135,7 @@ export const POST = protectApiWrite(async (request: NextRequest) => {
     skippedCount,
     syncedAt: new Date().toISOString(),
   })
-})
+}
 
 interface Attachment {
   id: string

@@ -4,10 +4,9 @@ import { Screenshots } from "@/db/schema"
 import { resizeScreenshot } from "@/lib/image-resize"
 import { config } from "@/lib/config"
 import { logWrite } from "@/lib/activity-log"
-import { protectApiWrite } from "../lib"
 import sharp from "sharp"
 
-export const POST = protectApiWrite(async (request: NextRequest) => {
+export async function POST(request: NextRequest) {
   const contentType = request.headers.get("content-type") || ""
   if (!contentType.includes("multipart/form-data")) {
     return NextResponse.json(
@@ -72,4 +71,4 @@ export const POST = protectApiWrite(async (request: NextRequest) => {
     sizeBytes: screenshot.sizeBytes,
     capturedAt: screenshot.capturedAt,
   })
-})
+}

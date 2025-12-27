@@ -3,9 +3,8 @@ import { db } from "@/db"
 import { Screenshots } from "@/db/schema"
 import { desc } from "drizzle-orm"
 import { logRead } from "@/lib/activity-log"
-import { protectApiRead } from "../../lib"
 
-export const GET = protectApiRead(async (_request: NextRequest) => {
+export async function GET() {
   const screenshot = await db.query.Screenshots.findFirst({
     orderBy: desc(Screenshots.capturedAt),
   })
@@ -28,4 +27,4 @@ export const GET = protectApiRead(async (_request: NextRequest) => {
     sizeBytes: screenshot.sizeBytes,
     capturedAt: screenshot.capturedAt,
   })
-})
+}

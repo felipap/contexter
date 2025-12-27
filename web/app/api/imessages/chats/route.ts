@@ -3,10 +3,8 @@ import { DEFAULT_USER_ID } from "@/db/schema"
 import { sql } from "drizzle-orm"
 import { NextRequest } from "next/server"
 import { logRead } from "@/lib/activity-log"
-import { CallerInfo, protectApiRead } from "../../lib"
 
-export const GET = protectApiRead(
-  async (request: NextRequest, _caller: CallerInfo) => {
+export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const limitParam = searchParams.get("limit")
     const offsetParam = searchParams.get("offset")
@@ -45,20 +43,19 @@ export const GET = protectApiRead(
       count: chats.length,
     })
 
-    return Response.json({
-      success: true,
-      chats,
-      count: chats.length,
-      page: {
-        limit,
-        offset,
-      },
-      metadata: {
-        elapsedMs: Date.now() - startTime,
-      },
-    })
-  }
-)
+  return Response.json({
+    success: true,
+    chats,
+    count: chats.length,
+    page: {
+      limit,
+      offset,
+    },
+    metadata: {
+      elapsedMs: Date.now() - startTime,
+    },
+  })
+}
 
 interface Chat {
   chatId: string

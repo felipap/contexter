@@ -3,9 +3,8 @@ import { DEFAULT_USER_ID, iMessages } from "@/db/schema"
 import { and, desc, eq } from "drizzle-orm"
 import { NextRequest } from "next/server"
 import { logRead } from "@/lib/activity-log"
-import { protectApiRead } from "../../../lib"
 
-export const GET = protectApiRead(async (request: NextRequest) => {
+export async function GET(request: NextRequest) {
   const url = new URL(request.url)
   const phone = url.pathname.split("/").pop()
 
@@ -59,7 +58,7 @@ export const GET = protectApiRead(async (request: NextRequest) => {
       offset,
     },
   })
-})
+}
 
 async function getMessagesWithContact(
   contact: string,
