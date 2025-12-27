@@ -8,7 +8,7 @@ import {
 } from '../sources/imessage'
 import { getDeviceId, store } from '../store'
 import { startAnimating } from '../tray/animate'
-import type { Service } from './index'
+import type { Service, SyncStatus } from './index'
 
 async function uploadMessages(
   messages: Message[],
@@ -38,12 +38,14 @@ let sdk: IMessageSDK | null = null
 let exportInterval: NodeJS.Timeout | null = null
 let nextExportTime: Date | null = null
 let lastExportedMessageDate: Date | null = null
+let lastSyncStatus: SyncStatus = null
 
 async function exportAndUpload(): Promise<void> {
   console.log('[imessage] Exporting messages...')
 
   if (!sdk) {
     console.debug('[imessage] SDK not initialized')
+    lastSyncStatus = 'error'
     return
   }
 
@@ -56,6 +58,7 @@ async function exportAndUpload(): Promise<void> {
 
   if (messages.length === 0) {
     console.log('[imessage] No new messages to export')
+    lastSyncStatus = 'success'
     return
   }
 
@@ -72,11 +75,13 @@ async function exportAndUpload(): Promise<void> {
   if ('error' in res) {
     console.error('[imessage] uploadMessages THREW:', res.error)
     stopAnimating()
+    lastSyncStatus = 'error'
     return
   }
 
   stopAnimating()
   lastExportedMessageDate = new Date(latestDateStr)
+  lastSyncStatus = 'success'
 }
 
 function scheduleNextExport(): void {
@@ -173,6 +178,10 @@ function getTimeUntilNextRun(): number {
 
 function isEnabled(): boolean {
   return store.get('imessageExport').enabled
+}
+
+function getLastSyncStatus(): SyncStatus {
+  return lastSyncStatus
 }
 
 // Backfill state
@@ -278,6 +287,7 @@ export const imessageService: Service = {
   runNow,
   getNextRunTime,
   getTimeUntilNextRun,
+  getLastSyncStatus,
 }
 
 export const imessageBackfill = {

@@ -1,3 +1,5 @@
+export type SyncStatus = 'success' | 'error' | null
+
 export type Service = {
   name: string
   start: () => Promise<void>
@@ -8,6 +10,7 @@ export type Service = {
   runNow: () => Promise<void>
   getNextRunTime: () => Date | null
   getTimeUntilNextRun: () => number
+  getLastSyncStatus: () => SyncStatus
 }
 
 import { screenshotsService } from './screenshots'

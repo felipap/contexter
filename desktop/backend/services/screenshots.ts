@@ -1,10 +1,11 @@
 import { store } from '../store'
 import { startAnimating, stopAnimating } from '../tray/animate'
 import { captureScreen, uploadScreenshot } from '../sources/screenshots'
-import type { Service } from './index'
+import type { Service, SyncStatus } from './index'
 
 let captureInterval: NodeJS.Timeout | null = null
 let nextCaptureTime: Date | null = null
+let lastSyncStatus: SyncStatus = null
 
 async function captureAndUpload(): Promise<void> {
   console.log('[screenshots] Capturing screen...')
@@ -12,14 +13,17 @@ async function captureAndUpload(): Promise<void> {
   const imageBuffer = await captureScreen()
   if (!imageBuffer) {
     console.error('[screenshots] Failed to capture screen')
+    lastSyncStatus = 'error'
     return
   }
 
   startAnimating('old')
   try {
     await uploadScreenshot(imageBuffer)
+    lastSyncStatus = 'success'
   } catch (error) {
     console.error('[screenshots] Failed to upload screenshot:', error)
+    lastSyncStatus = 'error'
   } finally {
     stopAnimating()
   }
@@ -111,6 +115,10 @@ function isEnabled(): boolean {
   return store.get('screenCapture').enabled
 }
 
+function getLastSyncStatus(): SyncStatus {
+  return lastSyncStatus
+}
+
 export const screenshotsService: Service = {
   name: 'screenshots',
   start,
@@ -121,4 +129,5 @@ export const screenshotsService: Service = {
   runNow,
   getNextRunTime,
   getTimeUntilNextRun,
+  getLastSyncStatus,
 }

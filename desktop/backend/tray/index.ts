@@ -68,8 +68,9 @@ function updateTrayMenu(): void {
 
     const isRunning = service.isRunning()
     const timeUntilNext = formatTimeUntilNextRun(service.getTimeUntilNextRun())
+    const lastSyncStatus = service.getLastSyncStatus()
 
-    return [
+    const items: MenuItemConstructorOptions[] = [
       {
         label,
         enabled: false,
@@ -78,13 +79,23 @@ function updateTrayMenu(): void {
         label: isRunning ? `  Next: ${timeUntilNext}` : '  Not running',
         enabled: false,
       },
-      {
-        label: '  Run Now',
-        click: () => {
-          service.runNow()
-        },
-      },
     ]
+
+    if (lastSyncStatus === 'error') {
+      items.push({
+        label: '  ⚠️ Last sync failed',
+        enabled: false,
+      })
+    }
+
+    items.push({
+      label: '  Run Now',
+      click: () => {
+        service.runNow()
+      },
+    })
+
+    return items
   }
 
   const serviceMenuItems: MenuItemConstructorOptions[] = []

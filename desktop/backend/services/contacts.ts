@@ -1,10 +1,11 @@
 import { store } from '../store'
 import { startAnimating, stopAnimating } from '../tray/animate'
 import { fetchContacts, uploadContacts } from '../sources/contacts'
-import type { Service } from './index'
+import type { Service, SyncStatus } from './index'
 
 let syncInterval: NodeJS.Timeout | null = null
 let nextSyncTime: Date | null = null
+let lastSyncStatus: SyncStatus = null
 
 async function syncAndUpload(): Promise<void> {
   console.log('[contacts] Syncing...')
@@ -12,6 +13,7 @@ async function syncAndUpload(): Promise<void> {
   const contacts = fetchContacts()
   if (contacts.length === 0) {
     console.log('[contacts] No contacts to sync')
+    lastSyncStatus = 'success'
     return
   }
 
@@ -20,8 +22,10 @@ async function syncAndUpload(): Promise<void> {
   startAnimating('old')
   try {
     await uploadContacts(contacts)
+    lastSyncStatus = 'success'
   } catch (error) {
     console.error('[contacts] Failed to upload:', error)
+    lastSyncStatus = 'error'
   } finally {
     stopAnimating()
   }
@@ -115,6 +119,10 @@ function isEnabled(): boolean {
   return store.get('contactsSync').enabled
 }
 
+function getLastSyncStatus(): SyncStatus {
+  return lastSyncStatus
+}
+
 export const contactsService: Service = {
   name: 'contacts',
   start,
@@ -125,4 +133,5 @@ export const contactsService: Service = {
   runNow,
   getNextRunTime,
   getTimeUntilNextRun,
+  getLastSyncStatus,
 }
