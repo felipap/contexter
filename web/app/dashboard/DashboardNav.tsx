@@ -19,9 +19,14 @@ export function DashboardNav() {
     <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
       <div className="mx-auto max-w-5xl px-6">
         <div className="flex items-center justify-between py-4">
-          <Link href="/dashboard" className="text-xl font-semibold">
-            Context
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/dashboard" className="text-xl font-semibold">
+              Context
+            </Link>
+            <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+              v{process.env.APP_VERSION}
+            </span>
+          </div>
           <form action={logout}>
             <button
               type="submit"
