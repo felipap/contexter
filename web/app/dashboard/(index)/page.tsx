@@ -1,7 +1,5 @@
 import { DashboardClient } from "./DashboardClient"
 
-function Page() {
+export default function Page() {
   return <DashboardClient />
 }
-
-export default Page

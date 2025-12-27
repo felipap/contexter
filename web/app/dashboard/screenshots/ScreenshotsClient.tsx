@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { getScreenshots, getScreenshotData, type Screenshot } from "./actions"
-import { Pagination } from "../Pagination"
+import { Pagination } from "../(index)/Pagination"
 
 export function ScreenshotsClient() {
   const [screenshots, setScreenshots] = useState<Screenshot[]>([])

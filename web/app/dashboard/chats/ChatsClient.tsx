@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { getChats, type Chat } from "./actions"
-import { Pagination } from "../Pagination"
+import { Pagination } from "../(index)/Pagination"
 
 export function ChatsClient() {
   const [chats, setChats] = useState<Chat[]>([])

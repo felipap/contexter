@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { getMessages, type Message } from "./actions"
-import { Pagination } from "../Pagination"
+import { Pagination } from "../(index)/Pagination"
 
 export function MessagesClient() {
   const [messages, setMessages] = useState<Message[]>([])
