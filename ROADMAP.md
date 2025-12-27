@@ -8,10 +8,11 @@
 - [ ] Feat: Allow expire data after certain time
 - [ ] Feat: _Don't_ auto upload data when starting the app
 - [ ] Think about real-time authentication of features
-- [ ] Whitelisting IPs
+- [ ] End-to-end encryption of message texts
 
 ## Done
 
+- [x] Whitelisting IPs
 - [x] Fix: local packing taking too long
 - [x] Feat: desktop icon
 - [x] Fix notarization
