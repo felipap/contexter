@@ -8,6 +8,7 @@ import {
   parseWhitelist,
 } from "@/lib/ip-whitelist"
 import assert from "assert"
+import { timingSafeEqual } from "crypto"
 import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
 
@@ -40,6 +41,15 @@ if (!DASHBOARD_SECRET) {
 assert(DASHBOARD_SECRET.length > 20, "DASHBOARD_SECRET is too short")
 
 const COOKIE_NAME = "context_admin"
+
+function secureCompare(a: string, b: string): boolean {
+  const bufA = Buffer.from(a)
+  const bufB = Buffer.from(b)
+  if (bufA.length !== bufB.length) {
+    return false
+  }
+  return timingSafeEqual(bufA, bufB)
+}
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -96,12 +106,12 @@ export function proxy(request: NextRequest) {
     }
 
     if (isWriteEndpoint) {
-      if (token !== API_WRITE_SECRET) {
+      if (!secureCompare(token, API_WRITE_SECRET)) {
         console.debug(`/api: Unauthorized (token mismatch)`)
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
       }
     } else {
-      if (token !== API_READ_SECRET) {
+      if (!secureCompare(token, API_READ_SECRET)) {
         console.debug(`/api: Unauthorized (token mismatch)`)
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
       }
@@ -130,14 +140,12 @@ export function proxy(request: NextRequest) {
 
     const cookieSecret = getDashboardSecretFromCookie(request)
     if (!cookieSecret) {
+      console.debug("/dashboard: Unauthorized (token missing)")
       return NextResponse.redirect(new URL("/", request.url))
     }
-    if (cookieSecret !== DASHBOARD_SECRET) {
+    if (!secureCompare(cookieSecret, DASHBOARD_SECRET)) {
       console.debug("/dashboard: Unauthorized (token mismatch)")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-    if (!cookieSecret) {
-      return NextResponse.redirect(new URL("/", request.url))
     }
   }
 
@@ -182,10 +190,16 @@ function getDashboardSecretFromCookie(
 // Get IP from request
 
 export function getClientIp(request: NextRequest): string | null {
-  // Check common headers for real IP (when behind proxy/load balancer)
-  const forwardedFor = request.headers.get("x-forwarded-for")
+  // @ts-ignore
+  const ip = request.ip
+  if (ip) {
+    return ip
+  }
+
+  // Check common headers for real IP (when behind proxy/load balancer) https://vercel.com/docs/headers/request-headers#x-vercel-forwarded-for
+  const forwardedFor = request.headers.get("x-vercel-forwarded-for")
   if (forwardedFor) {
-    // x-forwarded-for can contain multiple IPs, the first is the client
+    // x-vercel-forwarded-for can contain multiple IPs, the first is the client
     return forwardedFor.split(",")[0].trim()
   }
 

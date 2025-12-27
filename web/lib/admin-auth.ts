@@ -1,6 +1,16 @@
+import { timingSafeEqual } from "crypto"
 import { cookies } from "next/headers"
 
 const COOKIE_NAME = "context_admin"
+
+function secureCompare(a: string, b: string): boolean {
+  const bufA = Buffer.from(a)
+  const bufB = Buffer.from(b)
+  if (bufA.length !== bufB.length) {
+    return false
+  }
+  return timingSafeEqual(bufA, bufB)
+}
 
 const DASHBOARD_SECRET = process.env.DASHBOARD_SECRET || ""
 if (!DASHBOARD_SECRET) {
@@ -10,12 +20,15 @@ if (!DASHBOARD_SECRET) {
 export async function isAuthenticated(): Promise<boolean> {
   const cookieStore = await cookies()
   const token = cookieStore.get(COOKIE_NAME)?.value
-  return token === DASHBOARD_SECRET
+  if (!token) {
+    return false
+  }
+  return secureCompare(token, DASHBOARD_SECRET)
 }
 
 export async function setAuthCookie(secret: string): Promise<boolean> {
   const expected = process.env.DASHBOARD_SECRET
-  if (!expected || secret !== expected) {
+  if (!expected || !secureCompare(secret, expected)) {
     return false
   }
 
