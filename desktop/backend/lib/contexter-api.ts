@@ -141,7 +141,6 @@ export async function apiFormDataRequest<T = unknown>({
 
   if (!response.ok) {
     const text = await response.text()
-    console.log(`url: ${url}`, text)
     addRequestLog({
       timestamp: startTime,
       method: 'POST',

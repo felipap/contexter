@@ -2,6 +2,10 @@ import { safeStorage } from 'electron'
 
 const ENCRYPTED_PREFIX = 'encrypted:'
 
+if (!safeStorage.isEncryptionAvailable()) {
+  console.warn('Keychain encryption not available, storing in plaintext')
+}
+
 export function encryptSecret(plaintext: string): string {
   if (!plaintext) {
     return ''
@@ -36,4 +40,3 @@ export function decryptSecret(stored: string): string {
   const encryptedBuffer = Buffer.from(base64Data, 'base64')
   return safeStorage.decryptString(encryptedBuffer)
 }
-
