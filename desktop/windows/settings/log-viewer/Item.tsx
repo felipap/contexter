@@ -18,17 +18,17 @@ export function formatDate(timestamp: number): string {
   })
 }
 
-function StatusBadge({ status }: { status: 'success' | 'error' }) {
-  if (status === 'success') {
+function StatusBadge({ isError, status }: { isError: boolean; status?: number }) {
+  if (isError) {
     return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-        Success
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+        {status ?? 'Error'}
       </span>
     )
   }
   return (
-    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
-      Error
+    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+      {status ?? 'OK'}
     </span>
   )
 }
@@ -58,10 +58,10 @@ export function LogItem({ log, showDate }: Props) {
         {log.path}
       </td>
       <td className="py-2.5">
-        <StatusBadge status={log.status} />
-        {log.error && (
+        <StatusBadge isError={log.isError} status={log.status} />
+        {log.text && (
           <span className="ml-2 text-xs text-red-500 dark:text-red-400">
-            {log.error}
+            {log.text}
           </span>
         )}
       </td>

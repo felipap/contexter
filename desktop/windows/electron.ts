@@ -3,10 +3,10 @@ export interface ApiRequestLog {
   timestamp: number
   method: string
   path: string
-  status: 'success' | 'error'
-  statusCode?: number
+  isError: boolean
+  status?: number
   duration: number
-  error?: string
+  text?: string
 }
 
 export interface ServiceConfig {

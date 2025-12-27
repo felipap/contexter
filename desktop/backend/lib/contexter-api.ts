@@ -62,9 +62,9 @@ export async function apiRequest<T = unknown>({
       timestamp: startTime,
       method,
       path,
-      status: 'error',
+      isError: true,
       duration: Date.now() - startTime,
-      error: error instanceof Error ? error.message : 'Network error',
+      text: error instanceof Error ? error.message : 'Network error',
     })
     throw error
   }
@@ -72,17 +72,17 @@ export async function apiRequest<T = unknown>({
   const duration = Date.now() - startTime
 
   if (!response.ok) {
+    const text = await response.text()
     addRequestLog({
       timestamp: startTime,
       method,
       path,
-      status: 'error',
-      statusCode: response.status,
+      isError: true,
+      status: response.status,
       duration,
-      error: `${response.status} ${response.statusText}`,
+      text: text.slice(0, 500),
     })
 
-    const text = await response.text()
     return { error: text, errorStatus: response.status }
   }
 
@@ -90,8 +90,8 @@ export async function apiRequest<T = unknown>({
     timestamp: startTime,
     method,
     path,
-    status: 'success',
-    statusCode: response.status,
+    isError: false,
+    status: response.status,
     duration,
   })
 
@@ -130,9 +130,9 @@ export async function apiFormDataRequest<T = unknown>({
       timestamp: startTime,
       method: 'POST',
       path,
-      status: 'error',
+      isError: true,
       duration: Date.now() - startTime,
-      error: error instanceof Error ? error.message : 'Network error',
+      text: error instanceof Error ? error.message : 'Network error',
     })
     throw error
   }
@@ -146,10 +146,10 @@ export async function apiFormDataRequest<T = unknown>({
       timestamp: startTime,
       method: 'POST',
       path,
-      status: 'error',
-      statusCode: response.status,
+      isError: true,
+      status: response.status,
       duration,
-      error: `${response.status} ${response.statusText}`,
+      text: text.slice(0, 500),
     })
     throw new Error(`Request failed: ${response.status} ${response.statusText}`)
   }
@@ -158,8 +158,8 @@ export async function apiFormDataRequest<T = unknown>({
     timestamp: startTime,
     method: 'POST',
     path,
-    status: 'success',
-    statusCode: response.status,
+    isError: false,
+    status: response.status,
     duration,
   })
 
