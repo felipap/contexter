@@ -5,6 +5,7 @@
 import { app } from 'electron'
 import Store from 'electron-store'
 import { MAX_LOGS } from '../config'
+import { decryptSecret, encryptSecret } from '../lib/keychain'
 import { debug } from '../lib/logger'
 import { ApiRequestLog, DEFAULT_STATE, StoreSchema } from './schema'
 
@@ -18,20 +19,14 @@ export const store = new Store<StoreSchema>({
   defaults: DEFAULT_STATE,
 })
 
-//
-//
-//
-//
-//
-//
-//
-
 export function getDeviceSecret(): string {
-  return store.get('deviceSecret')
+  const stored = store.get('deviceSecret')
+  return decryptSecret(stored)
 }
 
 export function setDeviceSecret(secret: string): void {
-  store.set('deviceSecret', secret)
+  const encrypted = encryptSecret(secret)
+  store.set('deviceSecret', encrypted)
 }
 
 export function getDeviceId(): string {

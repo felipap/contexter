@@ -9,7 +9,6 @@
 - [ ] Feat: _Don't_ auto upload data when starting the app
 - [ ] Think about real-time authentication of features
 - [ ] End-to-end encryption of message texts
-- [ ] Security: store device secret in system keychain instead of plaintext JSON
 
 ## Later
 
@@ -17,6 +16,7 @@
 
 ## Done
 
+- [x] Security: store device secret in system keychain instead of plaintext JSON
 - [x] Auto delete screenshots after 24 hours
 - [x] Whitelisting IPs
 - [x] Fix: local packing taking too long
