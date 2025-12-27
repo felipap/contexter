@@ -1,4 +1,4 @@
-import { timingSafeEqual } from "crypto"
+import { createHmac, timingSafeEqual } from "crypto"
 import { cookies } from "next/headers"
 
 const COOKIE_NAME = "context_admin"
@@ -17,13 +17,21 @@ if (!DASHBOARD_SECRET) {
   throw new Error("DASHBOARD_SECRET is not set")
 }
 
+// Generate a signature of the secret to store in cookie instead of raw secret.
+// If the cookie leaks, attacker gets a hash, not the actual passphrase.
+function generateAuthToken(secret: string): string {
+  return createHmac("sha256", secret).update("context_admin_auth").digest("hex")
+}
+
+const EXPECTED_TOKEN = generateAuthToken(DASHBOARD_SECRET)
+
 export async function isAuthenticated(): Promise<boolean> {
   const cookieStore = await cookies()
   const token = cookieStore.get(COOKIE_NAME)?.value
   if (!token) {
     return false
   }
-  return secureCompare(token, DASHBOARD_SECRET)
+  return secureCompare(token, EXPECTED_TOKEN)
 }
 
 export async function setAuthCookie(secret: string): Promise<boolean> {
@@ -33,7 +41,7 @@ export async function setAuthCookie(secret: string): Promise<boolean> {
   }
 
   const cookieStore = await cookies()
-  cookieStore.set(COOKIE_NAME, secret, {
+  cookieStore.set(COOKIE_NAME, generateAuthToken(secret), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",

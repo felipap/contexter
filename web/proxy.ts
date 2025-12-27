@@ -8,7 +8,7 @@ import {
   parseWhitelist,
 } from "@/lib/ip-whitelist"
 import assert from "assert"
-import { timingSafeEqual } from "crypto"
+import { createHmac, timingSafeEqual } from "crypto"
 import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
 
@@ -41,6 +41,13 @@ if (!DASHBOARD_SECRET) {
 assert(DASHBOARD_SECRET.length > 20, "DASHBOARD_SECRET is too short")
 
 const COOKIE_NAME = "context_admin"
+
+// Must match the token generation in admin-auth.ts
+function generateAuthToken(secret: string): string {
+  return createHmac("sha256", secret).update("context_admin_auth").digest("hex")
+}
+
+const EXPECTED_DASHBOARD_TOKEN = generateAuthToken(DASHBOARD_SECRET)
 
 function secureCompare(a: string, b: string): boolean {
   const bufA = Buffer.from(a)
@@ -138,12 +145,12 @@ export function proxy(request: NextRequest) {
       warnUnprotected("Dashboard is not protected by IP whitelist")
     }
 
-    const cookieSecret = getDashboardSecretFromCookie(request)
-    if (!cookieSecret) {
+    const cookieToken = getDashboardTokenFromCookie(request)
+    if (!cookieToken) {
       console.debug("/dashboard: Unauthorized (token missing)")
       return NextResponse.redirect(new URL("/", request.url))
     }
-    if (!secureCompare(cookieSecret, DASHBOARD_SECRET)) {
+    if (!secureCompare(cookieToken, EXPECTED_DASHBOARD_TOKEN)) {
       console.debug("/dashboard: Unauthorized (token mismatch)")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
@@ -177,7 +184,7 @@ function getBearerToken(request: NextRequest): string | null {
   return authHeader.slice(7)
 }
 
-function getDashboardSecretFromCookie(
+function getDashboardTokenFromCookie(
   request: NextRequest
 ): string | undefined {
   return request.cookies.get(COOKIE_NAME)?.value
@@ -190,7 +197,7 @@ function getDashboardSecretFromCookie(
 // Get IP from request
 
 export function getClientIp(request: NextRequest): string | null {
-  // @ts-ignore
+  // @ts-expect-error - request.ip exists on Vercel but not in types
   const ip = request.ip
   if (ip) {
     return ip
