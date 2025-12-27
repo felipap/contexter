@@ -1,7 +1,7 @@
 {
   "name": "context-desktop",
   "productName": "Context",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Context desktop app",
   "main": "dist/backend/main.js",
   "license": "MIT",
@@ -61,7 +61,8 @@
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "sharp": "^0.34.5",
-    "tailwind-merge": "^3.4.0"
+    "tailwind-merge": "^3.4.0",
+    "tesseract.js": "^7.0.0"
   },
   "build": {
     "appId": "com.github.faragaop.context",
