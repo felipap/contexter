@@ -77,7 +77,7 @@ export function proxy(request: NextRequest) {
         const whitelist = parseWhitelist(API_WRITE_IP_WHITELIST)
         const ip = getClientIp(request)
         if (!isIpAllowed(ip, whitelist)) {
-          console.debug("/api: IP address not allowed", ip)
+          console.debug(`🔺 ${pathname}: IP address not allowed`, ip)
           return makeNonWhitelistedResponse()
         }
       } else {
@@ -90,7 +90,7 @@ export function proxy(request: NextRequest) {
         const whitelist = parseWhitelist(API_READ_IP_WHITELIST)
         const ip = getClientIp(request)
         if (!isIpAllowed(ip, whitelist)) {
-          console.debug("/api: IP address not allowed", ip)
+          console.debug(`🔺 ${pathname}: IP address not allowed`, ip)
           return makeNonWhitelistedResponse()
         }
       } else {
