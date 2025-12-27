@@ -18,15 +18,18 @@ export type StoreSchema = {
   screenCapture: {
     enabled: boolean
     intervalMinutes: number
+    nextSyncAfter: string | null
   }
   imessageExport: {
     enabled: boolean
     intervalMinutes: number
+    nextSyncAfter: string | null
     includeAttachments: boolean
   }
   contactsSync: {
     enabled: boolean
     intervalMinutes: number
+    nextSyncAfter: string | null
   }
   requestLogs: ApiRequestLog[]
 }
@@ -36,17 +39,20 @@ export const DEFAULT_STATE: StoreSchema = {
   deviceSecret: '',
   serverUrl: null,
   screenCapture: {
-    enabled: true,
+    enabled: false,
     intervalMinutes: 5,
+    nextSyncAfter: null,
   },
   imessageExport: {
     enabled: false,
     intervalMinutes: 5,
     includeAttachments: true,
+    nextSyncAfter: null,
   },
   contactsSync: {
     enabled: false,
     intervalMinutes: 60,
+    nextSyncAfter: null,
   },
   requestLogs: [],
 }
