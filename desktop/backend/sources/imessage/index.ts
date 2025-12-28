@@ -1,12 +1,18 @@
 import { readFile } from 'fs/promises'
 import { IMessageSDK } from '@photon-ai/imessage-kit'
 import sharp from 'sharp'
+import heicConvert from 'heic-convert'
 
 // Config for image resizing
 const IMAGE_CONFIG = {
   resizeRatio: 0.5, // 50% of original size
   quality: 70,
   format: 'jpeg' as const,
+}
+
+function isHeicFile(path: string): boolean {
+  const lower = path.toLowerCase()
+  return lower.endsWith('.heic') || lower.endsWith('.heif')
 }
 
 export type Attachment = {
@@ -44,9 +50,34 @@ export function createIMessageSDK(): IMessageSDK {
   return new IMessageSDK({ debug: false })
 }
 
+async function convertHeicToJpeg(inputBuffer: Buffer): Promise<Buffer> {
+  // Create an isolated copy - Node.js Buffers can share an underlying ArrayBuffer pool,
+  // which causes issues with heic-decode's spread syntax on the buffer
+  const isolatedBuffer = Buffer.from(inputBuffer)
+
+  // Extract the actual ArrayBuffer portion that the Buffer references
+  const arrayBuffer = isolatedBuffer.buffer.slice(
+    isolatedBuffer.byteOffset,
+    isolatedBuffer.byteOffset + isolatedBuffer.byteLength,
+  )
+
+  const outputBuffer = await heicConvert({
+    buffer: arrayBuffer,
+    format: 'JPEG',
+    quality: 0.9,
+  })
+  return Buffer.from(outputBuffer)
+}
+
 async function readAndResizeImage(path: string): Promise<string | null> {
   try {
-    const inputBuffer = await readFile(path)
+    let inputBuffer: Buffer = await readFile(path)
+
+    // Convert HEIC/HEIF to JPEG first since Sharp may not have HEIC support
+    if (isHeicFile(path)) {
+      inputBuffer = await convertHeicToJpeg(inputBuffer)
+    }
+
     const image = sharp(inputBuffer)
     const metadata = await image.metadata()
 
