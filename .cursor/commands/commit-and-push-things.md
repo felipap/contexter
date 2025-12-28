@@ -3,3 +3,5 @@ Run ts-check and fix whatever comes up. Then commit using conventional commits. 
 Files modified in the `desktop/` folder must be committed separately from the `server/` folder.
 
 Prefix commits with `[desktop]` or `[server]` depending on the folder that was modified.
+
+For web, bump the version every now and then.
