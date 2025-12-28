@@ -1,9 +1,19 @@
 import { db } from "@/db"
 import { DEFAULT_USER_ID, iMessageAttachments, iMessages } from "@/db/schema"
+import { logRead, logWrite } from "@/lib/activity-log"
+import {
+  ATTACHMENT_ENCRYPTABLE_COLUMNS,
+  IMESSAGE_ENCRYPTABLE_COLUMNS,
+} from "@/lib/encryption-schema"
 import { and, eq, gte, sql } from "drizzle-orm"
 import { NextRequest } from "next/server"
 import { z } from "zod"
-import { logRead, logWrite } from "@/lib/activity-log"
+
+const ENCRYPTED_PREFIX = "enc:v1:"
+
+function isEncryptedText(text: string | null): boolean {
+  return text !== null && text.startsWith(ENCRYPTED_PREFIX)
+}
 
 const MAX_LIMIT = 50
 
@@ -152,27 +162,37 @@ export async function POST(request: NextRequest) {
   if (insertedMessages.length > 0) {
     await logWrite({
       type: "imessage",
-      description: `Synced messages from ${deviceId}`,
+      description: `Synced encrypted messages from ${deviceId}`,
       count: insertedMessages.length,
-      metadata: { skippedCount, rejectedCount: rejectedMessages.length },
+      metadata: {
+        skippedCount,
+        rejectedCount: rejectedMessages.length,
+        encrypted: true,
+        encryptedColumns: IMESSAGE_ENCRYPTABLE_COLUMNS,
+      },
     })
   }
 
   if (insertedAttachments.length > 0) {
     await logWrite({
       type: "attachment",
-      description: `Synced attachments from ${deviceId}`,
+      description: `Synced encrypted attachments from ${deviceId}`,
       count: insertedAttachments.length,
+      metadata: {
+        encrypted: true,
+        encryptedColumns: ATTACHMENT_ENCRYPTABLE_COLUMNS,
+      },
     })
   }
 
   return Response.json({
     success: true,
-    message: `Stored ${insertedMessages.length} iMessages and ${insertedAttachments.length} attachments`,
+    message: `Stored ${insertedMessages.length} encrypted iMessages and ${insertedAttachments.length} encrypted attachments`,
     messageCount: insertedMessages.length,
     attachmentCount: insertedAttachments.length,
     rejectedCount: rejectedMessages.length,
     skippedCount,
+    encrypted: true,
     syncedAt: new Date().toISOString(),
   })
 }
@@ -227,6 +247,12 @@ function validateMessage(
   if (m.text !== null && typeof m.text !== "string") {
     return { success: false, error: "text must be a string or null" }
   }
+  if (m.text !== null && m.text !== "" && !isEncryptedText(m.text as string)) {
+    return {
+      success: false,
+      error: "text must be encrypted (missing enc:v1: prefix)",
+    }
+  }
   if (typeof m.contact !== "string") {
     return { success: false, error: "contact must be a string" }
   }
@@ -253,6 +279,16 @@ function validateMessage(
   }
   if (m.subject !== null && typeof m.subject !== "string") {
     return { success: false, error: "subject must be a string or null" }
+  }
+  if (
+    m.subject !== null &&
+    m.subject !== "" &&
+    !isEncryptedText(m.subject as string)
+  ) {
+    return {
+      success: false,
+      error: "subject must be encrypted (missing enc:v1: prefix)",
+    }
   }
   if (m.date !== null && typeof m.date !== "string") {
     return { success: false, error: "date must be a string or null" }
@@ -319,6 +355,18 @@ function validateMessage(
         return {
           success: false,
           error: "attachment.dataBase64 must be a string if present",
+        }
+      }
+      if (
+        a.dataBase64 !== undefined &&
+        typeof a.dataBase64 === "string" &&
+        a.dataBase64 !== "" &&
+        !isEncryptedText(a.dataBase64 as string)
+      ) {
+        return {
+          success: false,
+          error:
+            "attachment.dataBase64 must be encrypted (missing enc:v1: prefix)",
         }
       }
     }

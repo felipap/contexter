@@ -1,11 +1,12 @@
 "use client"
 
-import { ArrowDownIcon, ArrowUpIcon, GroupIcon } from "@/ui/icons"
+import { ArrowDownIcon, ArrowUpIcon, GroupIcon, LockIcon } from "@/ui/icons"
 import { Pagination } from "@/ui/Pagination"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { twMerge } from "tailwind-merge"
 import { getMessages, type Message } from "./actions"
 import { getChats, type Chat } from "../chats/actions"
+import { decryptText, isEncrypted, getEncryptionKey } from "@/lib/encryption"
 
 type TabType = "messages" | "chats"
 
@@ -60,24 +61,46 @@ function TabButton({ active, onClick, children }: TabButtonProps) {
   )
 }
 
+type DecryptedMessage = Message & { decryptedText: string | null }
+
 function MessagesView() {
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState<DecryptedMessage[]>([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
 
+  const decryptMessages = useCallback(
+    async (msgs: Message[]): Promise<DecryptedMessage[]> => {
+      const encryptionKey = getEncryptionKey()
+      return Promise.all(
+        msgs.map(async (msg) => {
+          if (!msg.text || !isEncrypted(msg.text)) {
+            return { ...msg, decryptedText: msg.text }
+          }
+          if (!encryptionKey) {
+            return { ...msg, decryptedText: null }
+          }
+          const decrypted = await decryptText(msg.text, encryptionKey)
+          return { ...msg, decryptedText: decrypted }
+        })
+      )
+    },
+    []
+  )
+
   useEffect(() => {
     async function load() {
       setLoading(true)
       const data = await getMessages(page)
-      setMessages(data.messages)
+      const decrypted = await decryptMessages(data.messages)
+      setMessages(decrypted)
       setTotalPages(data.totalPages)
       setTotal(data.total)
       setLoading(false)
     }
     load()
-  }, [page])
+  }, [page, decryptMessages])
 
   if (loading) {
     return <p className="text-zinc-500">Loading...</p>
@@ -123,24 +146,49 @@ function MessagesView() {
   )
 }
 
+type DecryptedChat = Chat & { decryptedLastMessage: string | null }
+
 function ChatsView() {
-  const [chats, setChats] = useState<Chat[]>([])
+  const [chats, setChats] = useState<DecryptedChat[]>([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
 
+  const decryptChats = useCallback(
+    async (chatList: Chat[]): Promise<DecryptedChat[]> => {
+      const encryptionKey = getEncryptionKey()
+      return Promise.all(
+        chatList.map(async (chat) => {
+          if (!chat.lastMessageText || !isEncrypted(chat.lastMessageText)) {
+            return { ...chat, decryptedLastMessage: chat.lastMessageText }
+          }
+          if (!encryptionKey) {
+            return { ...chat, decryptedLastMessage: null }
+          }
+          const decrypted = await decryptText(
+            chat.lastMessageText,
+            encryptionKey
+          )
+          return { ...chat, decryptedLastMessage: decrypted }
+        })
+      )
+    },
+    []
+  )
+
   useEffect(() => {
     async function load() {
       setLoading(true)
       const data = await getChats(page)
-      setChats(data.chats)
+      const decrypted = await decryptChats(data.chats)
+      setChats(decrypted)
       setTotalPages(data.totalPages)
       setTotal(data.total)
       setLoading(false)
     }
     load()
-  }, [page])
+  }, [page, decryptChats])
 
   if (loading) {
     return <p className="text-zinc-500">Loading...</p>
@@ -186,7 +234,10 @@ function ChatsView() {
   )
 }
 
-function MessageRow({ message }: { message: Message }) {
+function MessageRow({ message }: { message: DecryptedMessage }) {
+  const isMessageEncrypted = isEncrypted(message.text)
+  const displayText = message.decryptedText
+
   return (
     <tr className="transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900">
       <td className="px-4 py-3">
@@ -199,7 +250,21 @@ function MessageRow({ message }: { message: Message }) {
         </div>
       </td>
       <td className="max-w-[300px] truncate px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">
-        {message.text || (
+        {displayText ? (
+          <span className="flex items-center gap-1.5">
+            {isMessageEncrypted && (
+              <span className="text-green-500" title="Decrypted">
+                <LockIcon size={12} />
+              </span>
+            )}
+            {displayText}
+          </span>
+        ) : isMessageEncrypted ? (
+          <span className="flex items-center gap-1.5 italic text-amber-500">
+            <LockIcon size={12} />
+            Encrypted - enter key to decrypt
+          </span>
+        ) : (
           <span className="italic text-zinc-400">
             {message.hasAttachments ? "📎 Attachment" : "No content"}
           </span>
@@ -212,10 +277,12 @@ function MessageRow({ message }: { message: Message }) {
   )
 }
 
-function ChatRow({ chat }: { chat: Chat }) {
+function ChatRow({ chat }: { chat: DecryptedChat }) {
   const displayName = chat.isGroupChat
     ? `Group (${chat.participantCount})`
     : formatContact(chat.participants[0] || chat.chatId)
+  const isChatEncrypted = isEncrypted(chat.lastMessageText)
+  const displayText = chat.decryptedLastMessage
 
   return (
     <tr className="transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900">
@@ -226,10 +293,26 @@ function ChatRow({ chat }: { chat: Chat }) {
         </div>
       </td>
       <td className="max-w-[200px] truncate px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">
-        {chat.lastMessageFromMe && (
-          <span className="text-zinc-400 dark:text-zinc-500">You: </span>
+        {displayText ? (
+          <>
+            {chat.lastMessageFromMe && (
+              <span className="text-zinc-400 dark:text-zinc-500">You: </span>
+            )}
+            {isChatEncrypted && (
+              <span className="mr-1 text-green-500" title="Decrypted">
+                <LockIcon size={10} />
+              </span>
+            )}
+            {displayText}
+          </>
+        ) : isChatEncrypted ? (
+          <span className="flex items-center gap-1 italic text-amber-500">
+            <LockIcon size={10} />
+            Encrypted
+          </span>
+        ) : (
+          "No message"
         )}
-        {chat.lastMessageText || "No message"}
       </td>
       <td className="px-4 py-3 text-sm tabular-nums">
         {chat.messageCount.toLocaleString()}

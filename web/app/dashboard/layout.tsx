@@ -1,9 +1,9 @@
-import { redirect } from "next/navigation"
 import { isAuthenticated } from "@/lib/admin-auth"
-import { isDashboardIpWhitelistEnabled } from "@/lib/ip-whitelist"
+import { isDashboardIpWhitelistEnabled } from "@/lib/auth-utils"
+import { redirect } from "next/navigation"
 import { DashboardNav } from "./DashboardNav"
 
-type Props = {
+interface Props {
   children: React.ReactNode
 }
 

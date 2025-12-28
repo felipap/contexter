@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/db"
 import { Screenshots } from "@/db/schema"
-import { resizeScreenshot } from "@/lib/image-resize"
 import { config } from "@/lib/config"
 import { logWrite } from "@/lib/activity-log"
-import sharp from "sharp"
+import { SCREENSHOT_ENCRYPTABLE_COLUMNS } from "@/lib/encryption-schema"
+
+// Check if buffer starts with our encryption magic bytes "CTXE"
+function isEncryptedBuffer(buffer: Buffer): boolean {
+  if (buffer.length < 4) {
+    return false
+  }
+  return buffer.subarray(0, 4).toString() === "CTXE"
+}
 
 export async function POST(request: NextRequest) {
   const contentType = request.headers.get("content-type") || ""
@@ -17,10 +24,22 @@ export async function POST(request: NextRequest) {
 
   const formData = await request.formData()
   const file = formData.get("screenshot") as File | null
+  const widthParam = formData.get("width") as string | null
+  const heightParam = formData.get("height") as string | null
 
   if (!file) {
     return NextResponse.json(
       { error: "No screenshot file provided" },
+      { status: 400 }
+    )
+  }
+
+  const width = widthParam ? parseInt(widthParam, 10) : 0
+  const height = heightParam ? parseInt(heightParam, 10) : 0
+
+  if (!width || !height) {
+    return NextResponse.json(
+      { error: "width and height are required" },
       { status: 400 }
     )
   }
@@ -42,26 +61,35 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const resizedBuffer = await resizeScreenshot(imageBuffer)
-  const metadata = await sharp(resizedBuffer).metadata()
+  if (!isEncryptedBuffer(imageBuffer)) {
+    return NextResponse.json(
+      { error: "Screenshot data must be encrypted" },
+      { status: 400 }
+    )
+  }
 
-  const outputBase64 = resizedBuffer.toString("base64")
-  const dataUrl = `data:image/webp;base64,${outputBase64}`
+  const outputBase64 = imageBuffer.toString("base64")
+  const dataUrl = `data:application/octet-stream;base64,${outputBase64}`
+  const sizeBytes = imageBuffer.length
 
   const [screenshot] = await db
     .insert(Screenshots)
     .values({
       data: dataUrl,
-      width: metadata.width || 0,
-      height: metadata.height || 0,
-      sizeBytes: resizedBuffer.length,
+      width,
+      height,
+      sizeBytes,
     })
     .returning()
 
   await logWrite({
     type: "screenshot",
-    description: `Uploaded screenshot (${metadata.width}x${metadata.height})`,
-    metadata: { sizeBytes: resizedBuffer.length },
+    description: "Uploaded encrypted screenshot",
+    metadata: {
+      sizeBytes,
+      encrypted: true,
+      encryptedColumns: SCREENSHOT_ENCRYPTABLE_COLUMNS,
+    },
   })
 
   return NextResponse.json({

@@ -3,14 +3,20 @@
 // otherwise.
 
 import {
-  DASHBOARD_IP_WHITELIST,
+  getClientIp,
   isIpAllowed,
   parseWhitelist,
-} from "@/lib/ip-whitelist"
+  secureCompare,
+} from "@/lib/auth-utils"
 import assert from "assert"
-import { createHmac, timingSafeEqual } from "crypto"
+import { createHmac } from "crypto"
 import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
+
+export const DASHBOARD_IP_WHITELIST = process.env.DASHBOARD_IP_WHITELIST || ""
+if (!DASHBOARD_IP_WHITELIST) {
+  console.error("ATTENTION: DASHBOARD_IP_WHITELIST is not set")
+}
 
 const API_READ_IP_WHITELIST = process.env.API_READ_IP_WHITELIST || ""
 if (!API_READ_IP_WHITELIST) {
@@ -48,15 +54,6 @@ function generateAuthToken(secret: string): string {
 }
 
 const EXPECTED_DASHBOARD_TOKEN = generateAuthToken(DASHBOARD_SECRET)
-
-function secureCompare(a: string, b: string): boolean {
-  const bufA = Buffer.from(a)
-  const bufB = Buffer.from(b)
-  if (bufA.length !== bufB.length) {
-    return false
-  }
-  return timingSafeEqual(bufA, bufB)
-}
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -177,46 +174,6 @@ function getBearerToken(request: NextRequest): string | null {
 
 function getDashboardTokenFromCookie(request: NextRequest): string | undefined {
   return request.cookies.get(COOKIE_NAME)?.value
-}
-
-//
-//
-//
-//
-// Get IP from request
-
-export function getClientIp(request: NextRequest): string | null {
-  // @ts-expect-error - request.ip exists on Vercel but not in types
-  const ip = request.ip
-  if (ip) {
-    return ip
-  }
-
-  // Check common headers for real IP (when behind proxy/load balancer) https://vercel.com/docs/headers/request-headers#x-vercel-forwarded-for
-  const forwardedFor = request.headers.get("x-vercel-forwarded-for")
-  if (forwardedFor) {
-    // x-vercel-forwarded-for can contain multiple IPs, the first is the client
-    return forwardedFor.split(",")[0].trim()
-  }
-
-  const realIp = request.headers.get("x-real-ip")
-  if (realIp) {
-    return realIp.trim()
-  }
-
-  // Cloudflare
-  const cfConnectingIp = request.headers.get("cf-connecting-ip")
-  if (cfConnectingIp) {
-    return cfConnectingIp.trim()
-  }
-
-  // Fallback - this might not work in all environments
-  const remoteAddr = request.headers.get("remote-addr")
-  if (remoteAddr) {
-    return remoteAddr.trim()
-  }
-
-  return null
 }
 
 function warnUnprotected(message: string) {
