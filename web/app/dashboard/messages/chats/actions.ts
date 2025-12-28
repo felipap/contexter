@@ -111,5 +111,3 @@ export async function getChats(
     totalPages: Math.ceil(total / pageSize),
   }
 }
-
-
