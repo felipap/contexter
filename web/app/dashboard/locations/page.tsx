@@ -95,7 +95,6 @@ export default function Page() {
                 <th className="px-4 py-3 font-medium">Timestamp</th>
                 <th className="px-4 py-3 font-medium">Coordinates</th>
                 <th className="px-4 py-3 font-medium">Accuracy</th>
-                <th className="px-4 py-3 font-medium">Source</th>
                 <th className="px-4 py-3 font-medium"></th>
               </tr>
             </thead>
@@ -168,11 +167,6 @@ function LocationRow({ location }: { location: DecryptedLocation }) {
         ) : (
           <span className="text-zinc-400">—</span>
         )}
-      </td>
-      <td className="px-4 py-3">
-        <span className="inline-block rounded bg-zinc-100 px-1.5 py-0.5 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-          {location.source}
-        </span>
       </td>
       <td className="px-4 py-3">
         {mapsUrl ? (

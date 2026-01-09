@@ -11,8 +11,7 @@ export type Location = {
   latitude: string
   longitude: string
   accuracy: number | null
-  source: string
-  placeId: string | null
+  metadata: { source?: string } | null
   timestamp: Date
 }
 
@@ -51,8 +50,7 @@ export async function getLocations(
     latitude: row.latitude,
     longitude: row.longitude,
     accuracy: row.accuracy,
-    source: row.source,
-    placeId: row.placeId,
+    metadata: row.metadata ?? null,
     timestamp: row.timestamp,
   }))
 

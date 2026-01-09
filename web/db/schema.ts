@@ -1,7 +1,7 @@
 import {
-  boolean,
   index,
   integer,
+  jsonb,
   pgTable,
   text,
   timestamp,
@@ -162,26 +162,22 @@ export type Contact = typeof Contacts.$inferSelect
 //
 //
 
+export type LocationMetadata = {
+  source?: string
+}
+
 export const Locations = pgTable(
   "locations",
   {
     id: text("id").primaryKey(),
-    uniqueId: text("unique_id").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
     timestamp: timestamp("timestamp").notNull(),
-    userId: integer("user_id").notNull(),
     latitude: text("latitude").notNull(),
     longitude: text("longitude").notNull(),
-    placeId: text("place_id"),
     accuracy: integer("accuracy"),
-    source: text("source").notNull(),
-    locationInfoId: text("location_info_id"),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
+    metadata: jsonb("metadata").$type<LocationMetadata>(),
   },
-  (table) => [
-    index("locations_user_id_idx").on(table.userId),
-    index("locations_timestamp_idx").on(table.timestamp),
-    unique("locations_unique_id_unique").on(table.uniqueId),
-  ]
+  (table) => [index("locations_timestamp_idx").on(table.timestamp)]
 )
 
 export type NewLocation = typeof Locations.$inferInsert

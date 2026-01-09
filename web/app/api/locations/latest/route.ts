@@ -49,8 +49,7 @@ export async function GET(request: NextRequest) {
       latitude: latest.latitude,
       longitude: latest.longitude,
       accuracy: latest.accuracy,
-      source: latest.source,
-      placeId: latest.placeId,
+      metadata: latest.metadata,
       timestamp: latest.timestamp.toISOString(),
     },
   })
