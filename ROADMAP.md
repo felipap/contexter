@@ -2,20 +2,21 @@
 
 ## Now
 
-- [ ] Feat: implement an onboarding with info
-- [ ] Feat: blur the texts in screenshots
-- [ ] Feat: whitelist or blacklist messages from particular numbers
-- [ ] Feat: Allow expire data after certain time
-- [ ] Feat: _Don't_ auto upload data when starting the app
-- [ ] Think about real-time authentication by asking user directly
-- [ ] End-to-end encryption of message texts
+- [x] Feat: /api/locations/latest endpoint
 
 ## Later
 
-...
+- [ ] Encrypt locations?
+- [ ] Feat: implement an onboarding with info
+- [ ] Feat: whitelist or blacklist messages from particular numbers
+- [ ] Feat: Allow expire data after certain time
+- [ ] Think about real-time authentication by asking user directly
+- [ ] Feat: blur the texts in screenshots
 
 ## Done
 
+- [x] Feat: _Don't_ auto upload data when starting the app
+- [x] End-to-end encryption of message texts
 - [x] Security: store device secret in system keychain instead of plaintext JSON
 - [x] Auto delete screenshots after 24 hours
 - [x] Whitelisting IPs
