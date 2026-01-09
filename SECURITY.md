@@ -1,6 +1,17 @@
 This is a SHORT document, explaining the security measures in place. It's not
 the place for AI slop, or legaleeze.
 
+## Table of Contents
+
+- [Table of Contents](#table-of-contents)
+- [Authentication](#authentication)
+  - [Admin Dashboard](#admin-dashboard)
+  - [Device Auth (Desktop App)](#device-auth-desktop-app)
+- [Server security](#server-security)
+- [End-to-End Encryption (E2EE)](#end-to-end-encryption-e2ee)
+  - [Encryption Key Management](#encryption-key-management)
+- [Rate Limiting](#rate-limiting)
+
 ## Authentication
 
 There are two auth flows: one for the admin dashboard, one for devices (Electron app).
@@ -43,6 +54,35 @@ Messages and screenshots are encrypted on the desktop before upload. The encrypt
 - Decryption uses the Web Crypto API (`crypto.subtle`) in your browser
 
 The server has no way to decrypt your data. If you lose your encryption key, your data is unrecoverable.
+
+### Encryption Key Management
+
+**What we do now:**
+
+- Single encryption key per user (passphrase-derived via PBKDF2)
+- Encrypted values are prefixed with `enc:v1:` to self-identify as encrypted
+- Some fields are encrypted (message text, lat/long), others are plaintext (timestamps, contact IDs) so the server can index/query
+- No key identifier stored — we assume all data uses the same key
+- The `v1` in `enc:v1:` indicates the encryption _format_ version, not which key was used
+
+**What we could do (but don't):**
+
+- **Key rotation with key IDs**: Format could become `enc:v1:key01:iv:tag:ciphertext` to track which key encrypted what. Would allow rotating keys without re-encrypting old data.
+- **Per-table or per-field keys**: Different keys for messages vs locations. More complexity, unclear benefit.
+- **Key escrow / recovery**: Store an encrypted backup of the key somewhere. Defeats zero-knowledge if done wrong.
+
+**Trade-offs of zero-knowledge encryption:**
+
+- Forget your key → data is permanently lost (feature, not a bug)
+- Change your key → must re-encrypt everything
+- Multiple devices → all need the same passphrase
+- Server can't help you recover anything
+
+**Open questions Felipe doesn't know the answer to:**
+
+- Is PBKDF2 with 100k iterations still considered good? (Argon2 is "better" but more complex)
+- Should we ever implement key rotation, or is "re-encrypt everything" fine for a personal tool?
+- Do we need to encrypt more fields? (e.g., contact phone numbers are currently plaintext for querying)
 
 ## Rate Limiting
 
