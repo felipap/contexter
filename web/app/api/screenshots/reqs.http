@@ -1,8 +1,9 @@
 @deviceSecret = 123456789
+@host = {{$dotenv WEBSITE_HOST}}
 
 ###
 
-POST http://localhost:3000/api/screenshots
+POST {{host}}/api/screenshots
 Authorization: Bearer {{deviceSecret}}
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
 
@@ -23,7 +24,7 @@ Google Chrome
 
 ###
 
-GET http://localhost:3000/api/screenshots/latest
+GET {{host}}/api/screenshots/latest
 Authorization: Bearer {{deviceSecret}}
 
 

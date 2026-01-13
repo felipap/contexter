@@ -16,3 +16,5 @@ export const CONTACT_ENCRYPTED_COLUMNS = [
 ] as const
 
 export const LOCATION_ENCRYPTED_COLUMNS = ["latitude", "longitude"] as const
+
+export const WHATSAPP_ENCRYPTED_COLUMNS = ["text", "senderName"] as const

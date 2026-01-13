@@ -1,0 +1,29 @@
+# https://developer.unipile.com/reference/chatscontroller_listallchats
+
+@unipileToken = {{$dotenv UNIPILE_TOKEN}}
+
+###
+
+GET https://api16.unipile.com:14645/api/v1/accounts
+X-API-KEY: {{unipileToken}}
+Accept: application/json
+
+### Get all chats
+
+GET https://api16.unipile.com:14645/api/v1/chats
+X-API-KEY: {{unipileToken}}
+Accept: application/json
+
+### Get a specific chat
+
+@chatId = vliY3N8NUh23xd4lLCfUYw
+
+GET https://api16.unipile.com:14645/api/v1/chats/{{chatId}}
+X-API-KEY: {{unipileToken}}
+Accept: application/json
+
+### Get chat messages
+
+GET https://api16.unipile.com:14645/api/v1/chats/{{chatId}}/messages
+X-API-KEY: {{unipileToken}}
+Accept: application/json

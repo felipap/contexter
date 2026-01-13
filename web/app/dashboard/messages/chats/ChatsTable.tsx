@@ -49,7 +49,10 @@ const columns = [
                 <span className="text-zinc-400 dark:text-zinc-500">You: </span>
               )}
               {isChatEncrypted && (
-                <span className="mr-1 inline text-green-500" title="Decrypted">
+                <span
+                  className="mr-0.5 inline-flex items-center text-green-500"
+                  title="Decrypted"
+                >
                   <LockIcon size={10} />
                 </span>
               )}

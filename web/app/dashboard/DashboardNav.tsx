@@ -8,7 +8,7 @@ import {
 } from "@/lib/encryption"
 import { LockIcon, UnlockIcon } from "@/ui/icons"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useSearchParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { twMerge } from "tailwind-merge"
 import { logout } from "./actions"
@@ -82,6 +82,26 @@ function EncryptionKeyButton() {
   const [hasKey, setHasKey] = useState(false)
   const [expiryTime, setExpiryTime] = useState<Date | null>(null)
   const [, setTick] = useState(0)
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+
+  // Handle encryption key from URL (from desktop app tray)
+  useEffect(() => {
+    const keyFromUrl = searchParams.get("key")
+    if (keyFromUrl) {
+      setEncryptionKey(keyFromUrl)
+      setHasKey(true)
+      setExpiryTime(getEncryptionKeyExpiry())
+      // Remove key from URL for security
+      const newParams = new URLSearchParams(searchParams.toString())
+      newParams.delete("key")
+      const newUrl = newParams.toString()
+        ? `${pathname}?${newParams.toString()}`
+        : pathname
+      router.replace(newUrl)
+    }
+  }, [searchParams, router, pathname])
 
   useEffect(() => {
     const key = getEncryptionKey()

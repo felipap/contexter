@@ -182,3 +182,34 @@ export const Locations = pgTable(
 
 export type NewLocation = typeof Locations.$inferInsert
 export type Location = typeof Locations.$inferSelect
+
+//
+//
+//
+//
+
+export const WhatsappMessages = pgTable(
+  "whatsapp_messages",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text("user_id").notNull(),
+    messageId: text("message_id").notNull().unique(), // Unipile message ID
+    chatId: text("chat_id").notNull(),
+    text: text("text"),
+    sender: text("sender").notNull(),
+    senderName: text("sender_name"),
+    timestamp: timestamp("timestamp").notNull(),
+    isFromMe: integer("is_from_me").notNull(),
+    deviceId: text("device_id").notNull(),
+    syncTime: timestamp("sync_time").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("whatsapp_messages_chat_id_idx").on(table.chatId),
+    index("whatsapp_messages_sender_idx").on(table.sender),
+    index("whatsapp_messages_timestamp_idx").on(table.timestamp),
+  ]
+)
+
+export type NewWhatsappMessage = typeof WhatsappMessages.$inferInsert
+export type WhatsappMessage = typeof WhatsappMessages.$inferSelect

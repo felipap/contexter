@@ -1,7 +1,7 @@
 import { db } from "@/db"
 import { WriteLogs, ReadLogs } from "@/db/schema"
 
-export type WriteLogType = "screenshot" | "imessage" | "attachment" | "contact"
+export type WriteLogType = "screenshot" | "imessage" | "attachment" | "contact" | "whatsapp"
 export type ReadLogType =
   | "screenshot"
   | "imessage"
@@ -9,6 +9,7 @@ export type ReadLogType =
   | "contact"
   | "location"
   | "stats"
+  | "whatsapp"
 
 type LogWriteParams = {
   type: WriteLogType

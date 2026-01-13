@@ -1,5 +1,5 @@
 @readSecret = {{$dotenv API_READ_SECRET}}
-@host = http://localhost:3000
+@host = {{$dotenv WEBSITE_HOST}}
 
 ###
 
