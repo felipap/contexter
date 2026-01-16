@@ -1,0 +1,14 @@
+@readSecret = {{$dotenv API_READ_SECRET}}
+@host = {{$dotenv WEBSITE_HOST}}
+
+###
+
+GET {{host}}/api/contacts
+Authorization: Bearer {{readSecret}}
+
+###
+
+GET {{host}}/api/contacts/+17146236604
+Authorization: Bearer {{readSecret}}
+
+###
