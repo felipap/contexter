@@ -75,6 +75,64 @@ export function isEncrypted(text: string | null): boolean {
   return text !== null && text.startsWith(ENCRYPTED_PREFIX)
 }
 
+// Encrypts binary data and returns a string with the enc:v1: prefix
+// Use this when the encrypted result will be transmitted as a string (e.g., JSON)
+export function encryptBinaryToString(plainBuffer: Buffer, passphrase: string): string {
+  if (!plainBuffer || plainBuffer.length === 0 || !passphrase) {
+    return plainBuffer?.toString('base64') ?? ''
+  }
+
+  const key = deriveKey(passphrase)
+  const iv = randomBytes(IV_LENGTH)
+  const cipher = createCipheriv(ALGORITHM, key, iv, { authTagLength: AUTH_TAG_LENGTH })
+
+  const encrypted = Buffer.concat([
+    cipher.update(plainBuffer),
+    cipher.final(),
+  ])
+  const authTag = cipher.getAuthTag()
+
+  // Same format as encryptText: enc:v1:<iv>:<authTag>:<ciphertext> (all base64)
+  const ivB64 = iv.toString('base64')
+  const authTagB64 = authTag.toString('base64')
+  const ciphertextB64 = encrypted.toString('base64')
+
+  return `${ENCRYPTED_PREFIX}${ivB64}:${authTagB64}:${ciphertextB64}`
+}
+
+// Decrypts a string (with enc:v1: prefix) back to binary data
+export function decryptStringToBinary(ciphertext: string, passphrase: string): Buffer | null {
+  if (!ciphertext || !passphrase) {
+    return ciphertext ? Buffer.from(ciphertext, 'base64') : null
+  }
+
+  if (!ciphertext.startsWith(ENCRYPTED_PREFIX)) {
+    // Not encrypted, assume it's base64-encoded plaintext
+    return Buffer.from(ciphertext, 'base64')
+  }
+
+  const parts = ciphertext.slice(ENCRYPTED_PREFIX.length).split(':')
+  if (parts.length !== 3) {
+    return null
+  }
+
+  const [ivB64, authTagB64, encryptedB64] = parts
+  const iv = Buffer.from(ivB64, 'base64')
+  const authTag = Buffer.from(authTagB64, 'base64')
+  const encrypted = Buffer.from(encryptedB64, 'base64')
+
+  const key = deriveKey(passphrase)
+  const decipher = createDecipheriv(ALGORITHM, key, iv, { authTagLength: AUTH_TAG_LENGTH })
+  decipher.setAuthTag(authTag)
+
+  const decrypted = Buffer.concat([
+    decipher.update(encrypted),
+    decipher.final(),
+  ])
+
+  return decrypted
+}
+
 // Binary encryption for files like screenshots
 export function encryptBuffer(plainBuffer: Buffer, passphrase: string): Buffer {
   if (!plainBuffer || plainBuffer.length === 0 || !passphrase) {
