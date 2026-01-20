@@ -17,7 +17,10 @@ function deriveKey(passphrase: string): Buffer {
 }
 
 export function encryptText(plaintext: string, passphrase: string): string {
-  if (!plaintext || !passphrase) {
+  if (!passphrase) {
+    throw new Error('encryptText called without passphrase')
+  }
+  if (!plaintext) {
     return plaintext
   }
 
@@ -78,8 +81,11 @@ export function isEncrypted(text: string | null): boolean {
 // Encrypts binary data and returns a string with the enc:v1: prefix
 // Use this when the encrypted result will be transmitted as a string (e.g., JSON)
 export function encryptBinaryToString(plainBuffer: Buffer, passphrase: string): string {
-  if (!plainBuffer || plainBuffer.length === 0 || !passphrase) {
-    return plainBuffer?.toString('base64') ?? ''
+  if (!passphrase) {
+    throw new Error('encryptBinaryToString called without passphrase')
+  }
+  if (!plainBuffer || plainBuffer.length === 0) {
+    return ''
   }
 
   const key = deriveKey(passphrase)
@@ -135,7 +141,10 @@ export function decryptStringToBinary(ciphertext: string, passphrase: string): B
 
 // Binary encryption for files like screenshots
 export function encryptBuffer(plainBuffer: Buffer, passphrase: string): Buffer {
-  if (!plainBuffer || plainBuffer.length === 0 || !passphrase) {
+  if (!passphrase) {
+    throw new Error('encryptBuffer called without passphrase')
+  }
+  if (!plainBuffer || plainBuffer.length === 0) {
     return plainBuffer
   }
 
