@@ -59,11 +59,14 @@ async function runBackfill(days = 120): Promise<void> {
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 
   console.log(`[imessage] Fetching all messages since ${since.toISOString()}...`)
+  const fetchStart = Date.now()
+
   const messages = await fetchMessages(backfillSdk, since, {
     includeAttachments: config.includeAttachments,
   })
 
-  console.log(`[imessage] Found ${messages.length} messages to backfill`)
+  const fetchEnd = Date.now()
+  console.log(`[imessage] Found ${messages.length} messages to backfill in ${fetchEnd - fetchStart}ms`)
 
   if (messages.length === 0) {
     backfillProgress = { status: 'completed', current: 0, total: 0, messageCount: 0 }
