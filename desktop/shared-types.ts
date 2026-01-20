@@ -28,9 +28,11 @@ export interface ServiceStatus {
 }
 
 export interface BackfillProgress {
+  status: 'idle' | 'running' | 'completed' | 'error' | 'cancelled'
+  phase?: 'loading' | 'uploading'
   current: number
   total: number
-  status: 'idle' | 'running' | 'completed' | 'error' | 'cancelled'
+  messageCount?: number
   error?: string
 }
 

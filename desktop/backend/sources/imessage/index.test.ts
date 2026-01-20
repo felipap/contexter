@@ -1,7 +1,7 @@
 import { createIMessageSDK, fetchMessages } from './index'
 
 async function main() {
-  console.log('Testing iMessage export...')
+  console.log('Testing iMessage fetch...\n')
 
   const sdk = createIMessageSDK()
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000) // last 24 hours
@@ -22,9 +22,11 @@ async function main() {
       service: messages[0].service,
     })
   }
+
+  console.log('\n✓ All tests passed')
 }
 
 main().catch((err) => {
-  console.error('✗ Test failed:', err.message)
+  console.error('\n✗ Test failed:', err.message)
   process.exit(1)
 })

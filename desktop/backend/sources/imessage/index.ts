@@ -1,19 +1,5 @@
-import { readFile } from 'fs/promises'
 import { IMessageSDK } from '@photon-ai/imessage-kit'
-import sharp from 'sharp'
-import heicConvert from 'heic-convert'
-
-// Config for image resizing
-const IMAGE_CONFIG = {
-  resizeRatio: 0.5, // 50% of original size
-  quality: 70,
-  format: 'jpeg' as const,
-}
-
-function isHeicFile(path: string): boolean {
-  const lower = path.toLowerCase()
-  return lower.endsWith('.heic') || lower.endsWith('.heif')
-}
+import { readAttachmentAsBase64 } from './images'
 
 export type Attachment = {
   id: string
@@ -24,6 +10,7 @@ export type Attachment = {
   isImage: boolean
   createdAt: string
   dataBase64?: string
+  error?: string
 }
 
 export type Message = {
@@ -44,86 +31,25 @@ export type Message = {
   chatName: string | null
 }
 
-// AI says we need a separate SDK because each keeps a database connection open,
-// and it'd be wasteful to do one per call to `fetchMessages`.
+// Each SDK instance keeps a database connection open, so we reuse instances.
 export function createIMessageSDK(): IMessageSDK {
   return new IMessageSDK({ debug: false })
 }
 
-async function convertHeicToJpeg(inputBuffer: Buffer): Promise<Buffer> {
-  // Create an isolated copy - Node.js Buffers can share an underlying ArrayBuffer pool,
-  // which causes issues with heic-decode's spread syntax on the buffer
-  const isolatedBuffer = Buffer.from(inputBuffer)
-
-  // Extract the actual ArrayBuffer portion that the Buffer references
-  const arrayBuffer = isolatedBuffer.buffer.slice(
-    isolatedBuffer.byteOffset,
-    isolatedBuffer.byteOffset + isolatedBuffer.byteLength,
-  )
-
-  const outputBuffer = await heicConvert({
-    buffer: arrayBuffer,
-    format: 'JPEG',
-    quality: 0.9,
-  })
-  return Buffer.from(outputBuffer)
-}
-
-async function readAndResizeImage(path: string): Promise<string | null> {
-  try {
-    let inputBuffer: Buffer = await readFile(path)
-
-    // Convert HEIC/HEIF to JPEG first since Sharp may not have HEIC support
-    if (isHeicFile(path)) {
-      inputBuffer = await convertHeicToJpeg(inputBuffer)
-    }
-
-    const image = sharp(inputBuffer)
-    const metadata = await image.metadata()
-
-    if (!metadata.width || !metadata.height) {
-      return inputBuffer.toString('base64')
-    }
-
-    const newWidth = Math.round(metadata.width * IMAGE_CONFIG.resizeRatio)
-    const newHeight = Math.round(metadata.height * IMAGE_CONFIG.resizeRatio)
-
-    const outputBuffer = await image
-      .resize(newWidth, newHeight, {
-        fit: 'inside',
-        withoutEnlargement: true,
-      })
-      .toFormat(IMAGE_CONFIG.format, { quality: IMAGE_CONFIG.quality })
-      .toBuffer()
-
-    return outputBuffer.toString('base64')
-  } catch (err) {
-    console.warn(`Failed to resize image at ${path}:`, err)
-    return null
-  }
-}
-
-async function readAttachmentAsBase64(
-  path: string,
-  isImage: boolean,
-): Promise<string | null> {
-  if (isImage) {
-    return readAndResizeImage(path)
-  }
-
-  try {
-    const buffer = await readFile(path)
-    return buffer.toString('base64')
-  } catch (err) {
-    console.warn(`Failed to read attachment at ${path}:`, err)
-    return null
-  }
-}
-
 type FetchOptions = {
   includeAttachments?: boolean
+  // NOTE: limit is intentionally not exposed here. See comment below.
 }
 
+// PAGINATION NOTES (tested Jan 2026):
+// - Messages are returned in DESCENDING order (newest first)
+// - With a limit, you get the N newest messages since the date
+// - The SDK doesn't provide offset/cursor pagination
+// - To get ALL messages in a date range, we must either:
+//   1. Not use a limit (load all into memory)
+//   2. Paginate by tracking the oldest date seen and re-querying
+// - For now, we don't use a limit so we get all messages. This may need
+//   revisiting if memory becomes an issue with large date ranges.
 export async function fetchMessages(
   sdk: IMessageSDK,
   since: Date,
@@ -133,8 +59,9 @@ export async function fetchMessages(
 
   const result = await sdk.getMessages({
     since,
-    limit: 100,
     excludeOwnMessages: false,
+    // No limit - we need all messages since the date, not just the newest N
+
   })
 
   const messages: Message[] = []
@@ -144,8 +71,8 @@ export async function fetchMessages(
 
     if (includeAttachments) {
       for (const att of msg.attachments) {
-        const dataBase64 = await readAttachmentAsBase64(att.path, att.isImage)
-        attachments.push({
+        const readResult = await readAttachmentAsBase64(att.path, att.isImage)
+        const attachment: Attachment = {
           id: att.id,
           filename: att.filename,
           mimeType: att.isImage ? 'image/jpeg' : att.mimeType,
@@ -153,8 +80,14 @@ export async function fetchMessages(
           size: att.size,
           isImage: att.isImage,
           createdAt: att.createdAt.toISOString(),
-          dataBase64: dataBase64 ?? undefined,
-        })
+        }
+        if ('data' in readResult) {
+          attachment.dataBase64 = readResult.data
+        }
+        if ('error' in readResult) {
+          attachment.error = readResult.error
+        }
+        attachments.push(attachment)
       }
     }
 

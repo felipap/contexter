@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef } from 'react'
 import { BackfillProgress } from '../../../electron'
 
-const BACKFILL_DAYS = 120
+const BACKFILL_DAYS = 50
 
 export function HistoricalBackfill() {
   const [progress, setProgress] = useState<BackfillProgress | null>(null)
   const pollingRef = useRef<NodeJS.Timeout | null>(null)
 
   const isRunning = progress?.status === 'running'
+  const isLoading = isRunning && progress?.phase === 'loading'
+  const isUploading = isRunning && progress?.phase === 'uploading'
   const isIdle = !progress || progress.status === 'idle'
   const isCompleted = progress?.status === 'completed'
   const isError = progress?.status === 'error'
@@ -73,11 +75,23 @@ export function HistoricalBackfill() {
         </div>
       </div>
 
-      {isRunning && progress && (
+      {isLoading && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-xs text-blue-700 dark:text-blue-300">
+            <LoadingSpinner />
+            <span>Loading messages from iMessage...</span>
+          </div>
+          <div className="h-2 bg-blue-200 dark:bg-blue-800 rounded-full overflow-hidden">
+            <div className="h-full bg-blue-500 dark:bg-blue-400 animate-pulse w-full" />
+          </div>
+        </div>
+      )}
+
+      {isUploading && progress && (
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs text-blue-700 dark:text-blue-300">
             <span>
-              Day {progress.current} of {progress.total}
+              Uploading {progress.messageCount?.toLocaleString()} messages...
             </span>
             <span>{progressPercent}%</span>
           </div>
@@ -166,4 +180,26 @@ function CheckIcon() {
   )
 }
 
-
+function LoadingSpinner() {
+  return (
+    <svg
+      className="w-3 h-3 animate-spin text-blue-600 dark:text-blue-400"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      />
+    </svg>
+  )
+}
