@@ -77,7 +77,7 @@ export async function fetchMessages(
         const readResult = await readAttachmentAsBase64(att.path, att.isImage)
 
         // Skip attachments that couldn't be read (e.g., file deleted/moved)
-        if (!readResult.ok) {
+        if (readResult.ok === false) {
           console.warn(`[imessage] Skipping attachment ${att.id} for message ${msg.id}: ${readResult.error}`)
           continue
         }

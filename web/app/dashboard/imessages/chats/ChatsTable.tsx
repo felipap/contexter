@@ -79,7 +79,9 @@ function createColumns(contactLookup: ContactLookup) {
             {displayText ? (
               <>
                 {chat.lastMessageFromMe && (
-                  <span className="text-zinc-400 dark:text-zinc-500">You: </span>
+                  <span className="text-zinc-400 dark:text-zinc-500">
+                    You:{" "}
+                  </span>
                 )}
                 {isChatEncrypted && (
                   <span
@@ -131,7 +133,13 @@ type Props = {
   onPageChange: (page: number) => void
 }
 
-export function ChatsTable({ chats, contactLookup, page, totalPages, onPageChange }: Props) {
+export function ChatsTable({
+  chats,
+  contactLookup,
+  page,
+  totalPages,
+  onPageChange,
+}: Props) {
   const columns = useMemo(() => createColumns(contactLookup), [contactLookup])
 
   const table = useReactTable({
@@ -180,7 +188,11 @@ export function ChatsTable({ chats, contactLookup, page, totalPages, onPageChang
         </table>
       </div>
 
-      <Pagination page={page} totalPages={totalPages} onPageChange={onPageChange} />
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={onPageChange}
+      />
     </>
   )
 }
@@ -200,7 +212,10 @@ function ContactAvatar({ name, isGroup }: { name: string; isGroup: boolean }) {
   )
 }
 
-function resolveContactName(contact: string, contactLookup: ContactLookup): string {
+function resolveContactName(
+  contact: string,
+  contactLookup: ContactLookup
+): string {
   // Try lookup by email (lowercase)
   if (contact.includes("@")) {
     const name = contactLookup[contact.toLowerCase().trim()]
