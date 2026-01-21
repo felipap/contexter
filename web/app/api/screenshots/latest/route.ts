@@ -1,30 +1,50 @@
 import { db } from "@/db"
 import { Screenshots } from "@/db/schema"
 import { logRead } from "@/lib/activity-log"
-import { desc } from "drizzle-orm"
-import { NextResponse } from "next/server"
+import { desc, gte } from "drizzle-orm"
+import { NextRequest, NextResponse } from "next/server"
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url)
+  const withinMinParam = searchParams.get("within_min")
+  const withinMin = withinMinParam ? parseInt(withinMinParam, 10) : null
+
+  if (withinMinParam !== null && (isNaN(withinMin!) || withinMin! < 1)) {
+    return NextResponse.json(
+      { error: "within_min must be a positive integer" },
+      { status: 400 }
+    )
+  }
+
+  let where
+  if (withinMin) {
+    const cutoff = new Date(Date.now() - withinMin * 60 * 1000)
+    where = gte(Screenshots.capturedAt, cutoff)
+  }
+
   const screenshot = await db.query.Screenshots.findFirst({
+    where,
     orderBy: desc(Screenshots.capturedAt),
   })
-
-  if (!screenshot) {
-    return NextResponse.json({ error: "No screenshots found" }, { status: 404 })
-  }
 
   await logRead({
     type: "screenshot",
     description: "Fetched latest screenshot",
-    count: 1,
+    count: screenshot ? 1 : 0,
   })
 
+  if (!screenshot) {
+    return NextResponse.json({ screenshot: null })
+  }
+
   return NextResponse.json({
-    id: screenshot.id,
-    data: screenshot.data,
-    width: screenshot.width,
-    height: screenshot.height,
-    sizeBytes: screenshot.sizeBytes,
-    capturedAt: screenshot.capturedAt,
+    screenshot: {
+      id: screenshot.id,
+      data: screenshot.data,
+      width: screenshot.width,
+      height: screenshot.height,
+      sizeBytes: screenshot.sizeBytes,
+      capturedAt: screenshot.capturedAt,
+    },
   })
 }
