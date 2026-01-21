@@ -1,5 +1,8 @@
 "use client"
 
+import { useMemo } from "react"
+import { useRouter } from "next/navigation"
+import { twMerge } from "tailwind-merge"
 import { GroupIcon, LockIcon } from "@/ui/icons"
 import { Pagination } from "@/ui/Pagination"
 import { type Chat, type ContactLookup } from "./actions"
@@ -10,7 +13,6 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { useMemo } from "react"
 
 export type DecryptedChat = Chat & { decryptedLastMessage: string | null }
 
@@ -108,12 +110,6 @@ function createColumns(contactLookup: ContactLookup) {
         )
       },
     }),
-    columnHelper.accessor("messageCount", {
-      header: "Messages",
-      cell: (info) => (
-        <span className="tabular-nums">{info.getValue().toLocaleString()}</span>
-      ),
-    }),
     columnHelper.accessor("lastMessageDate", {
       header: "Date",
       cell: (info) => {
@@ -124,6 +120,12 @@ function createColumns(contactLookup: ContactLookup) {
           </span>
         )
       },
+    }),
+    columnHelper.accessor("messageCount", {
+      header: "Count",
+      cell: (info) => (
+        <span className="tabular-nums">{info.getValue().toLocaleString()}</span>
+      ),
     }),
   ]
 }
@@ -143,12 +145,14 @@ export function ChatsTable({
   totalPages,
   onPageChange,
 }: Props) {
+  const router = useRouter()
   const columns = useMemo(() => createColumns(contactLookup), [contactLookup])
 
   const table = useReactTable({
     data: chats,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getRowId: (row) => row.chatId,
   })
 
   return (
@@ -182,7 +186,12 @@ export function ChatsTable({
             {table.getRowModel().rows.map((row) => (
               <tr
                 key={row.id}
-                className="transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900"
+                onClick={() =>
+                  router.push(
+                    `/dashboard/imessages/chats/${encodeURIComponent(row.original.chatId)}`
+                  )
+                }
+                className="cursor-pointer transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900"
               >
                 {row.getVisibleCells().map((cell) => (
                   <td
@@ -213,13 +222,15 @@ export function ChatsTable({
 
 function ContactAvatar({ name, isGroup }: { name: string; isGroup: boolean }) {
   const initial = name.charAt(0).toUpperCase()
-  const bgColor = isGroup
-    ? "bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400"
-    : "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
 
   return (
     <div
-      className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium ${bgColor}`}
+      className={twMerge(
+        "flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium",
+        isGroup
+          ? "bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400"
+          : "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+      )}
     >
       {isGroup ? <GroupIcon /> : initial}
     </div>

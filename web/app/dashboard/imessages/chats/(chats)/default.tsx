@@ -6,9 +6,9 @@ import {
   getContactLookup,
   type Chat,
   type ContactLookup,
-} from "./actions"
+} from "../actions"
 import { decryptText, isEncrypted, getEncryptionKey } from "@/lib/encryption"
-import { ChatsTable, type DecryptedChat } from "./ChatsTable"
+import { ChatsTable, type DecryptedChat } from "../ChatsTable"
 import { SearchIcon } from "@/ui/icons"
 
 export default function Page() {
