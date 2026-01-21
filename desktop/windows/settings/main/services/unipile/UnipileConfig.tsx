@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { UnipileWhatsappConfig } from '../../../../shared-types'
+import { UnipileWhatsappConfig } from '../../../../../shared-types'
 
 type Props = {
   config: UnipileWhatsappConfig

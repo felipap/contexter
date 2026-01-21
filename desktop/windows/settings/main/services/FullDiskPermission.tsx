@@ -1,16 +1,11 @@
 import { useState, useEffect } from 'react'
 
 type Props = {
-  serviceName: 'imessage' | 'contacts'
+  description: string
   onPermissionChange?: (hasAccess: boolean) => void
 }
 
-const SERVICE_DESCRIPTIONS: Record<Props['serviceName'], string> = {
-  imessage: 'iMessage export requires Full Disk Access to read your messages database.',
-  contacts: 'Contacts sync requires Full Disk Access to read your contacts database.',
-}
-
-export function FullDiskPermission({ serviceName, onPermissionChange }: Props) {
+export function FullDiskPermission({ description, onPermissionChange }: Props) {
   const [hasAccess, setHasAccess] = useState<boolean | null>(null)
   const [isChecking, setIsChecking] = useState(true)
 
@@ -58,7 +53,7 @@ export function FullDiskPermission({ serviceName, onPermissionChange }: Props) {
             Full Disk Access Required
           </p>
           <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
-            {SERVICE_DESCRIPTIONS[serviceName]}
+            {description}
           </p>
         </div>
       </div>
@@ -101,7 +96,7 @@ function CheckIcon() {
 function WarningIcon() {
   return (
     <svg
-      className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0"
+      className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0"
       fill="none"
       viewBox="0 0 24 24"
       stroke="currentColor"
@@ -115,4 +110,3 @@ function WarningIcon() {
     </svg>
   )
 }
-

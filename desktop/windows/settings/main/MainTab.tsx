@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react'
-import { SERVICES, ServiceSection } from './services/ServiceSection'
+import { ScreenshotsService } from './services/screenshots'
+import { IMessageService } from './services/imessage'
+import { ContactsService } from './services/contacts'
+import { UnipileService } from './services/unipile'
 import { EyeIcon, EyeOffIcon } from '../../shared/ui/icons'
 
 type PasswordInputProps = {
@@ -153,9 +156,10 @@ export function MainTab() {
         <div
           className={`space-y-2 ${!hasEncryptionKey ? 'opacity-50 pointer-events-none' : ''}`}
         >
-          {SERVICES.map((service) => (
-            <ServiceSection key={service.name} service={service} />
-          ))}
+          <ScreenshotsService />
+          <IMessageService />
+          <ContactsService />
+          <UnipileService />
         </div>
       </div>
     </div>

@@ -1,78 +1,26 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, ReactNode } from 'react'
 import { ServiceConfig, UnipileWhatsappConfig } from '../../../electron'
-import { FullDiskPermission } from './FullDiskPermission'
-import { HistoricalBackfill } from './HistoricalBackfill'
-import { ScreenRecordingPermission } from './ScreenRecordingPermission'
-import { UnipileConfig } from './UnipileConfig'
 
 export type ServiceInfo = {
   name: string
   label: string
   description: string
   getConfig: () => Promise<ServiceConfig | UnipileWhatsappConfig>
-  setConfig: (config: Partial<ServiceConfig | UnipileWhatsappConfig>) => Promise<void>
+  setConfig: (
+    config: Partial<ServiceConfig | UnipileWhatsappConfig>,
+  ) => Promise<void>
   intervalOptions: { value: number; label: string }[]
 }
 
-export const SERVICES: ServiceInfo[] = [
-  {
-    name: 'screenshots',
-    label: 'Screen Capture',
-    description: 'Automatically capture screenshots at regular intervals',
-    getConfig: () => window.electron.getScreenCaptureConfig(),
-    setConfig: (config) => window.electron.setScreenCaptureConfig(config),
-    intervalOptions: [
-      { value: 1, label: 'Every 1 minute' },
-      { value: 2, label: 'Every 2 minutes' },
-      { value: 5, label: 'Every 5 minutes' },
-      { value: 10, label: 'Every 10 minutes' },
-      { value: 15, label: 'Every 15 minutes' },
-      { value: 30, label: 'Every 30 minutes' },
-    ],
-  },
-  {
-    name: 'imessage',
-    label: 'iMessage Export',
-    description: 'Export iMessage conversations to the server',
-    getConfig: () => window.electron.getIMessageExportConfig(),
-    setConfig: (config) => window.electron.setIMessageExportConfig(config),
-    intervalOptions: [
-      { value: 1, label: 'Every 1 minute' },
-      { value: 5, label: 'Every 5 minutes' },
-      { value: 15, label: 'Every 15 minutes' },
-      { value: 30, label: 'Every 30 minutes' },
-      { value: 60, label: 'Every hour' },
-    ],
-  },
-  {
-    name: 'contacts',
-    label: 'Contacts Sync',
-    description: 'Sync your contacts to the server',
-    getConfig: () => window.electron.getContactsSyncConfig(),
-    setConfig: (config) => window.electron.setContactsSyncConfig(config),
-    intervalOptions: [
-      { value: 30, label: 'Every 30 minutes' },
-      { value: 60, label: 'Every hour' },
-      { value: 360, label: 'Every 6 hours' },
-      { value: 720, label: 'Every 12 hours' },
-      { value: 1440, label: 'Every 24 hours' },
-    ],
-  },
-  {
-    name: 'unipile-whatsapp',
-    label: 'WhatsApp (Unipile)',
-    description: 'Sync WhatsApp messages via Unipile API',
-    getConfig: () => window.electron.getUnipileWhatsappConfig(),
-    setConfig: (config) => window.electron.setUnipileWhatsappConfig(config),
-    intervalOptions: [
-      { value: 1, label: 'Every 1 minute' },
-      { value: 5, label: 'Every 5 minutes' },
-      { value: 15, label: 'Every 15 minutes' },
-      { value: 30, label: 'Every 30 minutes' },
-      { value: 60, label: 'Every hour' },
-    ],
-  },
-]
+type Props = {
+  service: ServiceInfo
+  children?:
+    | ReactNode
+    | ((props: {
+        config: ServiceConfig | UnipileWhatsappConfig
+        setConfig: (config: ServiceConfig | UnipileWhatsappConfig) => void
+      }) => ReactNode)
+}
 
 function Toggle({
   enabled,
@@ -128,8 +76,10 @@ function StatusBadge({ enabled }: { enabled: boolean }) {
   )
 }
 
-export function ServiceSection({ service }: { service: ServiceInfo }) {
-  const [config, setConfig] = useState<ServiceConfig | UnipileWhatsappConfig | null>(null)
+export function ServiceSection({ service, children }: Props) {
+  const [config, setConfig] = useState<
+    ServiceConfig | UnipileWhatsappConfig | null
+  >(null)
   const [isExpanded, setIsExpanded] = useState(false)
 
   useEffect(() => {
@@ -161,6 +111,9 @@ export function ServiceSection({ service }: { service: ServiceInfo }) {
     )
   }
 
+  const renderedChildren =
+    typeof children === 'function' ? children({ config, setConfig }) : children
+
   return (
     <div className="rounded-lg border bg-[var(--background-color-two)] overflow-hidden">
       <button
@@ -176,7 +129,7 @@ export function ServiceSection({ service }: { service: ServiceInfo }) {
 
       <div
         className={`overflow-hidden transition-all duration-200 ${
-          isExpanded ? 'max-h-96' : 'max-h-0'
+          isExpanded ? 'max-h-[600px]' : 'max-h-0'
         }`}
       >
         <div className="px-4 pb-4 space-y-4 border-t">
@@ -184,26 +137,7 @@ export function ServiceSection({ service }: { service: ServiceInfo }) {
             {service.description}
           </div>
 
-          {service.name === 'screenshots' && <ScreenRecordingPermission />}
-          {service.name === 'imessage' && (
-            <>
-              <FullDiskPermission serviceName="imessage" />
-              <HistoricalBackfill />
-            </>
-          )}
-          {service.name === 'contacts' && (
-            <FullDiskPermission serviceName="contacts" />
-          )}
-          {service.name === 'unipile-whatsapp' && (
-            <UnipileConfig
-              config={config as UnipileWhatsappConfig}
-              onConfigChange={async (newConfig) => {
-                await service.setConfig(newConfig)
-                const updated = await service.getConfig()
-                setConfig(updated)
-              }}
-            />
-          )}
+          {renderedChildren}
 
           <div className="flex items-center justify-between pt-2">
             <span className="text-sm font-medium">Enable {service.label}</span>

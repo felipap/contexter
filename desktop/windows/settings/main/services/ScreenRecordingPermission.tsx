@@ -96,7 +96,7 @@ function CheckIcon() {
 function WarningIcon() {
   return (
     <svg
-      className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0"
+      className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0"
       fill="none"
       viewBox="0 0 24 24"
       stroke="currentColor"
@@ -110,4 +110,3 @@ function WarningIcon() {
     </svg>
   )
 }
-

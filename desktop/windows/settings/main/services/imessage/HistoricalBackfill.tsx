@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
-import { BackfillProgress } from '../../../electron'
+import { BackfillProgress } from '../../../../electron'
 
-const BACKFILL_DAYS = 50
+const DEFAULT_BACKFILL_DAYS = 50
 
 export function HistoricalBackfill() {
   const [progress, setProgress] = useState<BackfillProgress | null>(null)
+  const [days, setDays] = useState(DEFAULT_BACKFILL_DAYS)
   const pollingRef = useRef<NodeJS.Timeout | null>(null)
 
   const isRunning = progress?.status === 'running'
@@ -47,8 +48,8 @@ export function HistoricalBackfill() {
   }, [isRunning])
 
   const handleStart = async () => {
-    setProgress({ current: 0, total: BACKFILL_DAYS, status: 'running' })
-    window.electron.startIMessageBackfill(BACKFILL_DAYS)
+    setProgress({ current: 0, total: days, status: 'running' })
+    window.electron.startIMessageBackfill(days)
   }
 
   const handleCancel = () => {
@@ -60,6 +61,13 @@ export function HistoricalBackfill() {
       ? Math.round((progress.current / progress.total) * 100)
       : 0
 
+  const handleDaysChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10)
+    if (!isNaN(value) && value > 0) {
+      setDays(value)
+    }
+  }
+
   return (
     <div className="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 p-3 space-y-3">
       <div className="flex items-start gap-2">
@@ -69,11 +77,26 @@ export function HistoricalBackfill() {
             Historical Backfill
           </p>
           <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-            Import your last {BACKFILL_DAYS} days of messages. This may take a
-            while.
+            Import historical messages. This may take a while for large date ranges.
           </p>
         </div>
       </div>
+
+      {!isRunning && (
+        <div className="flex items-center gap-2">
+          <label className="text-xs text-blue-700 dark:text-blue-300">
+            Days to import:
+          </label>
+          <input
+            type="number"
+            min="1"
+            max="365"
+            value={days}
+            onChange={handleDaysChange}
+            className="w-20 px-2 py-1 text-xs border border-blue-300 dark:border-blue-700 rounded bg-white dark:bg-blue-900/30 text-blue-800 dark:text-blue-200"
+          />
+        </div>
+      )}
 
       {isLoading && (
         <div className="space-y-2">
