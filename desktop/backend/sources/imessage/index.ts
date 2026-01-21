@@ -70,15 +70,18 @@ export async function fetchMessages(
     const attachments: Attachment[] = []
 
     if (includeAttachments) {
-      for (const att of msg.attachments) {
+      // Only process image attachments - skip videos and other large files
+      const imageAttachments = msg.attachments.filter((att) => att.isImage)
+
+      for (const att of imageAttachments) {
         const readResult = await readAttachmentAsBase64(att.path, att.isImage)
         const attachment: Attachment = {
           id: att.id,
           filename: att.filename,
-          mimeType: att.isImage ? 'image/jpeg' : att.mimeType,
+          mimeType: 'image/jpeg', // All images are converted to JPEG
           path: att.path,
           size: att.size,
-          isImage: att.isImage,
+          isImage: true,
           createdAt: att.createdAt.toISOString(),
         }
         if ('data' in readResult) {
