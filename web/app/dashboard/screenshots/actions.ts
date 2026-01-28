@@ -5,6 +5,7 @@ import { db } from "@/db"
 import { Screenshots } from "@/db/schema"
 import { desc, eq, sql } from "drizzle-orm"
 import { unauthorized } from "next/navigation"
+import { SCREENSHOT_RETENTION_HOURS } from "@/app/api/cron/cleanup-screenshots/route"
 
 export type Screenshot = {
   id: string
@@ -73,4 +74,9 @@ export async function getScreenshotData(id: string): Promise<string | null> {
   return screenshot?.data ?? null
 }
 
-
+export async function getScreenshotRetentionHours(): Promise<number> {
+  if (!(await isAuthenticated())) {
+    unauthorized()
+  }
+  return SCREENSHOT_RETENTION_HOURS
+}

@@ -1,9 +1,21 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { getScreenshots, type Screenshot } from "./actions"
+import {
+  getScreenshots,
+  getScreenshotRetentionHours,
+  type Screenshot,
+} from "./actions"
 import { ScreenshotsTable } from "./ScreenshotsTable"
 import { ScreenshotPreview } from "./ScreenshotPreview"
+
+function formatRetention(hours: number): string {
+  if (hours < 24) {
+    return `${hours} hour${hours === 1 ? "" : "s"}`
+  }
+  const days = Math.floor(hours / 24)
+  return `${days} day${days === 1 ? "" : "s"}`
+}
 
 export default function Page() {
   const [screenshots, setScreenshots] = useState<Screenshot[]>([])
@@ -11,6 +23,7 @@ export default function Page() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
+  const [retentionHours, setRetentionHours] = useState<number | null>(null)
   const [previewScreenshot, setPreviewScreenshot] = useState<Screenshot | null>(
     null
   )
@@ -18,10 +31,14 @@ export default function Page() {
   useEffect(() => {
     async function load() {
       setLoading(true)
-      const data = await getScreenshots(page)
+      const [data, retention] = await Promise.all([
+        getScreenshots(page),
+        getScreenshotRetentionHours(),
+      ])
       setScreenshots(data.screenshots)
       setTotalPages(data.totalPages)
       setTotal(data.total)
+      setRetentionHours(retention)
       setLoading(false)
     }
     load()
@@ -47,7 +64,18 @@ export default function Page() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Screenshots</h1>
+        <div>
+          <h1 className="text-2xl font-semibold">Screenshots</h1>
+          {retentionHours !== null && (
+            <p className="text-sm text-zinc-500 mt-1">
+              Auto-delete after {formatRetention(retentionHours)} (set{" "}
+              <code className="bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded text-xs">
+                SCREENSHOT_RETENTION_HOURS
+              </code>{" "}
+              env var to change)
+            </p>
+          )}
+        </div>
         <span className="text-sm text-zinc-500">
           {total.toLocaleString()} total
         </span>

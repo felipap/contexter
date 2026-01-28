@@ -62,7 +62,9 @@ export interface ElectronAPI {
 
   // iMessage service
   getIMessageExportConfig: () => Promise<IMessageExportConfig>
-  setIMessageExportConfig: (config: Partial<IMessageExportConfig>) => Promise<void>
+  setIMessageExportConfig: (
+    config: Partial<IMessageExportConfig>,
+  ) => Promise<void>
 
   // Contacts service
   getContactsSyncConfig: () => Promise<ServiceConfig>
@@ -70,7 +72,9 @@ export interface ElectronAPI {
 
   // Unipile WhatsApp service
   getUnipileWhatsappConfig: () => Promise<UnipileWhatsappConfig>
-  setUnipileWhatsappConfig: (config: Partial<UnipileWhatsappConfig>) => Promise<void>
+  setUnipileWhatsappConfig: (
+    config: Partial<UnipileWhatsappConfig>,
+  ) => Promise<void>
 
   // Services status
   getServicesStatus: () => Promise<ServiceStatus[]>
