@@ -1,11 +1,11 @@
-# Contexter API
+const LLMS_TXT = `# Contexter API
 
 > Personal data sync API for contacts, iMessages, WhatsApp messages, screenshots, and locations. All message content and attachments are end-to-end encrypted.
 
 ## Encryption
 
-- Text fields must be prefixed with `enc:v1:`
-- Binary data (screenshots) must start with `CTXE` magic bytes
+- Text fields must be prefixed with \`enc:v1:\`
+- Binary data (screenshots) must start with \`CTXE\` magic bytes
 
 ## Endpoints
 
@@ -36,7 +36,16 @@
 
 ## Notes
 
-- All endpoints require authentication
+- All endpoints require authentication via Bearer token
 - Message text, subjects, sender names, and attachments must be encrypted before sync
 - Pagination uses limit/offset pattern (max limit: 50)
 - Dates are ISO 8601 format
+`
+
+export function GET() {
+  return new Response(LLMS_TXT, {
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+    },
+  })
+}
