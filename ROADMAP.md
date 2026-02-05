@@ -10,6 +10,7 @@
 
 ## Later
 
+- [ ] Upgrade ESLint to v9 (requires flat config migration)
 - [ ] Install via npm.
 - [ ] Ability to emit read keys
 - [x] llms.txt - requires authentication
