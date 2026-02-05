@@ -300,10 +300,9 @@ function validateMessages(messages: unknown[]) {
     if (!result.success) {
       const error = formatZodError(result.error)
       rejectedMessages.push({ index: i, message, error })
-      const truncatedMessage = truncateForLog(message)
       console.warn(
         `Rejected message at index ${i}:`,
-        JSON.stringify({ message: message, error }, null, 2)
+        JSON.stringify({ message: truncateForLog(message), error }, null, 2)
       )
       continue
     }
@@ -318,10 +317,9 @@ function validateMessages(messages: unknown[]) {
       if (invalidAttachments.length > 0) {
         const error = `Message has ${invalidAttachments.length} attachment(s) missing dataBase64: ${invalidAttachments.map((a) => a.id).join(", ")}`
         rejectedMessages.push({ index: i, message, error })
-        const truncatedMessage = truncateForLog(message)
         console.warn(
           `Rejected message attachment at index ${i}:`,
-          JSON.stringify({ message: truncatedMessage, parsed, error })
+          JSON.stringify({ message: truncateForLog(message), parsed, error })
         )
         continue
       }

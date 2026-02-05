@@ -82,7 +82,6 @@ export async function POST(request: NextRequest) {
 
   const BATCH_SIZE = 50
   let insertedCount = 0
-  let updatedCount = 0
 
   for (let i = 0; i < contacts.length; i += BATCH_SIZE) {
     const batch = contacts.slice(i, i + BATCH_SIZE)
