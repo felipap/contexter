@@ -61,7 +61,9 @@ async function uploadMessages(
     return { error: res.error }
   }
 
-  console.log(`[unipile-whatsapp] Uploaded ${messages.length} messages successfully`)
+  console.log(
+    `[unipile-whatsapp] Uploaded ${messages.length} messages successfully`,
+  )
   return {}
 }
 
@@ -72,10 +74,13 @@ async function exportAndUpload(): Promise<void> {
 
   const unipileConfig = getUnipileConfig()
   if (!unipileConfig) {
-    throw new Error('Unipile API not configured (missing apiBaseUrl, apiToken, or accountId)')
+    throw new Error(
+      'Unipile API not configured (missing apiBaseUrl, apiToken, or accountId)',
+    )
   }
 
-  const since = lastExportedMessageDate || new Date(Date.now() - 24 * 60 * 60 * 1000)
+  const since =
+    lastExportedMessageDate || new Date(Date.now() - 24 * 60 * 60 * 1000)
   const messages = await fetchAllMessages(unipileConfig, since)
 
   if (messages.length === 0) {

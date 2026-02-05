@@ -1,7 +1,9 @@
 import { app, autoUpdater, dialog } from 'electron'
 import { CHECK_UPDATE_AFTER_MS } from './lib/config'
-import { debug, logError } from './lib/logger'
+import { createLogger } from './lib/logger'
 import { getImagePath, getIsOutsideApplicationsFolder } from './lib/utils'
+
+const log = createLogger('updater')
 
 // autoUpdater downloads the latest version of the app. Then I think it starts a
 // new ShipIt process that waits until the app is closed (whenever that
@@ -28,7 +30,7 @@ setTimeout(async () => {
   }
 
   const status = await asyncCheckForUpdatesAndDownload()
-  debug('[updater] status', status)
+  log.debug('status', status)
   if (status === 'downloaded') {
     await showDownloadedDialog()
   } else if (status === 'outside-macos-apps') {
@@ -67,11 +69,11 @@ async function showDownloadedDialog() {
   if (result.response === 0) {
     // User chose "Install Now"
     try {
-      debug('[updater] quitting and installing')
+      log.debug('quitting and installing')
       autoUpdater.quitAndInstall()
       app.exit()
     } catch (error) {
-      logError('[updater] error', error)
+      log.error('error', error)
     }
   }
   // If user chose "Install Later", do nothing - they can continue using the app
@@ -140,14 +142,14 @@ async function asyncCheckForUpdatesAndDownload(
 
   const ret = await new Promise<'not-available' | 'downloaded'>((resolve) => {
     function onUpdateNotAvailable() {
-      debug('[updater/checkForUpdates] not available')
+      log.debug('not available')
       autoUpdater.removeListener('update-available', onUpdateAvailable)
       autoUpdater.removeListener('update-not-available', onUpdateNotAvailable)
       resolve('not-available')
     }
 
     async function onUpdateAvailable() {
-      debug('[updater/checkForUpdates] available')
+      log.debug('available')
       autoUpdater.removeListener('update-available', onUpdateAvailable)
       autoUpdater.removeListener('update-not-available', onUpdateNotAvailable)
 
@@ -165,7 +167,7 @@ async function asyncCheckForUpdatesAndDownload(
     autoUpdater.checkForUpdates()
   })
 
-  debug('[updater/checkForUpdates] ret', ret)
+  log.debug('ret', ret)
   isCheckingForUpdatesOrDownloading = false
   return ret
 }
@@ -178,7 +180,7 @@ function onDownload(callback: () => void) {
   // }
 
   function onDownloaded() {
-    debug('[updater] downloaded!?!?')
+    log.debug('downloaded')
     autoUpdater.removeListener('update-downloaded', onDownloaded)
     callback()
   }

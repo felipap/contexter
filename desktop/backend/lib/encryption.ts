@@ -1,7 +1,12 @@
 // E2E encryption utilities using AES-256-GCM
 // Compatible with Web Crypto API on the dashboard side
 
-import { createCipheriv, createDecipheriv, pbkdf2Sync, randomBytes } from 'crypto'
+import {
+  createCipheriv,
+  createDecipheriv,
+  pbkdf2Sync,
+  randomBytes,
+} from 'crypto'
 
 const ALGORITHM = 'aes-256-gcm'
 const IV_LENGTH = 12 // 96 bits for GCM
@@ -26,7 +31,9 @@ export function encryptText(plaintext: string, passphrase: string): string {
 
   const key = deriveKey(passphrase)
   const iv = randomBytes(IV_LENGTH)
-  const cipher = createCipheriv(ALGORITHM, key, iv, { authTagLength: AUTH_TAG_LENGTH })
+  const cipher = createCipheriv(ALGORITHM, key, iv, {
+    authTagLength: AUTH_TAG_LENGTH,
+  })
 
   const encrypted = Buffer.concat([
     cipher.update(plaintext, 'utf8'),
@@ -42,7 +49,10 @@ export function encryptText(plaintext: string, passphrase: string): string {
   return `${ENCRYPTED_PREFIX}${ivB64}:${authTagB64}:${ciphertextB64}`
 }
 
-export function decryptText(ciphertext: string, passphrase: string): string | null {
+export function decryptText(
+  ciphertext: string,
+  passphrase: string,
+): string | null {
   if (!ciphertext || !passphrase) {
     return ciphertext
   }
@@ -63,7 +73,9 @@ export function decryptText(ciphertext: string, passphrase: string): string | nu
   const encrypted = Buffer.from(encryptedB64, 'base64')
 
   const key = deriveKey(passphrase)
-  const decipher = createDecipheriv(ALGORITHM, key, iv, { authTagLength: AUTH_TAG_LENGTH })
+  const decipher = createDecipheriv(ALGORITHM, key, iv, {
+    authTagLength: AUTH_TAG_LENGTH,
+  })
   decipher.setAuthTag(authTag)
 
   const decrypted = Buffer.concat([
@@ -80,7 +92,10 @@ export function isEncrypted(text: string | null): boolean {
 
 // Encrypts binary data and returns a string with the enc:v1: prefix
 // Use this when the encrypted result will be transmitted as a string (e.g., JSON)
-export function encryptBinaryToString(plainBuffer: Buffer, passphrase: string): string {
+export function encryptBinaryToString(
+  plainBuffer: Buffer,
+  passphrase: string,
+): string {
   if (!passphrase) {
     throw new Error('encryptBinaryToString called without passphrase')
   }
@@ -90,12 +105,11 @@ export function encryptBinaryToString(plainBuffer: Buffer, passphrase: string): 
 
   const key = deriveKey(passphrase)
   const iv = randomBytes(IV_LENGTH)
-  const cipher = createCipheriv(ALGORITHM, key, iv, { authTagLength: AUTH_TAG_LENGTH })
+  const cipher = createCipheriv(ALGORITHM, key, iv, {
+    authTagLength: AUTH_TAG_LENGTH,
+  })
 
-  const encrypted = Buffer.concat([
-    cipher.update(plainBuffer),
-    cipher.final(),
-  ])
+  const encrypted = Buffer.concat([cipher.update(plainBuffer), cipher.final()])
   const authTag = cipher.getAuthTag()
 
   // Same format as encryptText: enc:v1:<iv>:<authTag>:<ciphertext> (all base64)
@@ -107,7 +121,10 @@ export function encryptBinaryToString(plainBuffer: Buffer, passphrase: string): 
 }
 
 // Decrypts a string (with enc:v1: prefix) back to binary data
-export function decryptStringToBinary(ciphertext: string, passphrase: string): Buffer | null {
+export function decryptStringToBinary(
+  ciphertext: string,
+  passphrase: string,
+): Buffer | null {
   if (!ciphertext || !passphrase) {
     return ciphertext ? Buffer.from(ciphertext, 'base64') : null
   }
@@ -128,7 +145,9 @@ export function decryptStringToBinary(ciphertext: string, passphrase: string): B
   const encrypted = Buffer.from(encryptedB64, 'base64')
 
   const key = deriveKey(passphrase)
-  const decipher = createDecipheriv(ALGORITHM, key, iv, { authTagLength: AUTH_TAG_LENGTH })
+  const decipher = createDecipheriv(ALGORITHM, key, iv, {
+    authTagLength: AUTH_TAG_LENGTH,
+  })
   decipher.setAuthTag(authTag)
 
   const decrypted = Buffer.concat([
@@ -150,12 +169,11 @@ export function encryptBuffer(plainBuffer: Buffer, passphrase: string): Buffer {
 
   const key = deriveKey(passphrase)
   const iv = randomBytes(IV_LENGTH)
-  const cipher = createCipheriv(ALGORITHM, key, iv, { authTagLength: AUTH_TAG_LENGTH })
+  const cipher = createCipheriv(ALGORITHM, key, iv, {
+    authTagLength: AUTH_TAG_LENGTH,
+  })
 
-  const encrypted = Buffer.concat([
-    cipher.update(plainBuffer),
-    cipher.final(),
-  ])
+  const encrypted = Buffer.concat([cipher.update(plainBuffer), cipher.final()])
   const authTag = cipher.getAuthTag()
 
   // Format: 4-byte magic + 1-byte version + 12-byte IV + 16-byte authTag + ciphertext
@@ -165,7 +183,10 @@ export function encryptBuffer(plainBuffer: Buffer, passphrase: string): Buffer {
   return Buffer.concat([MAGIC, VERSION, iv, authTag, encrypted])
 }
 
-export function decryptBuffer(encryptedBuffer: Buffer, passphrase: string): Buffer | null {
+export function decryptBuffer(
+  encryptedBuffer: Buffer,
+  passphrase: string,
+): Buffer | null {
   if (!encryptedBuffer || encryptedBuffer.length === 0 || !passphrase) {
     return encryptedBuffer
   }
@@ -184,11 +205,16 @@ export function decryptBuffer(encryptedBuffer: Buffer, passphrase: string): Buff
   }
 
   const iv = encryptedBuffer.subarray(5, 5 + IV_LENGTH)
-  const authTag = encryptedBuffer.subarray(5 + IV_LENGTH, 5 + IV_LENGTH + AUTH_TAG_LENGTH)
+  const authTag = encryptedBuffer.subarray(
+    5 + IV_LENGTH,
+    5 + IV_LENGTH + AUTH_TAG_LENGTH,
+  )
   const encrypted = encryptedBuffer.subarray(5 + IV_LENGTH + AUTH_TAG_LENGTH)
 
   const key = deriveKey(passphrase)
-  const decipher = createDecipheriv(ALGORITHM, key, iv, { authTagLength: AUTH_TAG_LENGTH })
+  const decipher = createDecipheriv(ALGORITHM, key, iv, {
+    authTagLength: AUTH_TAG_LENGTH,
+  })
   decipher.setAuthTag(authTag)
 
   const decrypted = Buffer.concat([

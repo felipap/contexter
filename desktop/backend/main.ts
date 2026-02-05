@@ -1,4 +1,8 @@
 import { app } from 'electron'
+// ATTENTION import logger before any other local modules. It calls
+// app.setName() which must happen before electron-log and electron-store
+// initialize, otherwise data gets written to the wrong folder.
+import { createLogger } from './lib/logger'
 import { registerIpcHandlers } from './ipc'
 import { startAllServices, stopAllServices } from './services'
 import { getDeviceSecret, store } from './store'
@@ -9,10 +13,9 @@ import {
   showMainWindow,
 } from './windows/settings'
 
-console.log(
-  'App version:',
-  app.isPackaged ? app.getVersion() : 'dev - not available',
-)
+const log = createLogger('app')
+
+log.info('App version:', app.isPackaged ? app.getVersion() : '(not available)')
 
 //
 //
@@ -63,13 +66,13 @@ app.setAboutPanelOptions({
 // Prevent multiple instances of the app
 const gotTheLock = app.requestSingleInstanceLock()
 if (!gotTheLock) {
-  console.log('Another instance is already running. Quitting.')
+  log.info('Another instance is already running. Quitting.')
   app.quit()
   process.exit(0)
 }
 
 app.on('second-instance', () => {
-  console.warn('second-instance fired')
+  log.warn('second-instance fired')
 
   // Someone tried to run a second instance, focus our window instead
   const win = getMainWindow()
@@ -95,7 +98,7 @@ let isInitialized = false
 
 app.whenReady().then(async () => {
   if (isInitialized) {
-    console.log('App already initialized, skipping...')
+    log.info('App already initialized, skipping...')
     return
   }
 
@@ -119,7 +122,7 @@ app.whenReady().then(async () => {
   // Start wake test heartbeat logger
   // startHeartbeat()
 
-  console.log('App initialized')
+  log.info('App initialized')
 
   // app.on('activate', () => {
   //   // On macOS, when the dock icon is clicked, show the library window

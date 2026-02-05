@@ -36,7 +36,10 @@ const BATCH_SIZE = 20 // Upload messages in batches to show progress
 // This loads all messages into memory, which could be an issue for very large
 // date ranges. If this becomes a problem, we'd need to implement our own
 // pagination by tracking the oldest seen date and re-querying.
-function cleanup(sdk: ReturnType<typeof createIMessageSDK>, stopAnimating: () => void) {
+function cleanup(
+  sdk: ReturnType<typeof createIMessageSDK>,
+  stopAnimating: () => void,
+) {
   sdk.close()
   stopAnimating()
   backfillInProgress = false
@@ -50,7 +53,12 @@ async function runBackfill(days = 120): Promise<void> {
 
   backfillInProgress = true
   backfillCancelled = false
-  backfillProgress = { status: 'running', phase: 'loading', current: 0, total: 0 }
+  backfillProgress = {
+    status: 'running',
+    phase: 'loading',
+    current: 0,
+    total: 0,
+  }
 
   console.log(`[imessage] Starting backfill for ${days} days`)
 
@@ -60,7 +68,9 @@ async function runBackfill(days = 120): Promise<void> {
 
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 
-  console.log(`[imessage] Fetching all messages since ${since.toISOString()}...`)
+  console.log(
+    `[imessage] Fetching all messages since ${since.toISOString()}...`,
+  )
   const fetchStart = Date.now()
 
   const messages = await fetchMessages(backfillSdk, since, {
@@ -68,10 +78,18 @@ async function runBackfill(days = 120): Promise<void> {
   })
 
   const fetchEnd = Date.now()
-  console.log(`[imessage] Found ${messages.length} messages to backfill in ${fetchEnd - fetchStart}ms`)
+  console.log(
+    `[imessage] Found ${messages.length} messages to backfill in ${fetchEnd - fetchStart}ms`,
+  )
 
   if (messages.length === 0) {
-    backfillProgress = { status: 'completed', current: 0, total: 0, messageCount: 0, itemsUploaded: 0 }
+    backfillProgress = {
+      status: 'completed',
+      current: 0,
+      total: 0,
+      messageCount: 0,
+      itemsUploaded: 0,
+    }
     cleanup(backfillSdk, stopAnimating)
     return
   }
@@ -113,16 +131,28 @@ async function runBackfill(days = 120): Promise<void> {
     backfillProgress.itemsUploaded = itemsUploaded
     console.log(
       `[imessage] Backfill progress: ${backfillProgress.current}/${totalBatches} batches ` +
-      `(${itemsUploaded}/${messages.length} messages)`,
+        `(${itemsUploaded}/${messages.length} messages)`,
     )
   }
 
   if (backfillCancelled) {
-    backfillProgress = { ...backfillProgress, status: 'cancelled', itemsUploaded }
-    console.log(`[imessage] Backfill cancelled. ${itemsUploaded} items uploaded.`)
+    backfillProgress = {
+      ...backfillProgress,
+      status: 'cancelled',
+      itemsUploaded,
+    }
+    console.log(
+      `[imessage] Backfill cancelled. ${itemsUploaded} items uploaded.`,
+    )
   } else {
-    backfillProgress = { ...backfillProgress, status: 'completed', itemsUploaded }
-    console.log(`[imessage] Backfill completed. ${itemsUploaded} items uploaded.`)
+    backfillProgress = {
+      ...backfillProgress,
+      status: 'completed',
+      itemsUploaded,
+    }
+    console.log(
+      `[imessage] Backfill completed. ${itemsUploaded} items uploaded.`,
+    )
   }
 
   cleanup(backfillSdk, stopAnimating)

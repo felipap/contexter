@@ -45,4 +45,9 @@ export function getService(name: string): Service | undefined {
   return SERVICES.find((s) => s.name === name)
 }
 
-export { screenshotsService, imessageService, contactsService, unipileWhatsappService }
+export {
+  screenshotsService,
+  imessageService,
+  contactsService,
+  unipileWhatsappService,
+}

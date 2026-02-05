@@ -1,7 +1,12 @@
+import { createLogger } from '../lib/logger'
 import { getEncryptionKey, store } from '../store'
 import type { SyncStatus, Service } from './index'
 
-type ConfigKey = 'screenCapture' | 'imessageExport' | 'contactsSync' | 'unipileWhatsapp'
+type ConfigKey =
+  | 'screenCapture'
+  | 'imessageExport'
+  | 'contactsSync'
+  | 'unipileWhatsapp'
 
 class MissingEncryptionKeyError extends Error {
   constructor() {
@@ -20,6 +25,7 @@ type SchedulerOptions = {
 
 export function createScheduledService(options: SchedulerOptions): Service {
   const { name, configKey, onSync, onStart, onStop } = options
+  const log = createLogger(name)
 
   let interval: NodeJS.Timeout | null = null
   let nextRunTime: Date | null = null
@@ -29,7 +35,7 @@ export function createScheduledService(options: SchedulerOptions): Service {
     // Check for encryption key before syncing
     const encryptionKey = getEncryptionKey()
     if (!encryptionKey) {
-      console.log(`[${name}] Skipping sync: encryption key not set`)
+      log.info('Skipping sync: encryption key not set')
       lastSyncStatus = 'error'
       return
     }
@@ -45,9 +51,9 @@ export function createScheduledService(options: SchedulerOptions): Service {
         (error.cause as { code?: string }).code === 'ECONNREFUSED'
 
       if (isConnectionError) {
-        console.error(`[${name}] Sync failed: Could not connect to server`)
+        log.error('Sync failed: Could not connect to server')
       } else {
-        console.error(`[${name}] Sync failed:`, error)
+        log.error('Sync failed:', error)
       }
       lastSyncStatus = 'error'
     }
@@ -73,17 +79,17 @@ export function createScheduledService(options: SchedulerOptions): Service {
 
   async function start(): Promise<void> {
     if (interval) {
-      console.log(`[${name}] Already running`)
+      log.info('Already running')
       return
     }
 
     const config = store.get(configKey)
     if (!config.enabled) {
-      console.log(`[${name}] Disabled`)
+      log.info('Disabled')
       return
     }
 
-    console.log(`[${name}] Starting...`)
+    log.info('Starting...')
     onStart?.()
 
     // Check if we have a persisted next sync time
@@ -95,9 +101,7 @@ export function createScheduledService(options: SchedulerOptions): Service {
     if (persistedNextSync && persistedNextSync > now) {
       // Resume schedule - wait until the persisted time
       const waitMs = persistedNextSync.getTime() - now.getTime()
-      console.log(
-        `[${name}] Resuming schedule, next run in ${Math.round(waitMs / 1000)}s`,
-      )
+      log.info(`Resuming schedule, next run in ${formatMs(waitMs)}`)
       nextRunTime = persistedNextSync
 
       interval = setTimeout(async () => {
@@ -116,7 +120,7 @@ export function createScheduledService(options: SchedulerOptions): Service {
       clearTimeout(interval)
       interval = null
       nextRunTime = null
-      console.log(`[${name}] Stopped`)
+      log.info('Stopped')
     }
     onStop?.()
   }
@@ -181,4 +185,26 @@ export function createScheduledService(options: SchedulerOptions): Service {
     getTimeUntilNextRun,
     getLastSyncStatus,
   }
+}
+
+function formatMs(ms: number): string {
+  const totalSeconds = Math.floor(ms / 1000)
+  const days = Math.floor(totalSeconds / 86400)
+  const hours = Math.floor((totalSeconds % 86400) / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+
+  const parts: string[] = []
+  if (days) {
+    parts.push(`${days}d`)
+  }
+  if (hours || parts.length) {
+    parts.push(`${hours}h`)
+  }
+  if (minutes || parts.length) {
+    parts.push(`${minutes}m`)
+  }
+  parts.push(`${seconds}s`)
+
+  return parts.join('')
 }

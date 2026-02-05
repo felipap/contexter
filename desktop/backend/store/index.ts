@@ -5,14 +5,14 @@
 import { app } from 'electron'
 import Store from 'electron-store'
 import { MAX_LOGS } from '../config'
-import { debug } from '../lib/logger'
+import { createLogger } from '../lib/logger'
 import { decryptSecret, encryptSecret } from './keychain'
 import { ApiRequestLog, DEFAULT_STATE, StoreSchema } from './schema'
 
-// Changes where the backend data is stored depending on dev or prod.
-app.setName(`Context${app.isPackaged ? '' : 'Dev'}`)
+const log = createLogger('store')
 
-debug('Store path:', app.getPath('userData'))
+// App name is set in logger.ts (must happen before electron-log initializes)
+log.debug('Store path:', app.getPath('userData'))
 
 export const store = new Store<StoreSchema>({
   name: 'data',

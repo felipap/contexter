@@ -61,7 +61,6 @@ export async function fetchMessages(
     since,
     excludeOwnMessages: false,
     // No limit - we need all messages since the date, not just the newest N
-
   })
 
   const messages: Message[] = []
@@ -78,7 +77,9 @@ export async function fetchMessages(
 
         // Skip attachments that couldn't be read (e.g., file deleted/moved)
         if (readResult.ok === false) {
-          console.warn(`[imessage] Skipping attachment ${att.id} for message ${msg.id}: ${readResult.error}`)
+          console.warn(
+            `[imessage] Skipping attachment ${att.id} for message ${msg.id}: ${readResult.error}`,
+          )
           continue
         }
 
