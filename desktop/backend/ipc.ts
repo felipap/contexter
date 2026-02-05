@@ -106,7 +106,14 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(
     'set-whatsapp-sqlite-config',
-    (_event, config: { enabled?: boolean; intervalMinutes?: number }) => {
+    (
+      _event,
+      config: {
+        enabled?: boolean
+        intervalMinutes?: number
+        ignoredChatIds?: string[]
+      },
+    ) => {
       const current = store.get('whatsappSqlite')
       store.set('whatsappSqlite', { ...current, ...config })
       getService('whatsapp-sqlite')?.restart()

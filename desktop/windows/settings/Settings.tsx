@@ -1,22 +1,15 @@
 import { useEffect, useState, useMemo } from 'react'
 import { GeneralSettings } from './GeneralSettings'
-import { DataSourceSettings } from './DataSourceSettings'
 import { LogsTab } from './log-viewer/LogsTab'
 import { McpServerTab } from './mcp/McpServerTab'
-import { SyncLog, SyncLogSource, ServiceConfig } from '../electron'
-
-type SidebarItem =
-  | { type: 'general' }
-  | { type: 'logs' }
-  | { type: 'mcp' }
-  | { type: 'source'; source: SyncLogSource }
-
-type DataSourceInfo = {
-  source: SyncLogSource
-  label: string
-  enabled: boolean
-  lastSyncFailed: boolean
-}
+import { DataSourceLogs } from './DataSourceLogs'
+import { Sidebar, ActiveTab, DataSourceInfo } from './Sidebar'
+import { ScreenshotsConfig } from './main/services/screenshots'
+import { IMessageConfig } from './main/services/imessage'
+import { ContactsConfig } from './main/services/contacts'
+import { SqliteConfig } from './main/services/whatsapp-sqlite'
+import { UnipileConfigPanel } from './main/services/whatsapp-unipile'
+import { SyncLog, SyncLogSource } from '../electron'
 
 const SOURCE_LABELS: Record<SyncLogSource, string> = {
   screenshots: 'Screen Capture',
@@ -26,13 +19,13 @@ const SOURCE_LABELS: Record<SyncLogSource, string> = {
   'whatsapp-unipile': 'WhatsApp (Unipile)',
 }
 
-function getInitialItem(): SidebarItem {
+function getInitialTab(): ActiveTab {
   const params = new URLSearchParams(window.location.search)
   const tab = params.get('tab')
   if (tab === 'logs') {
-    return { type: 'logs' }
+    return 'logs'
   }
-  return { type: 'general' }
+  return 'general'
 }
 
 function getHighlightSyncId(): string | null {
@@ -40,48 +33,8 @@ function getHighlightSyncId(): string | null {
   return params.get('highlightSyncId')
 }
 
-function SidebarButton({
-  active,
-  onClick,
-  children,
-  disabled,
-  hasError,
-}: {
-  active: boolean
-  onClick: () => void
-  children: React.ReactNode
-  disabled?: boolean
-  hasError?: boolean
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`w-full px-3 py-2 text-sm text-left rounded-md transition-colors flex items-center justify-between ${
-        active
-          ? 'bg-blue-500 text-white'
-          : disabled
-            ? 'text-[var(--text-color-secondary)] opacity-60 hover:bg-[var(--background-color-three)]'
-            : 'text-[var(--color-contrast)] hover:bg-[var(--background-color-three)]'
-      }`}
-    >
-      <span>{children}</span>
-      {hasError && !active && (
-        <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
-      )}
-    </button>
-  )
-}
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-[var(--text-color-secondary)]">
-      {children}
-    </div>
-  )
-}
-
 export function Settings() {
-  const [activeItem, setActiveItem] = useState<SidebarItem>(getInitialItem)
+  const [activeTab, setActiveTab] = useState<ActiveTab>(getInitialTab)
   const [highlightSyncId, setHighlightSyncId] = useState<string | null>(
     getHighlightSyncId,
   )
@@ -176,7 +129,7 @@ export function Settings() {
   // Handle URL changes
   useEffect(() => {
     function handleLocationChange() {
-      setActiveItem(getInitialItem())
+      setActiveTab(getInitialTab())
       setHighlightSyncId(getHighlightSyncId())
     }
 
@@ -210,10 +163,6 @@ export function Settings() {
   const enabledSources = sortedDataSources.filter((s) => s.enabled)
   const disabledSources = sortedDataSources.filter((s) => !s.enabled)
 
-  const handleSelectItem = (item: SidebarItem) => {
-    setActiveItem(item)
-  }
-
   const handleSourceEnabledChange = (
     source: SyncLogSource,
     enabled: boolean,
@@ -225,103 +174,77 @@ export function Settings() {
     )
   }
 
-  const filteredLogs =
-    activeItem.type === 'source'
-      ? logs.filter((log) => log.source === activeItem.source)
-      : logs
+  const isSourceTab = !['general', 'logs', 'mcp'].includes(activeTab)
+  const filteredLogs = isSourceTab
+    ? logs.filter((log) => log.source === activeTab)
+    : logs
 
   return (
     <div className="h-screen flex bg-[var(--background-color-one)]">
-      {/* Sidebar */}
-      <div className="w-52 flex-shrink-0 border-r bg-[var(--background-color-two)] flex flex-col">
-        <div className="p-2 space-y-1">
-          <SidebarButton
-            active={activeItem.type === 'general'}
-            onClick={() => handleSelectItem({ type: 'general' })}
-          >
-            General
-          </SidebarButton>
-          <SidebarButton
-            active={activeItem.type === 'logs'}
-            onClick={() => handleSelectItem({ type: 'logs' })}
-          >
-            All Logs
-          </SidebarButton>
-          <SidebarButton
-            active={activeItem.type === 'mcp'}
-            onClick={() => handleSelectItem({ type: 'mcp' })}
-          >
-            MCP Server
-          </SidebarButton>
-        </div>
-
-        <div className="border-t my-2" />
-
-        <div className="flex-1 overflow-auto px-2 pb-2">
-          {enabledSources.length > 0 && (
-            <div className="mb-2">
-              <SectionLabel>Enabled</SectionLabel>
-              <div className="space-y-1">
-                {enabledSources.map((info) => (
-                  <SidebarButton
-                    key={info.source}
-                    active={
-                      activeItem.type === 'source' &&
-                      activeItem.source === info.source
-                    }
-                    onClick={() =>
-                      handleSelectItem({ type: 'source', source: info.source })
-                    }
-                    hasError={info.lastSyncFailed}
-                  >
-                    {info.label}
-                  </SidebarButton>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {disabledSources.length > 0 && (
-            <div>
-              <SectionLabel>Disabled</SectionLabel>
-              <div className="space-y-1">
-                {disabledSources.map((info) => (
-                  <SidebarButton
-                    key={info.source}
-                    active={
-                      activeItem.type === 'source' &&
-                      activeItem.source === info.source
-                    }
-                    onClick={() =>
-                      handleSelectItem({ type: 'source', source: info.source })
-                    }
-                    disabled
-                  >
-                    {info.label}
-                  </SidebarButton>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+      <Sidebar
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
+        enabledSources={enabledSources}
+        disabledSources={disabledSources}
+      />
 
       {/* Main content */}
       <div className="flex-1 overflow-auto p-4">
-        {activeItem.type === 'general' && <GeneralSettings />}
-        {activeItem.type === 'logs' && (
-          <LogsTab highlightSyncId={highlightSyncId} />
-        )}
-        {activeItem.type === 'mcp' && <McpServerTab />}
-        {activeItem.type === 'source' && (
-          <DataSourceSettings
-            source={activeItem.source}
-            logs={filteredLogs}
-            highlightSyncId={highlightSyncId}
-            onEnabledChange={(enabled) =>
-              handleSourceEnabledChange(activeItem.source, enabled)
-            }
-          />
+        {activeTab === 'general' && <GeneralSettings />}
+        {activeTab === 'logs' && <LogsTab highlightSyncId={highlightSyncId} />}
+        {activeTab === 'mcp' && <McpServerTab />}
+        {isSourceTab && (
+          <div className="space-y-6">
+            <h2 className="text-lg font-semibold">
+              {SOURCE_LABELS[activeTab as SyncLogSource]}
+            </h2>
+
+            <div className="max-w-lg">
+              {activeTab === 'screenshots' && (
+                <ScreenshotsConfig
+                  onEnabledChange={(enabled) =>
+                    handleSourceEnabledChange('screenshots', enabled)
+                  }
+                />
+              )}
+              {activeTab === 'imessage' && (
+                <IMessageConfig
+                  onEnabledChange={(enabled) =>
+                    handleSourceEnabledChange('imessage', enabled)
+                  }
+                />
+              )}
+              {activeTab === 'contacts' && (
+                <ContactsConfig
+                  onEnabledChange={(enabled) =>
+                    handleSourceEnabledChange('contacts', enabled)
+                  }
+                />
+              )}
+              {activeTab === 'whatsapp-sqlite' && (
+                <SqliteConfig
+                  onEnabledChange={(enabled) =>
+                    handleSourceEnabledChange('whatsapp-sqlite', enabled)
+                  }
+                />
+              )}
+              {activeTab === 'whatsapp-unipile' && (
+                <UnipileConfigPanel
+                  onEnabledChange={(enabled) =>
+                    handleSourceEnabledChange('whatsapp-unipile', enabled)
+                  }
+                />
+              )}
+            </div>
+
+            <div className="border-t pt-6">
+              <DataSourceLogs
+                logs={filteredLogs}
+                highlightSyncId={highlightSyncId}
+                sourceLabel={SOURCE_LABELS[activeTab as SyncLogSource]}
+              />
+            </div>
+          </div>
         )}
       </div>
     </div>

@@ -1,4 +1,8 @@
 import { useState, useEffect } from 'react'
+import {
+  CheckCircleIcon,
+  WarningIcon,
+} from '../../../shared/ui/icons'
 
 type Props = {
   onPermissionChange?: (hasAccess: boolean) => void
@@ -35,7 +39,7 @@ export function ScreenRecordingPermission({ onPermissionChange }: Props) {
   if (hasAccess) {
     return (
       <div className="flex items-center gap-2 text-sm">
-        <CheckIcon />
+        <CheckCircleIcon className="text-green-600 dark:text-green-400" />
         <span className="text-green-600 dark:text-green-400">
           Screen Recording granted
         </span>
@@ -46,7 +50,7 @@ export function ScreenRecordingPermission({ onPermissionChange }: Props) {
   return (
     <div className="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-3 space-y-2">
       <div className="flex items-start gap-2">
-        <WarningIcon />
+        <WarningIcon className="text-amber-600 dark:text-amber-400 shrink-0" />
         <div className="flex-1">
           <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
             Screen Recording Required
@@ -72,41 +76,5 @@ export function ScreenRecordingPermission({ onPermissionChange }: Props) {
         </button>
       </div>
     </div>
-  )
-}
-
-function CheckIcon() {
-  return (
-    <svg
-      className="w-4 h-4 text-green-600 dark:text-green-400"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={2}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-      />
-    </svg>
-  )
-}
-
-function WarningIcon() {
-  return (
-    <svg
-      className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={2}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-      />
-    </svg>
   )
 }

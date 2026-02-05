@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { BackfillProgress } from '../../../../electron'
 import { Button } from '../../../../shared/ui/Button'
+import {
+  HistoryIcon,
+  CheckCircleIcon,
+  LoadingSpinnerIcon,
+} from '../../../../shared/ui/icons'
 
 const DEFAULT_BACKFILL_DAYS = 50
 
@@ -118,7 +123,7 @@ export function HistoricalBackfill() {
   return (
     <div className="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 p-3 space-y-3">
       <div className="flex items-start gap-2">
-        <HistoryIcon />
+        <HistoryIcon className="text-blue-600 dark:text-blue-400 shrink-0" />
         <div className="flex-1">
           <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
             Historical Backfill
@@ -150,7 +155,7 @@ export function HistoricalBackfill() {
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs text-blue-700 dark:text-blue-300">
             <div className="flex items-center gap-2">
-              <LoadingSpinner />
+              <LoadingSpinnerIcon className="animate-spin text-blue-600 dark:text-blue-400" />
               <span>Loading messages from iMessage into memory...</span>
             </div>
             <ElapsedTime seconds={elapsedSeconds} />
@@ -183,7 +188,7 @@ export function HistoricalBackfill() {
 
       {isCompleted && (
         <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
-          <CheckIcon />
+          <CheckCircleIcon className="text-green-600 dark:text-green-400" />
           <span>Backfill completed successfully!</span>
         </div>
       )}
@@ -212,66 +217,6 @@ export function HistoricalBackfill() {
         )}
       </div>
     </div>
-  )
-}
-
-function HistoryIcon() {
-  return (
-    <svg
-      className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={2}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-      />
-    </svg>
-  )
-}
-
-function CheckIcon() {
-  return (
-    <svg
-      className="w-4 h-4 text-green-600 dark:text-green-400"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={2}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-      />
-    </svg>
-  )
-}
-
-function LoadingSpinner() {
-  return (
-    <svg
-      className="w-3 h-3 animate-spin text-blue-600 dark:text-blue-400"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <circle
-        className="opacity-25"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="4"
-      />
-      <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-      />
-    </svg>
   )
 }
 

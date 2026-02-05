@@ -1,40 +1,28 @@
-import { ServiceSection, ServiceInfo } from '../ServiceSection'
+import { useState, useEffect } from 'react'
+import { IMessageExportConfig } from '../../../../electron'
 import { FullDiskPermission } from '../FullDiskPermission'
 import { HistoricalBackfill } from './HistoricalBackfill'
-import { IMessageExportConfig } from '../../../../electron'
+import { withBoundary } from '../../../../shared/ui/withBoundary'
+import { InfoCircleIcon } from '../../../../shared/ui/icons'
+import {
+  ServiceContainer,
+  ServiceDescription,
+  ToggleRow,
+  IntervalSelect,
+  LoadingSkeleton,
+} from '../shared'
 
-const SERVICE: ServiceInfo = {
-  name: 'imessage',
-  label: 'iMessage Export',
-  description: 'Export iMessage conversations to the server',
-  getConfig: () => window.electron.getIMessageExportConfig(),
-  setConfig: (config) => window.electron.setIMessageExportConfig(config),
-  intervalOptions: [
-    { value: 1, label: 'Every 1 minute' },
-    { value: 5, label: 'Every 5 minutes' },
-    { value: 15, label: 'Every 15 minutes' },
-    { value: 30, label: 'Every 30 minutes' },
-    { value: 60, label: 'Every hour' },
-  ],
+type Props = {
+  onEnabledChange: (enabled: boolean) => void
 }
 
-function InfoIcon() {
-  return (
-    <svg
-      className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={2}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-      />
-    </svg>
-  )
-}
+const INTERVAL_OPTIONS = [
+  { value: 1, label: 'Every 1 minute' },
+  { value: 5, label: 'Every 5 minutes' },
+  { value: 15, label: 'Every 15 minutes' },
+  { value: 30, label: 'Every 30 minutes' },
+  { value: 60, label: 'Every hour' },
+]
 
 function AttachmentNotice({ enabled }: { enabled: boolean }) {
   if (!enabled) {
@@ -42,7 +30,7 @@ function AttachmentNotice({ enabled }: { enabled: boolean }) {
   }
   return (
     <div className="flex gap-2 p-3 rounded-md bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-      <InfoIcon />
+      <InfoCircleIcon className="text-blue-500 flex-shrink-0 mt-0.5" />
       <p className="text-sm text-blue-700 dark:text-blue-300">
         Only images (JPEG, PNG, GIF, HEIC) are uploaded. Videos and other
         attachments are skipped to save bandwidth.
@@ -51,58 +39,78 @@ function AttachmentNotice({ enabled }: { enabled: boolean }) {
   )
 }
 
-function AttachmentToggle({
-  enabled,
-  onChange,
-}: {
-  enabled: boolean
-  onChange: () => void
-}) {
+export const IMessageConfig = withBoundary(function IMessageConfig({
+  onEnabledChange,
+}: Props) {
+  const [config, setConfig] = useState<IMessageExportConfig | null>(null)
+
+  useEffect(() => {
+    window.electron.getIMessageExportConfig().then(setConfig)
+  }, [])
+
+  const handleToggleEnabled = async () => {
+    if (!config) {
+      return
+    }
+    const newEnabled = !config.enabled
+    await window.electron.setIMessageExportConfig({ enabled: newEnabled })
+    setConfig({ ...config, enabled: newEnabled })
+    onEnabledChange(newEnabled)
+  }
+
+  const handleToggleAttachments = async () => {
+    if (!config) {
+      return
+    }
+    const newValue = !config.includeAttachments
+    await window.electron.setIMessageExportConfig({
+      includeAttachments: newValue,
+    })
+    setConfig({ ...config, includeAttachments: newValue })
+  }
+
+  const handleIntervalChange = async (minutes: number) => {
+    if (!config) {
+      return
+    }
+    await window.electron.setIMessageExportConfig({ intervalMinutes: minutes })
+    setConfig({ ...config, intervalMinutes: minutes })
+  }
+
+  if (!config) {
+    return <LoadingSkeleton />
+  }
+
   return (
-    <button
-      onClick={onChange}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-        enabled ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'
-      }`}
-    >
-      <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-          enabled ? 'translate-x-6' : 'translate-x-1'
-        }`}
+    <ServiceContainer>
+      <ServiceDescription>
+        Export iMessage conversations to the server.
+      </ServiceDescription>
+
+      <FullDiskPermission description="iMessage export requires Full Disk Access to read your messages database." />
+
+      <ToggleRow
+        label="Enable iMessage Export"
+        enabled={config.enabled}
+        onChange={handleToggleEnabled}
       />
-    </button>
+
+      <ToggleRow
+        label="Sync image attachments"
+        enabled={config.includeAttachments}
+        onChange={handleToggleAttachments}
+      />
+
+      <AttachmentNotice enabled={config.includeAttachments} />
+
+      <IntervalSelect
+        value={config.intervalMinutes}
+        options={INTERVAL_OPTIONS}
+        onChange={handleIntervalChange}
+        disabled={!config.enabled}
+      />
+
+      <HistoricalBackfill />
+    </ServiceContainer>
   )
-}
-
-export function IMessageService() {
-  return (
-    <ServiceSection service={SERVICE}>
-      {({ config, setConfig }) => {
-        const imessageConfig = config as IMessageExportConfig
-
-        const handleToggleAttachments = async () => {
-          const newValue = !imessageConfig.includeAttachments
-          await window.electron.setIMessageExportConfig({
-            includeAttachments: newValue,
-          })
-          setConfig({ ...imessageConfig, includeAttachments: newValue })
-        }
-
-        return (
-          <>
-            <FullDiskPermission description="iMessage export requires Full Disk Access to read your messages database." />
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Sync image attachments</span>
-              <AttachmentToggle
-                enabled={imessageConfig.includeAttachments}
-                onChange={handleToggleAttachments}
-              />
-            </div>
-            <AttachmentNotice enabled={imessageConfig.includeAttachments} />
-            <HistoricalBackfill />
-          </>
-        )
-      }}
-    </ServiceSection>
-  )
-}
+})
