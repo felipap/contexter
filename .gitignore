@@ -1,9 +1,5 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Is this supposed to?
-.pnpm-store
-.autowake-experiment
-
 RESEARCH.md
 
 # dependencies
