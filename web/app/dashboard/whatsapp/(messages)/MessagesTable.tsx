@@ -14,7 +14,11 @@ import { isEncrypted } from "@/lib/encryption"
 import { type WhatsappMessage, type SortBy } from "./actions"
 import { type ContactLookup } from "../chats/actions"
 
-export type DecryptedMessage = WhatsappMessage & { decryptedText: string | null }
+export type DecryptedMessage = WhatsappMessage & {
+  decryptedText: string | null
+  decryptedChatName: string | null
+  decryptedSenderName: string | null
+}
 
 type Props = {
   messages: DecryptedMessage[]
@@ -44,19 +48,25 @@ export function MessagesTable({
         cell: (info) => <DirectionBadge isFromMe={info.getValue()} />,
       }),
       columnHelper.accessor("sender", {
-        header: "Contact",
+        header: "Chat",
         cell: (info) => {
           const sender = info.getValue()
-          const senderName = info.row.original.senderName
-          const resolvedName = resolveContactName(sender, senderName, contactLookup)
-          const hasContactName = resolvedName !== formatPhone(sender)
+          const { decryptedChatName, decryptedSenderName, isFromMe } = info.row.original
+          const resolvedName = resolveChatName(
+            decryptedChatName,
+            decryptedSenderName,
+            sender,
+            isFromMe,
+            contactLookup
+          )
+          const showPhone = resolvedName !== formatPhone(sender)
 
           return (
             <div className="flex items-center gap-2">
               <WhatsappIcon />
               <div className="flex flex-col">
                 <span className="text-sm">{resolvedName}</span>
-                {hasContactName && (
+                {showPhone && (
                   <span className="text-xs text-zinc-500">
                     {formatPhone(sender)}
                   </span>
@@ -225,13 +235,21 @@ function WhatsappIcon() {
   )
 }
 
-function resolveContactName(
-  sender: string,
+function resolveChatName(
+  chatName: string | null,
   senderName: string | null,
+  sender: string,
+  isFromMe: boolean,
   contactLookup: ContactLookup
 ): string {
-  // First try the senderName from WhatsApp
-  if (senderName) {
+  // First try the chat name (group name or contact name from WhatsApp)
+  if (chatName) {
+    return chatName
+  }
+
+  // For outgoing messages, we want to show who we're talking to, not ourselves
+  // For incoming messages, show the sender name
+  if (senderName && !isFromMe) {
     return senderName
   }
 

@@ -195,6 +195,7 @@ export const WhatsappMessages = pgTable(
     userId: text("user_id").notNull(),
     messageId: text("message_id").notNull().unique(), // Unipile message ID
     chatId: text("chat_id").notNull(),
+    chatName: text("chat_name"),
     text: text("text"),
     sender: text("sender").notNull(),
     senderName: text("sender_name"),

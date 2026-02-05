@@ -1,7 +1,10 @@
 "use client"
 
 import { Drawer } from "@/ui/Drawer"
-import { type WhatsappChatWithMessages, type ContactLookup } from "../../../actions"
+import {
+  type WhatsappChatWithMessages,
+  type ContactLookup,
+} from "../../actions"
 import { Chat } from "./Chat"
 import { resolveContactName, formatPhone } from "./utils"
 

@@ -12,6 +12,7 @@ export type WhatsappMessage = {
   id: string
   messageId: string
   chatId: string
+  chatName: string | null
   text: string | null
   sender: string
   senderName: string | null
@@ -29,6 +30,7 @@ export type WhatsappMessagesPage = {
 }
 
 export type WhatsappMessageDetail = WhatsappMessage & {
+  decryptedChatName: string | null
   deviceId: string
   createdAt: Date
 }
@@ -63,6 +65,7 @@ export async function getWhatsappMessages(
       id: true,
       messageId: true,
       chatId: true,
+      chatName: true,
       text: true,
       sender: true,
       senderName: true,
@@ -77,6 +80,7 @@ export async function getWhatsappMessages(
       id: m.id,
       messageId: m.messageId,
       chatId: m.chatId,
+      chatName: m.chatName,
       text: m.text,
       sender: m.sender,
       senderName: m.senderName,
@@ -108,6 +112,8 @@ export async function getWhatsappMessage(id: string): Promise<WhatsappMessageDet
     id: message.id,
     messageId: message.messageId,
     chatId: message.chatId,
+    chatName: message.chatName,
+    decryptedChatName: null,
     text: message.text,
     sender: message.sender,
     senderName: message.senderName,

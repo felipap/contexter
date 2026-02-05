@@ -1,4 +1,4 @@
-import { type ContactLookup } from "../../../actions"
+import { type ContactLookup } from "../../actions"
 
 export function resolveContactName(
   contact: string,

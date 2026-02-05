@@ -27,6 +27,7 @@ const AttachmentSchema = z.object({
 const MessageSchema = z.object({
   id: z.string(),
   chatId: z.string(),
+  chatName: encryptedOrEmpty.nullable().optional(),
   text: encryptedOrEmpty.nullable(),
   sender: z.string(),
   senderName: encryptedOrEmpty.nullable(),
@@ -255,6 +256,7 @@ function toMessageValues(
     userId: DEFAULT_USER_ID,
     messageId: validMessage.id,
     chatId: validMessage.chatId,
+    chatName: validMessage.chatName ?? null,
     text: validMessage.text,
     sender: validMessage.sender,
     senderName: validMessage.senderName,

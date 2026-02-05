@@ -1,12 +1,11 @@
 "use client"
 
 import { useEffect, useState, useTransition } from "react"
+import { decryptText, isEncrypted, getEncryptionKey } from "@/lib/encryption"
 import {
-  decryptText,
-  isEncrypted,
-  getEncryptionKey,
-} from "@/lib/encryption"
-import { type WhatsappChatMessage, getWhatsappChatMessages } from "../../../actions"
+  type WhatsappChatMessage,
+  getWhatsappChatMessages,
+} from "../../actions"
 
 export type DecryptedMessage = WhatsappChatMessage & {
   decryptedText: string | null
@@ -18,9 +17,16 @@ type UseChatHistoryOptions = {
   totalCount: number
 }
 
-export function useChatHistory({ chatId, initialMessages, totalCount }: UseChatHistoryOptions) {
-  const [messages, setMessages] = useState<WhatsappChatMessage[]>(initialMessages)
-  const [decryptedMessages, setDecryptedMessages] = useState<DecryptedMessage[]>([])
+export function useChatHistory({
+  chatId,
+  initialMessages,
+  totalCount,
+}: UseChatHistoryOptions) {
+  const [messages, setMessages] =
+    useState<WhatsappChatMessage[]>(initialMessages)
+  const [decryptedMessages, setDecryptedMessages] = useState<
+    DecryptedMessage[]
+  >([])
   const [hasMore, setHasMore] = useState(initialMessages.length < totalCount)
   const [isPending, startTransition] = useTransition()
 

@@ -1,4 +1,4 @@
-import { getWhatsappChatWithMessages, getContactLookup } from "../../../actions"
+import { getWhatsappChatWithMessages, getContactLookup } from "../../actions"
 import { notFound } from "next/navigation"
 import { ChatDrawer } from "./ChatDrawer"
 

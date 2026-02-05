@@ -1,73 +1,29 @@
 "use client"
 
-import { useEffect, useState, useCallback, useRef } from "react"
-import {
-  getWhatsappChats,
-  getContactLookup,
-  type WhatsappChat,
-  type ContactLookup,
-} from "../actions"
-import { decryptText, isEncrypted, getEncryptionKey } from "@/lib/encryption"
-import { ChatsTable, type DecryptedChat } from "../ChatsTable"
+import { useEffect, useState, useRef } from "react"
+import { useChatList } from "./useChatList"
+import { ChatsTable } from "./ChatsTable"
 import { SearchIcon } from "@/ui/icons"
 
 export default function Page() {
-  const [chats, setChats] = useState<DecryptedChat[]>([])
-  const [contactLookup, setContactLookup] = useState<ContactLookup>({})
-  const [loading, setLoading] = useState(true)
-  const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const [total, setTotal] = useState(0)
-  const [search, setSearch] = useState("")
-
-  const decryptChats = useCallback(
-    async (rawChats: WhatsappChat[]): Promise<DecryptedChat[]> => {
-      const encryptionKey = getEncryptionKey()
-      return Promise.all(
-        rawChats.map(async (chat) => {
-          if (!chat.lastMessageText || !isEncrypted(chat.lastMessageText)) {
-            return { ...chat, decryptedLastMessage: chat.lastMessageText }
-          }
-          if (!encryptionKey) {
-            return { ...chat, decryptedLastMessage: null }
-          }
-          const decrypted = await decryptText(chat.lastMessageText, encryptionKey)
-          return { ...chat, decryptedLastMessage: decrypted }
-        })
-      )
-    },
-    []
-  )
-
-  // Fetch contacts once on mount
-  useEffect(() => {
-    getContactLookup().then(setContactLookup)
-  }, [])
-
-  useEffect(() => {
-    async function load() {
-      setLoading(true)
-      const data = await getWhatsappChats(page, 20, search)
-      const decrypted = await decryptChats(data.chats)
-      setChats(decrypted)
-      setTotalPages(data.totalPages)
-      setTotal(data.total)
-      setLoading(false)
-    }
-    load()
-  }, [page, search, decryptChats])
-
-  function handleSearchChange(value: string) {
-    setSearch(value)
-    setPage(1)
-  }
+  const {
+    chats,
+    contactLookup,
+    loading,
+    page,
+    totalPages,
+    total,
+    search,
+    setPage,
+    setSearch,
+  } = useChatList()
 
   return (
     <>
       <div className="mb-4 flex items-center gap-4">
         <SearchInput
           placeholder="Search by phone number..."
-          onChange={handleSearchChange}
+          onChange={setSearch}
           debounceMs={300}
         />
         <span className="text-sm text-zinc-500">

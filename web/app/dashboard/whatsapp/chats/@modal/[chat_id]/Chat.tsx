@@ -3,7 +3,7 @@
 import { twMerge } from "tailwind-merge"
 import { LockIcon, LoaderIcon, CheckIcon } from "@/ui/icons"
 import { isEncrypted } from "@/lib/encryption"
-import { type WhatsappChatMessage, type ContactLookup } from "../../../actions"
+import { type WhatsappChatMessage, type ContactLookup } from "../../actions"
 import { useChatHistory, type DecryptedMessage } from "./useChatHistory"
 import { resolveContactName } from "./utils"
 
@@ -93,7 +93,8 @@ function MessageBubble({
       >
         {!message.isFromMe && (
           <p className="mb-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-            {message.senderName || resolveContactName(message.sender, contactLookup)}
+            {message.senderName ||
+              resolveContactName(message.sender, contactLookup)}
           </p>
         )}
         <div className="flex items-start gap-1.5">
