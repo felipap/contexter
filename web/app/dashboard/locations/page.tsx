@@ -106,7 +106,11 @@ export default function Page() {
           </table>
         </div>
 
-        <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+        />
       </>
     )
   }

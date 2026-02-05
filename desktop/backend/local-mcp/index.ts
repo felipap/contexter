@@ -5,6 +5,12 @@ import { z } from 'zod'
 import { createLogger } from '../lib/logger'
 import { fetchContacts } from '../sources/contacts'
 import { createIMessageSDK, fetchMessages } from '../sources/imessage'
+import {
+  isWhatsAppInstalled,
+  openWhatsAppDatabase,
+  fetchMessages as fetchWhatsAppMessages,
+  fetchChats as fetchWhatsAppChats,
+} from '../sources/whatsapp-sqlite'
 
 const log = createLogger('mcp')
 

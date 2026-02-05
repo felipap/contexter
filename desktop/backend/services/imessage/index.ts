@@ -40,7 +40,9 @@ async function exportAndUpload(): Promise<void> {
     messages[0].date,
   )
 
-  console.debug('[imessage] Found', messages.length, 'new messages')
+  console.debug(
+    `[imessage] Found ${messages.length.toLocaleString()} new messages`,
+  )
 
   const stopAnimating = startAnimating('old')
 
