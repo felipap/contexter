@@ -6,7 +6,7 @@ import {
   getEncryptionKeyExpiry,
   setEncryptionKey,
 } from "@/lib/encryption"
-import { LockIcon, UnlockIcon } from "@/ui/icons"
+import { LockIcon, MoonIcon, SunIcon, UnlockIcon } from "@/ui/icons"
 import Link from "next/link"
 import { usePathname, useSearchParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -37,6 +37,7 @@ export function DashboardNav() {
             </span>
           </div>
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             <EncryptionKeyButton />
             <form action={logout}>
               <button
@@ -258,5 +259,51 @@ function EncryptionKeyButton() {
         </div>
       )}
     </div>
+  )
+}
+
+function ThemeToggle() {
+  const [isDark, setIsDark] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+    const isDarkMode = document.documentElement.classList.contains("dark")
+    setIsDark(isDarkMode)
+  }, [])
+
+  const toggleTheme = () => {
+    const newIsDark = !isDark
+    setIsDark(newIsDark)
+
+    if (newIsDark) {
+      document.documentElement.classList.add("dark")
+      localStorage.setItem("theme", "dark")
+    } else {
+      document.documentElement.classList.remove("dark")
+      localStorage.setItem("theme", "light")
+    }
+  }
+
+  if (!mounted) {
+    return (
+      <button
+        className="rounded-lg border border-zinc-200 p-2 hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
+        aria-label="Toggle theme"
+      >
+        <div className="h-[14px] w-[14px]" />
+      </button>
+    )
+  }
+
+  return (
+    <button
+      onClick={toggleTheme}
+      className="rounded-lg border border-zinc-200 p-2 hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
+      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+    >
+      {isDark ? <SunIcon size={14} /> : <MoonIcon size={14} />}
+    </button>
   )
 }
