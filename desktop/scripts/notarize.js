@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 // https://kilianvalkhof.com/2019/electron/notarizing-your-electron-application/
 
 const { notarize } = require('electron-notarize')

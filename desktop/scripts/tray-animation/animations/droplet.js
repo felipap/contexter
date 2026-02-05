@@ -103,7 +103,3 @@ export function getDeformForFrame(frame, totalFrames, mode, intensity) {
       return {}
   }
 }
-
-
-
-

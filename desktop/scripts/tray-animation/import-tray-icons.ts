@@ -1,3 +1,4 @@
+import * as readline from 'readline'
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
@@ -62,7 +63,6 @@ function copyFramesToAssets(frameFiles: string[]): void {
 }
 
 function cleanupDownloads(frameFiles: string[]): void {
-  const readline = require('readline')
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,

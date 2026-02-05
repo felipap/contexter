@@ -21,7 +21,8 @@
     "postinstall": "electron-builder install-app-deps && electron-rebuild -f -w better-sqlite3,sharp",
     "ts-check": "npm run ts-check-windows && npm run ts-check-backend",
     "ts-check-windows": "tsc -p windows/tsconfig.json --noEmit",
-    "ts-check-backend": "tsc -p tsconfig.backend.json --noEmit"
+    "ts-check-backend": "tsc -p tsconfig.backend.json --noEmit",
+    "lint": "eslint ."
   },
   "prettier": {
     "singleQuote": true,
