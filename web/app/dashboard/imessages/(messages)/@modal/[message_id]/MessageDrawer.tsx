@@ -1,15 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { Decrypted } from "@/ui/Decrypted"
 import { Drawer } from "@/ui/Drawer"
+import { InfoRow } from "@/ui/InfoRow"
+import { RawJson } from "@/ui/RawJson"
+import { LockIcon, FileIcon, ImageIcon, DownloadIcon } from "@/ui/icons"
 import {
-  LockIcon,
-  FileIcon,
-  ImageIcon,
-  DownloadIcon,
-} from "@/ui/icons"
-import {
-  decryptText,
   decryptBinaryToBase64,
   isEncrypted,
   getEncryptionKey,
@@ -25,27 +22,9 @@ type DecryptedAttachment = Attachment & {
 }
 
 export function MessageDrawer({ message }: Props) {
-  const [decryptedText, setDecryptedText] = useState<string | null>(null)
   const [decryptedAttachments, setDecryptedAttachments] = useState<
     DecryptedAttachment[]
   >([])
-
-  useEffect(() => {
-    async function decrypt() {
-      if (!message.text || !isEncrypted(message.text)) {
-        setDecryptedText(message.text)
-        return
-      }
-      const key = getEncryptionKey()
-      if (!key) {
-        setDecryptedText(null)
-        return
-      }
-      const decrypted = await decryptText(message.text, key)
-      setDecryptedText(decrypted)
-    }
-    decrypt()
-  }, [message.text])
 
   useEffect(() => {
     async function decryptAttachments() {
@@ -74,12 +53,6 @@ export function MessageDrawer({ message }: Props) {
     decryptAttachments()
   }, [message.attachments])
 
-  const displayData = {
-    ...message,
-    decryptedText,
-    isTextEncrypted: message.text ? isEncrypted(message.text) : false,
-  }
-
   return (
     <Drawer title="Message Details">
       <div className="space-y-4">
@@ -91,33 +64,19 @@ export function MessageDrawer({ message }: Props) {
         <InfoRow label="Service" value={message.service} />
         <InfoRow
           label="Date"
-          value={
-            message.date ? new Date(message.date).toLocaleString() : "—"
-          }
+          value={message.date ? new Date(message.date).toLocaleString() : "—"}
         />
         <div>
           <label className="mb-1 block text-sm font-medium text-zinc-500">
             Message
           </label>
           <div className="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-950">
-            {decryptedText ? (
-              <p className="flex items-center gap-2 text-sm text-zinc-800 dark:text-zinc-200">
-                {displayData.isTextEncrypted && (
-                  <span className="text-green-500" title="Decrypted">
-                    <LockIcon size={14} />
-                  </span>
-                )}
-                {decryptedText}
-              </p>
-            ) : displayData.isTextEncrypted ? (
-              <p className="flex items-center gap-2 text-sm italic text-amber-500">
-                <LockIcon size={14} />
-                Encrypted - enter key to decrypt
-              </p>
+            {message.text ? (
+              <Decrypted showLockIcon>{message.text}</Decrypted>
             ) : (
-              <p className="text-sm italic text-zinc-400">
+              <span className="text-sm italic text-zinc-400">
                 {message.hasAttachments ? "📎 Attachment" : "No content"}
-              </p>
+              </span>
             )}
           </div>
         </div>
@@ -128,35 +87,14 @@ export function MessageDrawer({ message }: Props) {
             </label>
             <div className="space-y-3">
               {decryptedAttachments.map((attachment) => (
-                <AttachmentCard
-                  key={attachment.id}
-                  attachment={attachment}
-                />
+                <AttachmentCard key={attachment.id} attachment={attachment} />
               ))}
             </div>
           </div>
         )}
       </div>
-      <div className="mt-6 border-t border-zinc-200 pt-6 dark:border-zinc-800">
-        <label className="mb-2 block text-sm font-medium text-zinc-500">
-          Raw JSON
-        </label>
-        <pre className="whitespace-pre-wrap break-all rounded-lg bg-zinc-50 p-4 font-mono text-sm text-zinc-800 dark:bg-zinc-950 dark:text-zinc-200">
-          {JSON.stringify(displayData, null, 2)}
-        </pre>
-      </div>
+      <RawJson data={message} />
     </Drawer>
-  )
-}
-
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <label className="mb-1 block text-sm font-medium text-zinc-500">
-        {label}
-      </label>
-      <p className="text-sm text-zinc-800 dark:text-zinc-200">{value}</p>
-    </div>
   )
 }
 
