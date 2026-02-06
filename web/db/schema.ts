@@ -11,8 +11,10 @@ import {
 
 export const DEFAULT_USER_ID = "default"
 
+// Encrypted: data
 export const Screenshots = pgTable("screenshots", {
   id: uuid("id").defaultRandom().primaryKey(),
+  // encrypted
   data: text("data").notNull(),
   width: integer("width").notNull(),
   height: integer("height").notNull(),
@@ -29,6 +31,7 @@ export type Screenshot = typeof Screenshots.$inferSelect
 //
 //
 
+// Encrypted: text, subject
 export const iMessages = pgTable(
   "imessages",
   {
@@ -36,8 +39,10 @@ export const iMessages = pgTable(
     userId: text("user_id").notNull(),
     messageId: integer("message_id").notNull(),
     guid: text("guid").notNull().unique(),
+    // encrypted
     text: text("text"),
     contact: text("contact").notNull(),
+    // encrypted
     subject: text("subject"),
     date: timestamp("date"),
     isFromMe: integer("is_from_me").notNull(),
@@ -67,6 +72,7 @@ export type Message = typeof iMessages.$inferSelect
 //
 //
 
+// Encrypted: dataBase64
 export const iMessageAttachments = pgTable("imessage_attachments", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id").notNull(),
@@ -76,6 +82,7 @@ export const iMessageAttachments = pgTable("imessage_attachments", {
   mimeType: text("mime_type").notNull(),
   size: integer("size"),
   isImage: integer("is_image"),
+  // encrypted
   dataBase64: text("data_base64"),
   deviceId: text("device_id").notNull(),
   syncTime: timestamp("sync_time").notNull(),
@@ -132,17 +139,23 @@ export type ReadLog = typeof ReadLogs.$inferSelect
 //
 //
 
+// Encrypted: firstName, lastName, organization, emails, phoneNumbers
 export const Contacts = pgTable(
   "contacts",
   {
     id: uuid("id").defaultRandom().primaryKey(),
     userId: text("user_id").notNull(),
     contactId: text("contact_id").notNull(), // The unique ID from the contacts database
+    // encrypted
     firstName: text("first_name"),
+    // encrypted
     lastName: text("last_name"),
+    // encrypted
     organization: text("organization"),
-    emails: text("emails").notNull(), // JSON array
-    phoneNumbers: text("phone_numbers").notNull(), // JSON array
+    // encrypted, JSON array
+    emails: text("emails").notNull(),
+    // encrypted, JSON array
+    phoneNumbers: text("phone_numbers").notNull(),
     deviceId: text("device_id").notNull(),
     syncTime: timestamp("sync_time").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -166,13 +179,16 @@ export type LocationMetadata = {
   source?: string
 }
 
+// Encrypted: latitude, longitude
 export const Locations = pgTable(
   "locations",
   {
     id: text("id").primaryKey(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     timestamp: timestamp("timestamp").notNull(),
+    // encrypted
     latitude: text("latitude").notNull(),
+    // encrypted
     longitude: text("longitude").notNull(),
     accuracy: integer("accuracy"),
     metadata: jsonb("metadata").$type<LocationMetadata>(),
@@ -188,6 +204,7 @@ export type Location = typeof Locations.$inferSelect
 //
 //
 
+// Encrypted: text, chatName, senderName, senderPhoneNumber
 export const WhatsappMessages = pgTable(
   "whatsapp_messages",
   {
@@ -195,11 +212,21 @@ export const WhatsappMessages = pgTable(
     userId: text("user_id").notNull(),
     messageId: text("message_id").notNull().unique(), // Unipile message ID
     chatId: text("chat_id").notNull(),
+    // encrypted
     chatName: text("chat_name"),
+    // HMAC blind index
+    chatNameIndex: text("chat_name_index"),
+    // encrypted
     text: text("text"),
     sender: text("sender").notNull(),
+    // encrypted
     senderName: text("sender_name"),
+    // HMAC blind index
+    senderNameIndex: text("sender_name_index"),
+    // encrypted
     senderPhoneNumber: text("sender_phone_number"),
+    // HMAC blind index
+    senderPhoneNumberIndex: text("sender_phone_number_index"),
     timestamp: timestamp("timestamp").notNull(),
     isFromMe: integer("is_from_me").notNull(),
     deviceId: text("device_id").notNull(),
@@ -210,6 +237,11 @@ export const WhatsappMessages = pgTable(
     index("whatsapp_messages_chat_id_idx").on(table.chatId),
     index("whatsapp_messages_sender_idx").on(table.sender),
     index("whatsapp_messages_timestamp_idx").on(table.timestamp),
+    index("whatsapp_messages_chat_name_index_idx").on(table.chatNameIndex),
+    index("whatsapp_messages_sender_name_index_idx").on(table.senderNameIndex),
+    index("whatsapp_messages_sender_phone_index_idx").on(
+      table.senderPhoneNumberIndex
+    ),
   ]
 )
 

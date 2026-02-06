@@ -6,7 +6,8 @@ import { logRead } from "@/lib/activity-log"
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
-  const phone = searchParams.get("phone") || ""
+  const sender = searchParams.get("sender") || ""
+  const senderPhoneNumberIndex = searchParams.get("senderPhoneNumberIndex") // HMAC blind index for encrypted sender_phone_number
   const limitParam = searchParams.get("limit") || "20"
   const offsetParam = searchParams.get("offset")
 
@@ -27,27 +28,27 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  // Strip non-digits from phone search
-  const normalizedPhone = phone.replace(/\D/g, "")
+  // Partial match on sender column: strip non-digits and match
+  const normalizedSender = sender.replace(/\D/g, "")
 
-  if (normalizedPhone.length === 0) {
+  if (normalizedSender.length === 0 && !senderPhoneNumberIndex) {
     return Response.json(
-      { error: "phone parameter is required and must contain digits" },
+      { error: "sender or senderPhoneNumberIndex parameter is required" },
       { status: 400 }
     )
   }
 
   const startTime = Date.now()
 
-  const { chats, total } = await searchChatsByPhone(
-    normalizedPhone,
-    limit,
-    offset
-  )
+  const { chats, total } = senderPhoneNumberIndex
+    ? await searchChatsByPhoneIndex(senderPhoneNumberIndex, limit, offset)
+    : await searchChatsBySender(normalizedSender, limit, offset)
 
   await logRead({
     type: "whatsapp",
-    description: `Searched WhatsApp chats by phone: ${phone}`,
+    description: senderPhoneNumberIndex
+      ? `Searched WhatsApp chats by phone index`
+      : `Searched WhatsApp chats by sender: ${sender}`,
     count: chats.length,
   })
 
@@ -62,8 +63,9 @@ export async function GET(request: NextRequest) {
     },
     metadata: {
       elapsedMs: Date.now() - startTime,
-      searchPhone: phone,
-      normalizedPhone,
+      searchSender: sender || undefined,
+      normalizedSender: normalizedSender || undefined,
+      searchByIndex: !!senderPhoneNumberIndex,
     },
   })
 }
@@ -80,17 +82,17 @@ interface Chat {
   messageCount: number
 }
 
-async function searchChatsByPhone(
-  normalizedPhone: string,
+// Search by HMAC blind index on senderPhoneNumberIndex (exact match on encrypted field)
+async function searchChatsByPhoneIndex(
+  senderPhoneNumberIndex: string,
   limit: number,
   offset: number
 ): Promise<{ chats: Chat[]; total: number }> {
-  // Get total count of matching chats
   const [countResult] = await db.execute<{ count: number }>(sql`
     SELECT COUNT(DISTINCT chat_id)::int as count
     FROM whatsapp_messages
     WHERE user_id = ${DEFAULT_USER_ID}
-      AND REGEXP_REPLACE(sender, '[^0-9]', '', 'g') LIKE '%' || ${normalizedPhone} || '%'
+      AND sender_phone_number_index = ${senderPhoneNumberIndex}
   `)
 
   const total = countResult.count
@@ -134,7 +136,95 @@ async function searchChatsByPhone(
       SELECT DISTINCT chat_id
       FROM whatsapp_messages
       WHERE user_id = ${DEFAULT_USER_ID}
-        AND REGEXP_REPLACE(sender, '[^0-9]', '', 'g') LIKE '%' || ${normalizedPhone} || '%'
+        AND sender_phone_number_index = ${senderPhoneNumberIndex}
+    )
+    SELECT
+      rm.chat_id,
+      rm.chat_name,
+      rm.text,
+      rm.timestamp,
+      rm.is_from_me,
+      cp.participant_count,
+      cp.participants,
+      cp.message_count
+    FROM ranked_messages rm
+    JOIN chat_participants cp ON rm.chat_id = cp.chat_id
+    JOIN filtered_chats fc ON rm.chat_id = fc.chat_id
+    WHERE rm.rn = 1
+    ORDER BY rm.timestamp DESC NULLS LAST
+    LIMIT ${limit} OFFSET ${offset}
+  `)
+
+  const chats: Chat[] = [...result].map((row) => ({
+    chatId: row.chat_id,
+    chatName: row.chat_name,
+    isGroupChat: Number(row.participant_count) > 2,
+    lastMessageText: row.text,
+    lastMessageDate: row.timestamp,
+    lastMessageFromMe: row.is_from_me === 1,
+    participantCount: Number(row.participant_count),
+    participants: row.participants,
+    messageCount: Number(row.message_count),
+  }))
+
+  return { chats, total }
+}
+
+// Partial match on sender column (not encrypted)
+async function searchChatsBySender(
+  normalizedSender: string,
+  limit: number,
+  offset: number
+): Promise<{ chats: Chat[]; total: number }> {
+  const [countResult] = await db.execute<{ count: number }>(sql`
+    SELECT COUNT(DISTINCT chat_id)::int as count
+    FROM whatsapp_messages
+    WHERE user_id = ${DEFAULT_USER_ID}
+      AND REGEXP_REPLACE(sender, '[^0-9]', '', 'g') LIKE '%' || ${normalizedSender} || '%'
+  `)
+
+  const total = countResult.count
+
+  const result = await db.execute<{
+    chat_id: string
+    chat_name: string | null
+    text: string | null
+    timestamp: Date | null
+    is_from_me: number
+    participant_count: number
+    participants: string[]
+    message_count: number
+  }>(sql`
+    WITH ranked_messages AS (
+      SELECT
+        chat_id,
+        chat_name,
+        text,
+        timestamp,
+        is_from_me,
+        sender,
+        ROW_NUMBER() OVER (
+          PARTITION BY chat_id
+          ORDER BY timestamp DESC NULLS LAST
+        ) as rn
+      FROM whatsapp_messages
+      WHERE user_id = ${DEFAULT_USER_ID}
+    ),
+    chat_participants AS (
+      SELECT
+        chat_id,
+        COUNT(DISTINCT sender) as participant_count,
+        COUNT(*) as message_count,
+        ARRAY_AGG(DISTINCT sender) as participants
+      FROM whatsapp_messages
+      WHERE user_id = ${DEFAULT_USER_ID}
+      GROUP BY chat_id
+    ),
+    filtered_chats AS (
+      SELECT DISTINCT chat_id
+      FROM whatsapp_messages
+      WHERE user_id = ${DEFAULT_USER_ID}
+        AND REGEXP_REPLACE(sender, '[^0-9]', '', 'g') LIKE '%' || ${normalizedSender} || '%'
     )
     SELECT
       rm.chat_id,

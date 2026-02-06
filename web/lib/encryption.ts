@@ -236,6 +236,55 @@ export function isEncryptedBuffer(dataUrl: string): boolean {
   return firstBytes.startsWith("CTXE")
 }
 
+// Blind index for searchable encrypted fields
+// Uses HMAC-SHA256 with a derived key - deterministic output for same input
+const INDEX_SALT = "contexter-search-index-v1"
+
+async function deriveIndexKey(passphrase: string): Promise<CryptoKey> {
+  const encoder = new TextEncoder()
+  const passphraseKey = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(passphrase),
+    "PBKDF2",
+    false,
+    ["deriveBits", "deriveKey"]
+  )
+
+  return crypto.subtle.deriveKey(
+    {
+      name: "PBKDF2",
+      salt: encoder.encode(INDEX_SALT),
+      iterations: PBKDF2_ITERATIONS,
+      hash: "SHA-256",
+    },
+    passphraseKey,
+    { name: "HMAC", hash: "SHA-256", length: KEY_LENGTH },
+    false,
+    ["sign"]
+  )
+}
+
+export async function computeSearchIndex(
+  plaintext: string,
+  passphrase: string
+): Promise<string> {
+  if (!plaintext || !passphrase) {
+    return ""
+  }
+
+  const encoder = new TextEncoder()
+  const key = await deriveIndexKey(passphrase)
+  const signature = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    encoder.encode(plaintext)
+  )
+
+  // Convert to hex string
+  const hashArray = Array.from(new Uint8Array(signature))
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
+}
+
 export async function decryptBufferFromDataUrl(
   dataUrl: string,
   passphrase: string
