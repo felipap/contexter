@@ -111,12 +111,14 @@ async function runBackfill(days = 120): Promise<void> {
 
   const fetchEnd = Date.now()
   console.log(
-    `[whatsapp] Found ${sqliteMessages.length} messages to backfill in ${fetchEnd - fetchStart}ms`,
+    `[whatsapp] Found ${sqliteMessages.length.toLocaleString()} messages to backfill in ${fetchEnd - fetchStart}ms`,
   )
 
   const ignoredChatIds = store.get('whatsappSqlite').ignoredChatIds ?? []
   const filteredMessages = sqliteMessages.filter(
-    (msg) => !ignoredChatIds.includes(msg.chatId),
+    (msg) =>
+      !ignoredChatIds.includes(msg.chatId) &&
+      msg.senderJid !== 'status@broadcast',
   )
 
   if (filteredMessages.length === 0) {
