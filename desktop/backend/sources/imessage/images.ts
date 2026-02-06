@@ -44,7 +44,9 @@ export async function convertHeicToJpeg(inputBuffer: Buffer): Promise<Buffer> {
   } finally {
     // Clean up temp files (ignore errors if files don't exist)
     await Promise.all([
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       unlink(inputPath).catch(() => {}),
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       unlink(outputPath).catch(() => {}),
     ])
   }

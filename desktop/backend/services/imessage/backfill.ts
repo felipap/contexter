@@ -1,5 +1,4 @@
 import { createIMessageSDK, fetchMessages } from '../../sources/imessage'
-import fs from 'fs'
 import { store } from '../../store'
 import { startAnimating } from '../../tray/animate'
 import { catchAndComplain } from '../../lib/utils'

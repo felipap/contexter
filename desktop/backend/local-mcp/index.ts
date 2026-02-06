@@ -1,4 +1,6 @@
+// eslint-disable-next-line import/no-unresolved
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+// eslint-disable-next-line import/no-unresolved
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js'
 import { createServer, IncomingMessage, ServerResponse } from 'http'
 import { z } from 'zod'
