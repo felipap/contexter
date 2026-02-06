@@ -25,7 +25,7 @@ export interface IMessageExportConfig extends ServiceConfig {
 
 export interface WhatsappSqliteConfig extends ServiceConfig {
   lastExportedMessageDate: string | null
-  ignoredChatIds: string[]
+  ignoredChatIds?: string[]
 }
 
 export interface WhatsappUnipileConfig extends ServiceConfig {

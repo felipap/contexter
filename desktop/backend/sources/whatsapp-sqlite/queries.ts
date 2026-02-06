@@ -74,8 +74,8 @@ function buildContactPhoneMap(): Map<string, string> {
   const contactsDb = new Database(contactsDbPath, { readonly: true })
   const rawRows = contactsDb
     .prepare(
-      `SELECT ZLID, ZWHATSAPPID, ZPHONENUMBER 
-       FROM ZWAADDRESSBOOKCONTACT 
+      `SELECT ZLID, ZWHATSAPPID, ZPHONENUMBER
+       FROM ZWAADDRESSBOOKCONTACT
        WHERE ZPHONENUMBER IS NOT NULL AND ZPHONENUMBER != ''`,
     )
     .all()
@@ -164,6 +164,8 @@ export function fetchMessages(
     LEFT JOIN ZWAPROFILEPUSHNAME ppn ON gm.ZMEMBERJID = ppn.ZJID
     LEFT JOIN ZWAMEDIAITEM media ON m.ZMEDIAITEM = media.Z_PK
     WHERE m.ZMESSAGEDATE > ?
+      AND c.ZCONTACTJID != 'status@broadcast'
+      AND c.ZCONTACTJID NOT LIKE '%@status'
     ORDER BY m.ZMESSAGEDATE ASC
   `,
     )
@@ -173,12 +175,23 @@ export function fetchMessages(
 
   return rows.map((row) => {
     const isGroup = row.chatJid?.endsWith('@g.us') ?? false
-    // For group chats, use the group member's JID as the actual sender
-    // For individual chats, use fromJid (which is the sender's JID)
-    const senderJid = isGroup ? row.groupMemberJid : row.fromJid
+
+    // Determine sender JID:
+    // - For group chats: use the group member's JID
+    // - For individual chats: if incoming (isFromMe=0), the sender is the chat contact (chatJid)
+    //   If outgoing (isFromMe=1), use fromJid (which might be our own JID or null)
+    let senderJid: string | null
+    if (isGroup) {
+      senderJid = row.groupMemberJid
+    } else {
+      // In 1:1 chats, the chatJid IS the contact's JID
+      senderJid = row.isFromMe === 1 ? row.fromJid : row.chatJid
+    }
 
     // Look up phone number from contacts by sender JID (LID or WhatsApp JID format)
-    const senderPhoneNumber = senderJid ? (phoneMap.get(senderJid) ?? null) : null
+    const senderPhoneNumber = senderJid
+      ? (phoneMap.get(senderJid) ?? null)
+      : null
 
     // For individual chats, the chatName is the contact's name
     // For group chats, try to use the group member's contact name (often null)

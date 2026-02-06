@@ -1,4 +1,5 @@
 import { createIMessageSDK, fetchMessages } from '../../sources/imessage'
+import fs from 'fs'
 import { store } from '../../store'
 import { startAnimating } from '../../tray/animate'
 import { catchAndComplain } from '../../lib/utils'
@@ -79,7 +80,7 @@ async function runBackfill(days = 120): Promise<void> {
 
   const fetchEnd = Date.now()
   console.log(
-    `[imessage] Found ${messages.length} messages to backfill in ${fetchEnd - fetchStart}ms`,
+    `[imessage] Found ${messages.length.toLocaleString()} messages to backfill in ${fetchEnd - fetchStart}ms`,
   )
 
   if (messages.length === 0) {
