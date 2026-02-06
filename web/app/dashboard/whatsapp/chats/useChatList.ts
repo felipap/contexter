@@ -4,7 +4,7 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { getWhatsappChats, type WhatsappChat } from "./actions"
-import { decryptText, isEncrypted, getEncryptionKey } from "@/lib/encryption"
+import { maybeDecrypt } from "@/lib/encryption"
 
 export type DecryptedChat = WhatsappChat & {
   decryptedChatName: string | null
@@ -27,36 +27,12 @@ export function useChatList(options: UseChatListOptions = {}) {
 
   const decryptChats = useCallback(
     async (rawChats: WhatsappChat[]): Promise<DecryptedChat[]> => {
-      const encryptionKey = getEncryptionKey()
       return Promise.all(
-        rawChats.map(async (chat) => {
-          let decryptedChatName: string | null = chat.chatName
-          let decryptedLastMessage: string | null = chat.lastMessageText
-
-          if (encryptionKey) {
-            if (chat.chatName && isEncrypted(chat.chatName)) {
-              decryptedChatName = await decryptText(
-                chat.chatName,
-                encryptionKey
-              )
-            }
-            if (chat.lastMessageText && isEncrypted(chat.lastMessageText)) {
-              decryptedLastMessage = await decryptText(
-                chat.lastMessageText,
-                encryptionKey
-              )
-            }
-          } else {
-            if (chat.chatName && isEncrypted(chat.chatName)) {
-              decryptedChatName = null
-            }
-            if (chat.lastMessageText && isEncrypted(chat.lastMessageText)) {
-              decryptedLastMessage = null
-            }
-          }
-
-          return { ...chat, decryptedChatName, decryptedLastMessage }
-        })
+        rawChats.map(async (chat) => ({
+          ...chat,
+          decryptedChatName: await maybeDecrypt(chat.chatName),
+          decryptedLastMessage: await maybeDecrypt(chat.lastMessageText),
+        }))
       )
     },
     []

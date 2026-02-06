@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Drawer } from "@/ui/Drawer"
-import { decryptText, isEncrypted, getEncryptionKey } from "@/lib/encryption"
+import { maybeDecrypt } from "@/lib/encryption"
 import { type WhatsappChatWithMessages } from "../../actions"
 import { Chat } from "./Chat"
 
@@ -14,22 +14,7 @@ export function ChatDrawer({ chat }: Props) {
   const [decryptedChatName, setDecryptedChatName] = useState<string | null>(null)
 
   useEffect(() => {
-    async function decryptChatName() {
-      if (!chat.chatName) {
-        return
-      }
-      if (!isEncrypted(chat.chatName)) {
-        setDecryptedChatName(chat.chatName)
-        return
-      }
-      const key = getEncryptionKey()
-      if (!key) {
-        return
-      }
-      const decrypted = await decryptText(chat.chatName, key)
-      setDecryptedChatName(decrypted)
-    }
-    decryptChatName()
+    maybeDecrypt(chat.chatName).then(setDecryptedChatName)
   }, [chat.chatName])
 
   const displayName = decryptedChatName || chat.chatId
@@ -72,13 +57,16 @@ function ChatInfo({
           )}
         </div>
       </div>
-      <div className="mt-3 flex gap-4 text-xs text-zinc-500">
-        <span>{chat.messageCount.toLocaleString()} messages</span>
-        {chat.lastMessageDate && (
-          <span>
-            Last: {new Date(chat.lastMessageDate).toLocaleDateString()}
-          </span>
-        )}
+      <div className="mt-3 space-y-1 text-xs text-zinc-500">
+        <div className="flex gap-4">
+          <span>{chat.messageCount.toLocaleString()} messages</span>
+          {chat.lastMessageDate && (
+            <span>
+              Last: {new Date(chat.lastMessageDate).toLocaleDateString()}
+            </span>
+          )}
+        </div>
+        <div className="font-mono text-zinc-400">{chat.chatId}</div>
       </div>
     </div>
   )

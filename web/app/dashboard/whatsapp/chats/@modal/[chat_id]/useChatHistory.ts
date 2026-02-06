@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useTransition } from "react"
-import { decryptText, isEncrypted, getEncryptionKey } from "@/lib/encryption"
+import { maybeDecrypt } from "@/lib/encryption"
 import {
   type WhatsappChatMessage,
   getWhatsappChatMessages,
@@ -35,30 +35,12 @@ export function useChatHistory({
 
   useEffect(() => {
     async function decryptMessages() {
-      const key = getEncryptionKey()
       const decrypted = await Promise.all(
-        messages.map(async (msg) => {
-          let decryptedText: string | null = msg.text
-          let decryptedSenderName: string | null = msg.senderName
-
-          if (key) {
-            if (msg.text && isEncrypted(msg.text)) {
-              decryptedText = await decryptText(msg.text, key)
-            }
-            if (msg.senderName && isEncrypted(msg.senderName)) {
-              decryptedSenderName = await decryptText(msg.senderName, key)
-            }
-          } else {
-            if (msg.text && isEncrypted(msg.text)) {
-              decryptedText = null
-            }
-            if (msg.senderName && isEncrypted(msg.senderName)) {
-              decryptedSenderName = null
-            }
-          }
-
-          return { ...msg, decryptedText, decryptedSenderName }
-        })
+        messages.map(async (msg) => ({
+          ...msg,
+          decryptedText: await maybeDecrypt(msg.text),
+          decryptedSenderName: await maybeDecrypt(msg.senderName),
+        }))
       )
       setDecryptedMessages(decrypted)
     }

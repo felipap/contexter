@@ -1,13 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { isEncrypted, maybeDecrypt } from "@/lib/encryption"
 import { Drawer } from "@/ui/Drawer"
 import { LockIcon } from "@/ui/icons"
-import {
-  decryptText,
-  isEncrypted,
-  getEncryptionKey,
-} from "@/lib/encryption"
+import { useEffect, useState } from "react"
 import { type WhatsappMessageDetail } from "../../actions"
 
 type Props = {
@@ -18,20 +14,7 @@ export function MessageDrawer({ message }: Props) {
   const [decryptedText, setDecryptedText] = useState<string | null>(null)
 
   useEffect(() => {
-    async function decrypt() {
-      if (!message.text || !isEncrypted(message.text)) {
-        setDecryptedText(message.text)
-        return
-      }
-      const key = getEncryptionKey()
-      if (!key) {
-        setDecryptedText(null)
-        return
-      }
-      const decrypted = await decryptText(message.text, key)
-      setDecryptedText(decrypted)
-    }
-    decrypt()
+    maybeDecrypt(message.text).then(setDecryptedText)
   }, [message.text])
 
   const displayData = {
@@ -43,13 +26,8 @@ export function MessageDrawer({ message }: Props) {
   return (
     <Drawer title="Message Details">
       <div className="space-y-4">
-        <InfoRow
-          label="Sender"
-          value={message.senderName || message.sender}
-        />
-        {message.senderName && (
-          <InfoRow label="Phone" value={message.sender} />
-        )}
+        <InfoRow label="Sender" value={message.senderName || message.sender} />
+        {message.senderName && <InfoRow label="Phone" value={message.sender} />}
         <InfoRow
           label="Direction"
           value={message.isFromMe ? "Sent" : "Received"}

@@ -1,37 +1,37 @@
 // E2E decryption utilities using Web Crypto API
 // Compatible with Node.js crypto on the desktop side
 
-const ALGORITHM = 'AES-GCM'
+const ALGORITHM = "AES-GCM"
 const KEY_LENGTH = 256
 const PBKDF2_ITERATIONS = 100000
-const SALT = 'contexter-e2e-v1' // Fixed salt for cross-platform compatibility
+const SALT = "contexter-e2e-v1" // Fixed salt for cross-platform compatibility
 
-const ENCRYPTED_PREFIX = 'enc:v1:'
-const SESSION_KEY = 'encryption_key'
-const EXPIRY_KEY = 'encryption_key_expiry'
+const ENCRYPTED_PREFIX = "enc:v1:"
+const SESSION_KEY = "encryption_key"
+const EXPIRY_KEY = "encryption_key_expiry"
 const EXPIRY_HOURS = 1
 
 async function deriveKey(passphrase: string): Promise<CryptoKey> {
   const encoder = new TextEncoder()
   const passphraseKey = await crypto.subtle.importKey(
-    'raw',
+    "raw",
     encoder.encode(passphrase),
-    'PBKDF2',
+    "PBKDF2",
     false,
-    ['deriveBits', 'deriveKey']
+    ["deriveBits", "deriveKey"]
   )
 
   return crypto.subtle.deriveKey(
     {
-      name: 'PBKDF2',
+      name: "PBKDF2",
       salt: encoder.encode(SALT),
       iterations: PBKDF2_ITERATIONS,
-      hash: 'SHA-256',
+      hash: "SHA-256",
     },
     passphraseKey,
     { name: ALGORITHM, length: KEY_LENGTH },
     false,
-    ['decrypt']
+    ["decrypt"]
   )
 }
 
@@ -48,7 +48,7 @@ export async function decryptText(
     return ciphertext
   }
 
-  const parts = ciphertext.slice(ENCRYPTED_PREFIX.length).split(':')
+  const parts = ciphertext.slice(ENCRYPTED_PREFIX.length).split(":")
   if (parts.length !== 3) {
     return null
   }
@@ -94,7 +94,7 @@ export async function decryptBinaryToBase64(
     return ciphertext
   }
 
-  const parts = ciphertext.slice(ENCRYPTED_PREFIX.length).split(':')
+  const parts = ciphertext.slice(ENCRYPTED_PREFIX.length).split(":")
   if (parts.length !== 3) {
     return null
   }
@@ -120,7 +120,7 @@ export async function decryptBinaryToBase64(
 
   // Convert decrypted binary to base64
   const decryptedArray = new Uint8Array(decrypted)
-  let binary = ''
+  let binary = ""
   for (let i = 0; i < decryptedArray.length; i++) {
     binary += String.fromCharCode(decryptedArray[i])
   }
@@ -130,7 +130,7 @@ export async function decryptBinaryToBase64(
 // Session storage helpers with expiry
 
 export function setEncryptionKey(key: string): void {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return
   }
   const expiry = Date.now() + EXPIRY_HOURS * 60 * 60 * 1000
@@ -139,7 +139,7 @@ export function setEncryptionKey(key: string): void {
 }
 
 export function getEncryptionKey(): string | null {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return null
   }
   const key = sessionStorage.getItem(SESSION_KEY)
@@ -159,7 +159,7 @@ export function getEncryptionKey(): string | null {
 }
 
 export function clearEncryptionKey(): void {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return
   }
   sessionStorage.removeItem(SESSION_KEY)
@@ -167,7 +167,7 @@ export function clearEncryptionKey(): void {
 }
 
 export function getEncryptionKeyExpiry(): Date | null {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return null
   }
   const expiryStr = sessionStorage.getItem(EXPIRY_KEY)
@@ -175,6 +175,23 @@ export function getEncryptionKeyExpiry(): Date | null {
     return null
   }
   return new Date(parseInt(expiryStr, 10))
+}
+
+// Decrypts text if encrypted and key exists, otherwise returns original or null
+export async function maybeDecrypt(
+  text: string | null
+): Promise<string | null> {
+  if (!text) {
+    return text
+  }
+  if (!isEncrypted(text)) {
+    return text
+  }
+  const key = getEncryptionKey()
+  if (!key) {
+    return null
+  }
+  return await decryptText(text, key)
 }
 
 // Binary decryption for files like screenshots

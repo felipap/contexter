@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { getWhatsappMessages, type WhatsappMessage, type SortBy } from "./actions"
-import { decryptText, isEncrypted, getEncryptionKey } from "@/lib/encryption"
+import { maybeDecrypt } from "@/lib/encryption"
 
 export type DecryptedMessage = WhatsappMessage & {
   decryptedText: string | null
@@ -27,33 +27,16 @@ export function useMessageList(options: UseMessageListOptions = {}) {
 
   const decryptMessages = useCallback(
     async (msgs: WhatsappMessage[]): Promise<DecryptedMessage[]> => {
-      const encryptionKey = getEncryptionKey()
       return Promise.all(
         msgs.map(async (msg) => {
-          const base = {
-            ...msg,
-            decryptedText: msg.text,
-            decryptedChatName: msg.chatName,
-            decryptedSenderName: msg.senderName,
-          }
-
-          if (!encryptionKey) {
-            return {
-              ...base,
-              decryptedText: isEncrypted(msg.text) ? null : msg.text,
-              decryptedChatName: isEncrypted(msg.chatName) ? null : msg.chatName,
-              decryptedSenderName: isEncrypted(msg.senderName) ? null : msg.senderName,
-            }
-          }
-
-          const [decryptedText, decryptedChatName, decryptedSenderName] = await Promise.all([
-            msg.text && isEncrypted(msg.text) ? decryptText(msg.text, encryptionKey) : msg.text,
-            msg.chatName && isEncrypted(msg.chatName) ? decryptText(msg.chatName, encryptionKey) : msg.chatName,
-            msg.senderName && isEncrypted(msg.senderName) ? decryptText(msg.senderName, encryptionKey) : msg.senderName,
-          ])
-
+          const [decryptedText, decryptedChatName, decryptedSenderName] =
+            await Promise.all([
+              maybeDecrypt(msg.text),
+              maybeDecrypt(msg.chatName),
+              maybeDecrypt(msg.senderName),
+            ])
           return {
-            ...base,
+            ...msg,
             decryptedText,
             decryptedChatName,
             decryptedSenderName,
