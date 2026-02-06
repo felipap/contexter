@@ -1,24 +1,39 @@
 import { apiRequest } from '../../lib/contexter-api'
-import { encryptText } from '../../lib/encryption'
+import { computeSearchIndex, encryptText } from '../../lib/encryption'
 import { getDeviceId, getEncryptionKey } from '../../store'
 import type { WhatsAppMessage, WhatsAppSource } from './types'
+
+type EncryptedWhatsAppMessage = WhatsAppMessage & {
+  chatNameIndex?: string
+  senderNameIndex?: string
+  senderPhoneNumberIndex?: string
+}
 
 function encryptMessages(
   messages: WhatsAppMessage[],
   encryptionKey: string,
-): WhatsAppMessage[] {
+): EncryptedWhatsAppMessage[] {
   return messages.map((msg) => ({
     ...msg,
     text: msg.text ? encryptText(msg.text, encryptionKey) : msg.text,
     chatName: msg.chatName
       ? encryptText(msg.chatName, encryptionKey)
       : msg.chatName,
+    chatNameIndex: msg.chatName
+      ? computeSearchIndex(msg.chatName, encryptionKey)
+      : undefined,
     senderName: msg.senderName
       ? encryptText(msg.senderName, encryptionKey)
       : msg.senderName,
+    senderNameIndex: msg.senderName
+      ? computeSearchIndex(msg.senderName, encryptionKey)
+      : undefined,
     senderPhoneNumber: msg.senderPhoneNumber
       ? encryptText(msg.senderPhoneNumber, encryptionKey)
       : msg.senderPhoneNumber,
+    senderPhoneNumberIndex: msg.senderPhoneNumber
+      ? computeSearchIndex(msg.senderPhoneNumber, encryptionKey)
+      : undefined,
   }))
 }
 

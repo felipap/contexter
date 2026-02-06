@@ -231,3 +231,32 @@ export function isEncryptedBuffer(buffer: Buffer): boolean {
   }
   return buffer.subarray(0, 4).toString() === 'CTXE'
 }
+
+// Blind index for searchable encrypted fields
+// Uses HMAC-SHA256 with a derived key - deterministic output for same input
+const INDEX_SALT = 'contexter-search-index-v1'
+
+function deriveIndexKey(passphrase: string): Buffer {
+  return pbkdf2Sync(
+    passphrase,
+    INDEX_SALT,
+    PBKDF2_ITERATIONS,
+    KEY_LENGTH,
+    'sha256',
+  )
+}
+
+export function computeSearchIndex(
+  plaintext: string,
+  passphrase: string,
+): string {
+  if (!plaintext || !passphrase) {
+    return ''
+  }
+
+  const { createHmac } = require('crypto')
+  const key = deriveIndexKey(passphrase)
+  const hmac = createHmac('sha256', key)
+  hmac.update(plaintext)
+  return hmac.digest('hex')
+}
