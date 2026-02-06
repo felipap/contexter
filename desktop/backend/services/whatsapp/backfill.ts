@@ -33,30 +33,6 @@ let backfillProgress: BackfillProgress = {
 
 const BATCH_SIZE = 50
 
-const EXTENSION_TO_MIME: Record<string, string> = {
-  jpg: 'image/jpeg',
-  jpeg: 'image/jpeg',
-  png: 'image/png',
-  gif: 'image/gif',
-  webp: 'image/webp',
-  mp4: 'video/mp4',
-  mov: 'video/quicktime',
-  mp3: 'audio/mpeg',
-  m4a: 'audio/mp4',
-  ogg: 'audio/ogg',
-  opus: 'audio/opus',
-  pdf: 'application/pdf',
-}
-
-function getMimeTypeFromPath(path: string): string {
-  const ext = path.split('.').pop()?.toLowerCase() ?? ''
-  return EXTENSION_TO_MIME[ext] ?? 'application/octet-stream'
-}
-
-function getFilenameFromPath(path: string): string {
-  return path.split('/').pop() ?? 'unknown'
-}
-
 function toWhatsAppMessage(msg: WhatsappSqliteMessage): WhatsAppMessage {
   return {
     id: `sqlite-${msg.id}`,
@@ -70,18 +46,7 @@ function toWhatsAppMessage(msg: WhatsappSqliteMessage): WhatsAppMessage {
     isFromMe: msg.isFromMe,
     messageType: msg.messageType,
     hasMedia: msg.hasMedia,
-    attachments: msg.mediaLocalPath
-      ? [
-          {
-            id: `sqlite-media-${msg.id}`,
-            filename: getFilenameFromPath(msg.mediaLocalPath),
-            mimeType: getMimeTypeFromPath(msg.mediaLocalPath),
-            size: null,
-            localPath: msg.mediaLocalPath,
-            dataBase64: '',
-          },
-        ]
-      : [],
+    attachments: [], // TODO: implement attachment syncing
   }
 }
 

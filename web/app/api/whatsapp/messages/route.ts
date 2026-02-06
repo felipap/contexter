@@ -16,13 +16,15 @@ const encryptedOrEmpty = z.string().refine((s) => s === "" || isEncrypted(s), {
   message: "must be encrypted (missing enc:v1: prefix)",
 })
 
-const AttachmentSchema = z.object({
-  id: z.string(),
-  filename: z.string(),
-  mimeType: z.string(),
-  size: z.number().nullable(),
-  dataBase64: encryptedOrEmpty.optional(),
-})
+// TODO: implement attachment syncing
+// const AttachmentSchema = z.object({
+//   id: z.string(),
+//   filename: z.string().nullable(),
+//   mimeType: z.string().nullable(),
+//   size: z.number().nullable(),
+//   localPath: z.string().nullable(),
+//   dataBase64: encryptedOrEmpty.nullable(),
+// })
 
 const MessageSchema = z.object({
   id: z.string(),
@@ -34,7 +36,7 @@ const MessageSchema = z.object({
   senderPhoneNumber: encryptedOrEmpty.nullable(),
   timestamp: z.string(),
   isFromMe: z.boolean(),
-  attachments: z.array(AttachmentSchema).optional(),
+  attachments: z.array(z.unknown()).optional(), // TODO: implement attachment syncing
 })
 
 type ValidatedMessage = z.infer<typeof MessageSchema>

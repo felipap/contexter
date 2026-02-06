@@ -26,18 +26,7 @@ function toWhatsAppMessage(msg: WhatsappSqliteMessage): WhatsAppMessage {
     messageType: msg.messageType,
     isFromMe: msg.isFromMe,
     hasMedia: msg.hasMedia,
-    attachments: msg.mediaLocalPath
-      ? [
-          {
-            id: `sqlite-media-${msg.id}`,
-            filename: null,
-            mimeType: null,
-            size: null,
-            localPath: msg.mediaLocalPath,
-            dataBase64: null,
-          },
-        ]
-      : [],
+    attachments: [], // TODO: implement attachment syncing
   }
 }
 

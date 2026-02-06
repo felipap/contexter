@@ -1,3 +1,5 @@
+"use client"
+
 // E2E decryption utilities using Web Crypto API
 // Compatible with Node.js crypto on the desktop side
 

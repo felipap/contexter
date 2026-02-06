@@ -2,6 +2,7 @@
 
 import { isEncrypted } from "@/lib/encryption"
 import { ContactAvatar } from "@/ui/ContactAvatar"
+import { Decrypted } from "@/ui/Decrypted"
 import { LockIcon } from "@/ui/icons"
 import { Pagination } from "@/ui/Pagination"
 import {
@@ -28,13 +29,17 @@ const columns = [
     cell: ({ row }) => {
       const chat = row.original
       const isGroup = chat.participantCount > 2
-      const displayName = chat.decryptedChatName || chat.chatId
 
       return (
         <div className="flex min-w-0 items-center gap-2">
-          <ContactAvatar name={displayName} isGroup={isGroup} />
+          <ContactAvatar
+            name={chat.decryptedChatName || "-"}
+            isGroup={isGroup}
+          />
           <div className="flex min-w-0 flex-col">
-            <span className="truncate text-sm font-medium">{displayName}</span>
+            <span className="truncate text-sm font-medium">
+              <Decrypted>{chat.chatName}</Decrypted>
+            </span>
             <span className="truncate text-xs text-zinc-500">
               {chat.chatId}
             </span>
