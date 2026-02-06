@@ -12,7 +12,7 @@ export function SortSelector<T extends string>({
   options,
 }: Props<T>) {
   return (
-    <div className="flex items-center gap-2 text-sm">
+    <div className="flex items-center gap-2 text-sm w-[200px]">
       <span className="text-zinc-500">Sort by:</span>
       <select
         value={value}
