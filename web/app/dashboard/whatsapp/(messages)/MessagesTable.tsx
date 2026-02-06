@@ -42,10 +42,12 @@ export function MessagesTable({
     () => [
       columnHelper.accessor("isFromMe", {
         header: "Direction",
+        size: 100,
         cell: (info) => <DirectionBadge isFromMe={info.getValue()} />,
       }),
       columnHelper.accessor("chatId", {
         header: "Chat",
+        size: 180,
         cell: (info) => {
           const { decryptedChatName, chatId } = info.row.original
           const displayName = decryptedChatName || chatId
@@ -63,6 +65,7 @@ export function MessagesTable({
       }),
       columnHelper.accessor("sender", {
         header: "Sender",
+        size: 140,
         cell: (info) => {
           const sender = info.getValue()
           const { decryptedSenderName, isFromMe } = info.row.original
@@ -82,12 +85,15 @@ export function MessagesTable({
         },
       }),
       columnHelper.accessor("text", {
+        id: "text",
         header: "Message",
+        size: 320,
         cell: (info) => <MessageCell message={info.row.original} />,
       }),
       columnHelper.accessor(sortBy === "syncTime" ? "syncTime" : "timestamp", {
         id: "dateColumn",
         header: sortBy === "syncTime" ? "Received" : "Message Date",
+        size: 200,
         cell: (info) => (
           <DateCell message={info.row.original} sortBy={sortBy} />
         ),
@@ -106,7 +112,7 @@ export function MessagesTable({
   return (
     <>
       <div className="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
-        <table className="w-full">
+        <table className="w-full table-fixed">
           <thead className="bg-zinc-50 dark:bg-zinc-900">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
@@ -136,11 +142,11 @@ export function MessagesTable({
                 {row.getVisibleCells().map((cell) => (
                   <td
                     key={cell.id}
-                    className={`px-4 py-3 text-sm ${
-                      cell.column.id === "text"
-                        ? "max-w-[300px] truncate text-zinc-600 dark:text-zinc-400"
-                        : ""
-                    }`}
+                    className="overflow-hidden px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400"
+                    style={{
+                      maxWidth: cell.column.getSize(),
+                      width: cell.column.getSize(),
+                    }}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
@@ -193,14 +199,14 @@ function MessageCell({ message }: { message: DecryptedMessage }) {
 
   if (displayText) {
     return (
-      <span className="flex items-center gap-1.5">
+      <div className="flex min-w-0 items-center gap-1.5">
         {isMessageEncrypted && (
-          <span className="text-green-500" title="Decrypted">
+          <span className="shrink-0 text-green-500" title="Decrypted">
             <LockIcon size={12} />
           </span>
         )}
-        {displayText}
-      </span>
+        <span className="min-w-0 truncate">{displayText}</span>
+      </div>
     )
   }
 

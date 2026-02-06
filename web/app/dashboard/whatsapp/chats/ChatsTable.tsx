@@ -56,27 +56,30 @@ const columns = [
   columnHelper.display({
     id: "lastMessage",
     header: "Last Message",
+    size: 220,
     cell: ({ row }) => {
       const chat = row.original
       const isChatEncrypted = isEncrypted(chat.lastMessageText)
       const displayText = chat.decryptedLastMessage
 
       return (
-        <div className="max-w-[200px] truncate text-sm text-zinc-600 dark:text-zinc-400">
+        <div className="flex max-w-[200px] min-w-0 items-center gap-0.5 text-sm text-zinc-600 dark:text-zinc-400">
           {displayText ? (
             <>
               {chat.lastMessageFromMe && (
-                <span className="text-zinc-400 dark:text-zinc-500">You: </span>
+                <span className="shrink-0 text-zinc-400 dark:text-zinc-500">
+                  You:{" "}
+                </span>
               )}
               {isChatEncrypted && (
                 <span
-                  className="mr-0.5 inline-flex items-center text-green-500"
+                  className="shrink-0 inline-flex items-center text-green-500"
                   title="Decrypted"
                 >
                   <LockIcon size={10} />
                 </span>
               )}
-              {displayText}
+              <span className="min-w-0 truncate">{displayText}</span>
             </>
           ) : isChatEncrypted ? (
             <span className="flex items-center gap-1 italic text-amber-500">
@@ -129,7 +132,7 @@ export function ChatsTable({ chats, page, totalPages, onPageChange }: Props) {
   return (
     <>
       <div className="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
-        <table className="w-full">
+        <table className="w-full table-fixed">
           <thead className="bg-zinc-50 dark:bg-zinc-900">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
@@ -167,7 +170,7 @@ export function ChatsTable({ chats, page, totalPages, onPageChange }: Props) {
                 {row.getVisibleCells().map((cell) => (
                   <td
                     key={cell.id}
-                    className="px-4 py-3 text-sm"
+                    className="overflow-hidden px-4 py-3 text-sm"
                     style={{
                       maxWidth: cell.column.getSize(),
                       width: cell.column.getSize(),
