@@ -22,7 +22,7 @@ export function IgnoredChatIds({ ignoredChatIds, onAdd, onRemove }: Props) {
       <label className="block text-sm font-medium mb-1.5">
         Ignored chat IDs
       </label>
-      <p className="text-xs text-[var(--text-color-secondary)] mb-2">
+      <p className="text-xs text-secondary mb-2">
         Messages from these chats will not be synced. Enter the chat JID (e.g.,
         123456789@g.us).
       </p>
@@ -37,7 +37,7 @@ export function IgnoredChatIds({ ignoredChatIds, onAdd, onRemove }: Props) {
             }
           }}
           placeholder="Group ID (e.g., 123456789@g.us)"
-          className="flex-1 px-3 py-2 rounded-md border bg-[var(--background-color-three)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+          className="flex-1 px-3 py-2 rounded-md border bg-threefocus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
         />
         <button
           onClick={handleAdd}
@@ -52,7 +52,7 @@ export function IgnoredChatIds({ ignoredChatIds, onAdd, onRemove }: Props) {
           {ignoredChatIds.map((id) => (
             <div
               key={id}
-              className="flex items-center justify-between px-3 py-2 rounded-md bg-[var(--background-color-two)] text-sm"
+              className="flex items-center justify-between px-3 py-2 rounded-md bg-two text-sm"
             >
               <span className="font-mono text-xs truncate">{id}</span>
               <button

@@ -30,14 +30,14 @@ export const DataSourceLogs = withBoundary(function DataSourceLogs({
       <h3 className="text-md font-medium mb-3">Recent Syncs</h3>
 
       {logs.length === 0 ? (
-        <div className="text-sm text-[var(--text-color-secondary)] py-4">
+        <div className="text-sm text-secondary py-4">
           No sync attempts for {sourceLabel} yet.
         </div>
       ) : (
         <div className="overflow-auto max-h-64 border rounded-lg">
           <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-[var(--background-color-two)]">
-              <tr className="text-left text-[var(--text-color-secondary)] border-b">
+            <thead className="sticky top-0 bg-two">
+              <tr className="text-left text-secondary border-b">
                 <th className="px-3 py-2 font-medium">Time</th>
                 <th className="px-3 py-2 font-medium">Status</th>
                 <th className="px-3 py-2 font-medium text-right">Duration</th>
@@ -109,13 +109,13 @@ const DataSourceLogItem = forwardRef<HTMLTableRowElement, ItemProps>(
         <tr
           ref={ref}
           onClick={() => setExpanded(!expanded)}
-          className={`border-b border-[var(--border-color-one)] hover:bg-[var(--background-color-three)] cursor-pointer ${
+          className={`border-b border-one hover:bg-threecursor-pointer ${
             highlighted ? 'bg-blue-50 dark:bg-blue-900/20' : ''
           }`}
         >
           <td className="px-3 py-2 font-mono text-xs">
             {showDate && (
-              <span className="text-[var(--text-color-secondary)] mr-1.5">
+              <span className="text-secondary mr-1.5">
                 {formatDate(log.timestamp)}
               </span>
             )}
@@ -124,12 +124,12 @@ const DataSourceLogItem = forwardRef<HTMLTableRowElement, ItemProps>(
           <td className="px-3 py-2">
             <StatusBadge status={log.status} />
           </td>
-          <td className="px-3 py-2 text-right font-mono text-xs text-[var(--text-color-secondary)]">
+          <td className="px-3 py-2 text-right font-mono text-xs text-secondary">
             {log.duration}ms
           </td>
         </tr>
         {expanded && log.errorMessage && (
-          <tr className="bg-[var(--background-color-two)]">
+          <tr className="bg-two">
             <td colSpan={3} className="px-3 py-2 text-sm">
               <span className="text-red-600 dark:text-red-400 font-mono text-xs">
                 {log.errorMessage}

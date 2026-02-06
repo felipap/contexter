@@ -47,7 +47,7 @@ export function McpServerTab() {
 
   if (isLoading || !config || !status) {
     return (
-      <div className="flex items-center justify-center py-12 text-[var(--text-color-secondary)]">
+      <div className="flex items-center justify-center py-12 text-secondary">
         Loading...
       </div>
     )
@@ -57,7 +57,7 @@ export function McpServerTab() {
     <div className="space-y-6">
       <div>
         <h2 className="text-lg font-semibold mb-2">MCP Server</h2>
-        <p className="text-sm text-[var(--text-color-secondary)] mb-4">
+        <p className="text-sm text-secondary mb-4">
           Enable the local MCP server to allow AI assistants like Claude (in
           Cursor) to access your contacts and messages.
         </p>
@@ -80,11 +80,11 @@ export function McpServerTab() {
             type="number"
             value={config.port}
             onChange={(e) => handlePortChange(parseInt(e.target.value, 10))}
-            className="w-32 px-3 py-2 rounded-md border bg-[var(--background-color-three)] focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-32 px-3 py-2 rounded-md border bg-threefocus:outline-none focus:ring-2 focus:ring-blue-500"
             min={1024}
             max={65535}
           />
-          <p className="text-xs text-[var(--text-color-secondary)] mt-1">
+          <p className="text-xs text-secondary mt-1">
             Port changes take effect after restart
           </p>
         </div>
@@ -104,10 +104,10 @@ export function McpServerTab() {
 
       <div className="border-t pt-4">
         <h3 className="text-sm font-semibold mb-2">Cursor Configuration</h3>
-        <p className="text-sm text-[var(--text-color-secondary)] mb-3">
+        <p className="text-sm text-secondary mb-3">
           Add this to your Cursor MCP settings to connect:
         </p>
-        <pre className="text-xs bg-[var(--background-color-three)] p-3 rounded-md overflow-x-auto">
+        <pre className="text-xs bg-threep-3 rounded-md overflow-x-auto">
           {`{
   "mcpServers": {
     "contexter": {
@@ -120,7 +120,7 @@ export function McpServerTab() {
 
       <div className="border-t pt-4">
         <h3 className="text-sm font-semibold mb-2">Available Tools</h3>
-        <ul className="text-sm text-[var(--text-color-secondary)] space-y-1">
+        <ul className="text-sm text-secondary space-y-1">
           <li>
             <strong>get_contacts</strong> - Search and list macOS contacts
           </li>

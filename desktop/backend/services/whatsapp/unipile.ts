@@ -10,6 +10,14 @@ import { createScheduledService } from '../scheduler'
 import type { WhatsAppAttachment, WhatsAppMessage } from './types'
 import { uploadWhatsAppMessages } from './upload'
 
+const BATCH_SIZE = 50
+
+function yieldToEventLoop(): Promise<void> {
+  return new Promise((resolve) => {
+    setImmediate(resolve)
+  })
+}
+
 function getUnipileConfig(): UnipileConfig | null {
   const config = store.get('whatsappUnipile')
   if (!config.apiBaseUrl || !config.apiToken || !config.accountId) {
@@ -53,6 +61,7 @@ let lastExportedMessageDate: Date | null = null
 
 async function exportAndUpload(): Promise<void> {
   console.log('[whatsapp-unipile] Exporting messages...')
+  await yieldToEventLoop()
 
   const unipileConfig = getUnipileConfig()
   if (!unipileConfig) {
@@ -79,17 +88,23 @@ async function exportAndUpload(): Promise<void> {
 
   console.debug('[whatsapp-unipile] Found', messages.length, 'new messages')
 
+  await yieldToEventLoop()
+
   const stopAnimating = startAnimating('old')
 
-  const res = await catchAndComplain(
-    uploadWhatsAppMessages(messages, 'unipile'),
-  )
-  stopAnimating()
-
-  if ('error' in res) {
-    throw new Error(`uploadWhatsAppMessages failed: ${res.error}`)
+  for (let i = 0; i < messages.length; i += BATCH_SIZE) {
+    const batch = messages.slice(i, i + BATCH_SIZE)
+    const res = await catchAndComplain(
+      uploadWhatsAppMessages(batch, 'unipile'),
+    )
+    if ('error' in res) {
+      stopAnimating()
+      throw new Error(`uploadWhatsAppMessages failed: ${res.error}`)
+    }
+    await yieldToEventLoop()
   }
 
+  stopAnimating()
   lastExportedMessageDate = new Date(latestTimestamp)
 }
 

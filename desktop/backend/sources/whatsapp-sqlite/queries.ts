@@ -129,16 +129,161 @@ export function fetchChats(db: Database.Database): WhatsappSqliteChat[] {
   }))
 }
 
+function toWhatsappSqliteMessage(
+  row: z.infer<typeof MessageRowSchema>,
+  phoneMap: Map<string, string>,
+): WhatsappSqliteMessage {
+  const isGroup = row.chatJid?.endsWith('@g.us') ?? false
+
+  let senderJid: string | null
+  if (isGroup) {
+    senderJid = row.groupMemberJid
+  } else {
+    senderJid = row.isFromMe === 1 ? row.fromJid : row.chatJid
+  }
+
+  const senderPhoneNumber = senderJid
+    ? (phoneMap.get(senderJid) ?? null)
+    : null
+
+  const senderName = isGroup ? row.groupMemberName : row.chatName
+
+  return {
+    id: String(row.id),
+    chatId: row.chatJid ?? String(row.chatSessionId),
+    chatName: row.chatName,
+    chatIsGroupChat: isGroup,
+    text: row.text,
+    senderJid,
+    senderName,
+    senderPhoneNumber,
+    timestamp: coreDataToDate(row.messageDate).toISOString(),
+    isFromMe: row.isFromMe === 1,
+    messageType: row.messageType,
+    hasMedia: row.mediaItemId !== null,
+    mediaLocalPath: row.mediaLocalPath,
+  }
+}
+
+export type FetchMessagesBatchResult = {
+  messages: WhatsappSqliteMessage[]
+  nextAfterMessageDate: number | null
+  nextAfterId: number | null
+}
+
+export function fetchMessagesBatch(
+  db: Database.Database,
+  since: Date,
+  limit: number,
+  afterMessageDate?: number,
+  afterId?: number,
+): FetchMessagesBatchResult {
+  const sinceTimestamp =
+    Math.floor(since.getTime() / 1000) - CORE_DATA_EPOCH_OFFSET
+  const phoneMap = buildContactPhoneMap()
+
+  const hasCursor = afterMessageDate !== undefined && afterId !== undefined
+  const stmt = hasCursor
+    ? db.prepare(
+        `
+    SELECT
+      m.Z_PK as id,
+      m.ZCHATSESSION as chatSessionId,
+      c.ZCONTACTJID as chatJid,
+      c.ZPARTNERNAME as chatName,
+      m.ZTEXT as text,
+      m.ZFROMJID as fromJid,
+      gm.ZMEMBERJID as groupMemberJid,
+      COALESCE(NULLIF(gm.ZCONTACTNAME, ''), ppn.ZPUSHNAME) as groupMemberName,
+      m.ZMESSAGEDATE as messageDate,
+      m.ZISFROMME as isFromMe,
+      m.ZMESSAGETYPE as messageType,
+      m.ZMEDIAITEM as mediaItemId,
+      media.ZMEDIALOCALPATH as mediaLocalPath
+    FROM ZWAMESSAGE m
+    LEFT JOIN ZWACHATSESSION c ON m.ZCHATSESSION = c.Z_PK
+    LEFT JOIN ZWAGROUPMEMBER gm ON m.ZGROUPMEMBER = gm.Z_PK
+    LEFT JOIN ZWAPROFILEPUSHNAME ppn ON gm.ZMEMBERJID = ppn.ZJID
+    LEFT JOIN ZWAMEDIAITEM media ON m.ZMEDIAITEM = media.Z_PK
+    WHERE (m.ZMESSAGEDATE > ? OR (m.ZMESSAGEDATE = ? AND m.Z_PK > ?))
+      AND c.ZCONTACTJID != 'status@broadcast'
+      AND c.ZCONTACTJID NOT LIKE '%@status'
+    ORDER BY m.ZMESSAGEDATE ASC, m.Z_PK ASC
+    LIMIT ?
+  `,
+      )
+    : db.prepare(
+        `
+    SELECT
+      m.Z_PK as id,
+      m.ZCHATSESSION as chatSessionId,
+      c.ZCONTACTJID as chatJid,
+      c.ZPARTNERNAME as chatName,
+      m.ZTEXT as text,
+      m.ZFROMJID as fromJid,
+      gm.ZMEMBERJID as groupMemberJid,
+      COALESCE(NULLIF(gm.ZCONTACTNAME, ''), ppn.ZPUSHNAME) as groupMemberName,
+      m.ZMESSAGEDATE as messageDate,
+      m.ZISFROMME as isFromMe,
+      m.ZMESSAGETYPE as messageType,
+      m.ZMEDIAITEM as mediaItemId,
+      media.ZMEDIALOCALPATH as mediaLocalPath
+    FROM ZWAMESSAGE m
+    LEFT JOIN ZWACHATSESSION c ON m.ZCHATSESSION = c.Z_PK
+    LEFT JOIN ZWAGROUPMEMBER gm ON m.ZGROUPMEMBER = gm.Z_PK
+    LEFT JOIN ZWAPROFILEPUSHNAME ppn ON gm.ZMEMBERJID = ppn.ZJID
+    LEFT JOIN ZWAMEDIAITEM media ON m.ZMEDIAITEM = media.Z_PK
+    WHERE m.ZMESSAGEDATE > ?
+      AND c.ZCONTACTJID != 'status@broadcast'
+      AND c.ZCONTACTJID NOT LIKE '%@status'
+    ORDER BY m.ZMESSAGEDATE ASC, m.Z_PK ASC
+    LIMIT ?
+  `,
+      )
+
+  const rawRows = hasCursor
+    ? stmt.all(afterMessageDate!, afterMessageDate!, afterId!, limit)
+    : stmt.all(sinceTimestamp, limit)
+
+  const rows = z.array(MessageRowSchema).parse(rawRows)
+  const messages = rows.map((row) => toWhatsappSqliteMessage(row, phoneMap))
+
+  const hasMore = rows.length === limit && rows.length > 0
+  const last = rows[rows.length - 1]
+  const nextAfterMessageDate = hasMore ? last.messageDate : null
+  const nextAfterId = hasMore ? last.id : null
+
+  return { messages, nextAfterMessageDate, nextAfterId }
+}
+
+export function getMessageCountSince(
+  db: Database.Database,
+  since: Date,
+): number {
+  const sinceTimestamp =
+    Math.floor(since.getTime() / 1000) - CORE_DATA_EPOCH_OFFSET
+  const rawRow = db
+    .prepare(
+      `
+    SELECT COUNT(*) as count
+    FROM ZWAMESSAGE m
+    LEFT JOIN ZWACHATSESSION c ON m.ZCHATSESSION = c.Z_PK
+    WHERE m.ZMESSAGEDATE > ?
+      AND c.ZCONTACTJID != 'status@broadcast'
+      AND c.ZCONTACTJID NOT LIKE '%@status'
+  `,
+    )
+    .get(sinceTimestamp)
+  const row = CountRowSchema.parse(rawRow)
+  return row.count
+}
+
 export function fetchMessages(
   db: Database.Database,
   since: Date,
 ): WhatsappSqliteMessage[] {
-  // Convert JS Date to Core Data timestamp
   const sinceTimestamp =
     Math.floor(since.getTime() / 1000) - CORE_DATA_EPOCH_OFFSET
-
-  // Build phone number lookup map from contacts database
-  // Phone numbers are only available for contacts saved in the user's address book
   const phoneMap = buildContactPhoneMap()
 
   const rawRows = db
@@ -173,47 +318,7 @@ export function fetchMessages(
     .all(sinceTimestamp)
 
   const rows = z.array(MessageRowSchema).parse(rawRows)
-
-  return rows.map((row) => {
-    const isGroup = row.chatJid?.endsWith('@g.us') ?? false
-
-    // Determine sender JID:
-    // - For group chats: use the group member's JID
-    // - For individual chats: if incoming (isFromMe=0), the sender is the chat contact (chatJid)
-    //   If outgoing (isFromMe=1), use fromJid (which might be our own JID or null)
-    let senderJid: string | null
-    if (isGroup) {
-      senderJid = row.groupMemberJid
-    } else {
-      // In 1:1 chats, the chatJid IS the contact's JID
-      senderJid = row.isFromMe === 1 ? row.fromJid : row.chatJid
-    }
-
-    // Look up phone number from contacts by sender JID (LID or WhatsApp JID format)
-    const senderPhoneNumber = senderJid
-      ? (phoneMap.get(senderJid) ?? null)
-      : null
-
-    // For individual chats, the chatName is the contact's name
-    // For group chats, try to use the group member's contact name (often null)
-    const senderName = isGroup ? row.groupMemberName : row.chatName
-
-    return {
-      id: String(row.id),
-      chatId: row.chatJid ?? String(row.chatSessionId),
-      chatName: row.chatName,
-      chatIsGroupChat: isGroup,
-      text: row.text,
-      senderJid,
-      senderName,
-      senderPhoneNumber,
-      timestamp: coreDataToDate(row.messageDate).toISOString(),
-      isFromMe: row.isFromMe === 1,
-      messageType: row.messageType,
-      hasMedia: row.mediaItemId !== null,
-      mediaLocalPath: row.mediaLocalPath,
-    }
-  })
+  return rows.map((row) => toWhatsappSqliteMessage(row, phoneMap))
 }
 
 export function getMessageCount(db: Database.Database): number {

@@ -1,5 +1,6 @@
 import {
-  fetchMessages,
+  fetchMessagesBatch,
+  getMessageCountSince,
   openWhatsAppDatabase,
   type WhatsappSqliteMessage,
 } from '../../sources/whatsapp-sqlite'
@@ -92,24 +93,10 @@ async function runBackfill(days = 120): Promise<void> {
 
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 
-  console.log(
-    `[whatsapp] Fetching all messages since ${since.toISOString()}...`,
-  )
-  const fetchStart = Date.now()
-
-  const sqliteMessages = fetchMessages(db, since)
-
-  const fetchEnd = Date.now()
-  console.log(
-    `[whatsapp] Found ${sqliteMessages.length.toLocaleString()} messages to backfill in ${fetchEnd - fetchStart}ms`,
-  )
-
   const ignoredChatIds = store.get('whatsappSqlite').ignoredChatIds ?? []
-  const filteredMessages = sqliteMessages.filter(
-    (msg) => !ignoredChatIds.includes(msg.chatId),
-  )
 
-  if (filteredMessages.length === 0) {
+  const messageCount = getMessageCountSince(db, since)
+  if (messageCount === 0) {
     backfillProgress = {
       status: 'completed',
       current: 0,
@@ -123,49 +110,74 @@ async function runBackfill(days = 120): Promise<void> {
     return
   }
 
-  const messages = filteredMessages.map(toWhatsAppMessage)
-
-  // Switch to uploading phase
-  const totalBatches = Math.ceil(messages.length / BATCH_SIZE)
+  const totalBatches = Math.ceil(messageCount / BATCH_SIZE)
+  let batchNumber = 0
   let itemsUploaded = 0
   backfillProgress = {
     status: 'running',
     phase: 'uploading',
     current: 0,
     total: totalBatches,
-    messageCount: messages.length,
+    messageCount,
     itemsUploaded: 0,
   }
 
-  // Upload in batches
-  for (let i = 0; i < messages.length && !backfillCancelled; i += BATCH_SIZE) {
-    const batch = messages.slice(i, i + BATCH_SIZE)
-    const pageNumber = Math.floor(i / BATCH_SIZE) + 1
+  console.log(
+    `[whatsapp] Backfilling up to ${messageCount.toLocaleString()} messages in batches (no full load)...`,
+  )
 
-    const res = await catchAndComplain(uploadWhatsAppMessages(batch, 'sqlite'))
-    if ('error' in res) {
-      const errorMessage = `Failed to upload page ${pageNumber}. ${itemsUploaded} items uploaded in total.`
-      console.error(`[whatsapp] ${errorMessage} Error: ${res.error}`)
-      backfillProgress = {
-        ...backfillProgress,
-        status: 'error',
-        failedPage: pageNumber,
-        itemsUploaded,
-        error: `${errorMessage} Error: ${res.error}`,
+  let nextAfterDate: number | undefined = undefined
+  let nextAfterId: number | undefined = undefined
+  let fetchBatchCount = 0
+
+  while (!backfillCancelled) {
+    const { messages: sqliteMessages, nextAfterMessageDate, nextAfterId: nextId } =
+      fetchMessagesBatch(db, since, BATCH_SIZE, nextAfterDate, nextAfterId)
+
+    fetchBatchCount++
+
+    const filtered = sqliteMessages.filter(
+      (msg) => !ignoredChatIds.includes(msg.chatId),
+    )
+
+    if (filtered.length > 0) {
+      const batch = filtered.map(toWhatsAppMessage)
+      batchNumber++
+
+      const res = await catchAndComplain(uploadWhatsAppMessages(batch, 'sqlite'))
+      if ('error' in res) {
+        const errorMessage = `Failed to upload page ${batchNumber}. ${itemsUploaded} items uploaded in total.`
+        console.error(`[whatsapp] ${errorMessage} Error: ${res.error}`)
+        backfillProgress = {
+          ...backfillProgress,
+          status: 'error',
+          failedPage: batchNumber,
+          itemsUploaded,
+          error: `${errorMessage} Error: ${res.error}`,
+        }
+        db.close()
+        stopAnimating()
+        backfillInProgress = false
+        return
       }
-      db.close()
-      stopAnimating()
-      backfillInProgress = false
-      return
+
+      itemsUploaded += batch.length
     }
 
-    itemsUploaded += batch.length
-    backfillProgress.current++
+    backfillProgress.current = fetchBatchCount
     backfillProgress.itemsUploaded = itemsUploaded
-    console.log(
-      `[whatsapp] Backfill progress: ${backfillProgress.current}/${totalBatches} batches ` +
-        `(${itemsUploaded}/${messages.length} messages)`,
-    )
+
+    if (batchNumber > 0 && batchNumber % 10 === 0) {
+      console.log(
+        `[whatsapp] Backfill progress: ${itemsUploaded.toLocaleString()} messages uploaded`,
+      )
+    }
+
+    nextAfterDate = nextAfterMessageDate ?? undefined
+    nextAfterId = nextId ?? undefined
+    if (nextAfterMessageDate === null) {
+      break
+    }
   }
 
   if (backfillCancelled) {

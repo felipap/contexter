@@ -1,7 +1,7 @@
 import Database from 'better-sqlite3'
 import { catchAndComplain } from '../../lib/utils'
 import {
-  fetchMessages,
+  fetchMessagesBatch,
   openWhatsAppDatabase,
   type WhatsappSqliteMessage,
 } from '../../sources/whatsapp-sqlite'
@@ -10,6 +10,14 @@ import { startAnimating } from '../../tray/animate'
 import { createScheduledService } from '../scheduler'
 import type { WhatsAppMessage } from './types'
 import { uploadWhatsAppMessages } from './upload'
+
+const BATCH_SIZE = 50
+
+function yieldToEventLoop(): Promise<void> {
+  return new Promise((resolve) => {
+    setImmediate(resolve)
+  })
+}
 
 let db: Database.Database | null = null
 
@@ -49,6 +57,7 @@ function setLastExportedDate(date: Date): void {
 
 async function exportAndUpload(): Promise<void> {
   console.log('[whatsapp-sqlite] Exporting messages...')
+  await yieldToEventLoop()
 
   if (!db) {
     throw new Error('Database not initialized')
@@ -59,39 +68,58 @@ async function exportAndUpload(): Promise<void> {
     ? new Date(lastExported.getTime() + 1_000)
     : new Date(Date.now() - 24 * 60 * 60 * 1000)
 
-  const sqliteMessages = fetchMessages(db, since)
-
   const ignoredChatIds = store.get('whatsappSqlite').ignoredChatIds ?? []
-  const filteredMessages = sqliteMessages.filter(
-    (msg) => !ignoredChatIds.includes(msg.chatId),
-  )
-
-  if (filteredMessages.length === 0) {
-    console.log('[whatsapp-sqlite] No new messages to export')
-    return
-  }
-
-  const messages = filteredMessages.map(toWhatsAppMessage)
-
-  const latestTimestamp = messages.reduce(
-    (max, msg) => (msg.timestamp > max ? msg.timestamp : max),
-    messages[0].timestamp,
-  )
-
-  console.debug(
-    `[whatsapp-sqlite] Found ${messages.length.toLocaleString()} new messages`,
-  )
+  let nextAfterDate: number | undefined = undefined
+  let nextAfterId: number | undefined = undefined
+  let totalUploaded = 0
+  let latestTimestamp: string | null = null
 
   const stopAnimating = startAnimating('old')
 
-  const res = await catchAndComplain(uploadWhatsAppMessages(messages, 'sqlite'))
-  stopAnimating()
+  for (;;) {
+    const { messages: sqliteMessages, nextAfterMessageDate, nextAfterId: nextId } =
+      fetchMessagesBatch(db, since, BATCH_SIZE, nextAfterDate, nextAfterId)
 
-  if ('error' in res) {
-    throw new Error(`uploadWhatsAppMessages failed: ${res.error}`)
+    const filtered = sqliteMessages.filter(
+      (msg) => !ignoredChatIds.includes(msg.chatId),
+    )
+
+    if (filtered.length > 0) {
+      const batch = filtered.map(toWhatsAppMessage)
+      const batchLatest = batch.reduce(
+        (max, msg) => (msg.timestamp > max ? msg.timestamp : max),
+        batch[0].timestamp,
+      )
+      if (latestTimestamp === null || batchLatest > latestTimestamp) {
+        latestTimestamp = batchLatest
+      }
+
+      const res = await catchAndComplain(uploadWhatsAppMessages(batch, 'sqlite'))
+      if ('error' in res) {
+        stopAnimating()
+        throw new Error(`uploadWhatsAppMessages failed: ${res.error}`)
+      }
+      totalUploaded += batch.length
+    }
+
+    nextAfterDate = nextAfterMessageDate ?? undefined
+    nextAfterId = nextId ?? undefined
+    if (nextAfterMessageDate === null) {
+      break
+    }
+    await yieldToEventLoop()
   }
 
-  setLastExportedDate(new Date(latestTimestamp))
+  stopAnimating()
+
+  if (totalUploaded > 0 && latestTimestamp) {
+    console.debug(
+      `[whatsapp-sqlite] Uploaded ${totalUploaded.toLocaleString()} new messages`,
+    )
+    setLastExportedDate(new Date(latestTimestamp))
+  } else if (totalUploaded === 0) {
+    console.log('[whatsapp-sqlite] No new messages to export')
+  }
 }
 
 export const whatsappSqliteService = createScheduledService({

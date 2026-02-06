@@ -57,13 +57,13 @@ export const SyncLogItem = forwardRef<HTMLTableRowElement, Props>(
         <tr
           ref={ref}
           onClick={() => setExpanded(!expanded)}
-          className={`border-b border-[var(--border-color-one)] hover:bg-[var(--background-color-three)] cursor-pointer ${
+          className={`border-b border-one hover:bg-threecursor-pointer ${
             highlighted ? 'bg-blue-50 dark:bg-blue-900/20' : ''
           }`}
         >
           <td className="py-2.5 font-mono text-xs">
             {showDate && (
-              <span className="text-[var(--text-color-secondary)] mr-1.5">
+              <span className="text-secondary mr-1.5">
                 {formatDate(log.timestamp)}
               </span>
             )}
@@ -73,37 +73,29 @@ export const SyncLogItem = forwardRef<HTMLTableRowElement, Props>(
           <td className="py-2.5">
             <StatusBadge status={log.status} />
           </td>
-          <td className="py-2.5 text-right font-mono text-xs text-[var(--text-color-secondary)]">
+          <td className="py-2.5 text-right font-mono text-xs text-secondary">
             {log.duration}ms
           </td>
         </tr>
         {expanded && (
-          <tr className="bg-[var(--background-color-two)]">
+          <tr className="bg-two">
             <td colSpan={4} className="px-4 py-3 text-sm">
               <div className="space-y-1">
                 <div>
-                  <span className="text-[var(--text-color-secondary)]">
-                    Source:
-                  </span>{' '}
+                  <span className="text-secondary">Source:</span>{' '}
                   {SOURCE_LABELS[log.source]}
                 </div>
                 <div>
-                  <span className="text-[var(--text-color-secondary)]">
-                    Status:
-                  </span>{' '}
+                  <span className="text-secondary">Status:</span>{' '}
                   {log.status === 'success' ? 'Success' : 'Failed'}
                 </div>
                 <div>
-                  <span className="text-[var(--text-color-secondary)]">
-                    Duration:
-                  </span>{' '}
+                  <span className="text-secondary">Duration:</span>{' '}
                   {log.duration}ms
                 </div>
                 {log.errorMessage && (
                   <div>
-                    <span className="text-[var(--text-color-secondary)]">
-                      Error:
-                    </span>{' '}
+                    <span className="text-secondary">Error:</span>{' '}
                     <span className="text-red-600 dark:text-red-400 font-mono text-xs">
                       {log.errorMessage}
                     </span>

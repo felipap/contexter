@@ -7,11 +7,14 @@ import {
   openWhatsAppDatabase,
   fetchChats,
   fetchMessages,
+  fetchMessagesBatch,
   getChatCount,
   getMessageCount,
+  getMessageCountSince,
   getWhatsAppDatabasePath,
   isWhatsAppInstalled,
 } from './index'
+import type { WhatsappSqliteMessage } from './types'
 
 describe('whatsapp-sqlite', () => {
   it('should find WhatsApp database path', () => {
@@ -128,6 +131,74 @@ describe('whatsapp-sqlite', () => {
           expect(messages[0]).toHaveProperty('chatIsGroupChat')
           expect(messages[0]).toHaveProperty('timestamp')
           expect(messages[0]).toHaveProperty('senderPhoneNumber')
+        }
+      } finally {
+        db.close()
+      }
+    })
+
+    it('fetchMessagesBatch yields same messages as fetchMessages when iterated (streaming)', () => {
+      const db = openWhatsAppDatabase()
+      try {
+        const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+        const allAtOnce = fetchMessages(db, since)
+
+        const batchSize = 50
+        const batched: WhatsappSqliteMessage[] = []
+        let nextAfterDate: number | undefined = undefined
+        let nextAfterId: number | undefined = undefined
+        for (;;) {
+          const { messages, nextAfterMessageDate, nextAfterId: nextId } =
+            fetchMessagesBatch(db, since, batchSize, nextAfterDate, nextAfterId)
+          batched.push(...messages)
+          if (nextAfterMessageDate === null) {
+            break
+          }
+          nextAfterDate = nextAfterMessageDate
+          nextAfterId = nextId ?? undefined
+        }
+
+        expect(batched.length).toBe(allAtOnce.length)
+        expect(batched.map((m) => m.id)).toEqual(allAtOnce.map((m) => m.id))
+      } finally {
+        db.close()
+      }
+    })
+
+    it('getMessageCountSince matches fetchMessages length', () => {
+      const db = openWhatsAppDatabase()
+      try {
+        const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+        const count = getMessageCountSince(db, since)
+        const messages = fetchMessages(db, since)
+        expect(count).toBe(messages.length)
+      } finally {
+        db.close()
+      }
+    })
+
+    it('fetchMessagesBatch respects limit and returns nextAfter for pagination', () => {
+      const db = openWhatsAppDatabase()
+      try {
+        const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+        const { messages: first, nextAfterMessageDate, nextAfterId } =
+          fetchMessagesBatch(db, since, 2, undefined, undefined)
+        expect(first.length).toBeLessThanOrEqual(2)
+        if (first.length === 2) {
+          expect(nextAfterMessageDate).not.toBeNull()
+          expect(nextAfterId).not.toBeNull()
+          const { messages: second } = fetchMessagesBatch(
+            db,
+            since,
+            2,
+            nextAfterMessageDate ?? undefined,
+            nextAfterId ?? undefined,
+          )
+          expect(second.length).toBeLessThanOrEqual(2)
+          expect(second.every((m) => m.id !== first[0].id)).toBe(true)
+        } else {
+          expect(nextAfterMessageDate).toBeNull()
+          expect(nextAfterId).toBeNull()
         }
       } finally {
         db.close()

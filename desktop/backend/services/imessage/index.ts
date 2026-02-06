@@ -12,10 +12,19 @@ import { uploadMessages } from './upload'
 
 export { imessageBackfill } from './backfill'
 
+const BATCH_SIZE = 50
+
+function yieldToEventLoop(): Promise<void> {
+  return new Promise((resolve) => {
+    setImmediate(resolve)
+  })
+}
+
 let sdk: IMessageSDK | null = null
 
 async function exportAndUpload(): Promise<void> {
   console.log('[imessage] Exporting messages...')
+  await yieldToEventLoop()
 
   if (!sdk) {
     throw new Error('SDK not initialized')
@@ -44,15 +53,21 @@ async function exportAndUpload(): Promise<void> {
     `[imessage] Found ${messages.length.toLocaleString()} new messages`,
   )
 
+  await yieldToEventLoop()
+
   const stopAnimating = startAnimating('old')
 
-  const res = await catchAndComplain(uploadMessages(messages))
-  stopAnimating()
-
-  if ('error' in res) {
-    throw new Error(`uploadMessages failed: ${res.error}`)
+  for (let i = 0; i < messages.length; i += BATCH_SIZE) {
+    const batch = messages.slice(i, i + BATCH_SIZE)
+    const res = await catchAndComplain(uploadMessages(batch))
+    if ('error' in res) {
+      stopAnimating()
+      throw new Error(`uploadMessages failed: ${res.error}`)
+    }
+    await yieldToEventLoop()
   }
 
+  stopAnimating()
   setLastExportedMessageDate(new Date(latestDateStr))
 }
 

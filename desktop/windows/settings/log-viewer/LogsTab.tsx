@@ -30,7 +30,10 @@ export function LogsTab({ highlightSyncId }: Props) {
   // Scroll to highlighted item
   useEffect(() => {
     if (highlightSyncId && highlightRef.current) {
-      highlightRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      highlightRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      })
     }
   }, [highlightSyncId, logs])
 
@@ -41,7 +44,7 @@ export function LogsTab({ highlightSyncId }: Props) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12 text-[var(--text-color-secondary)]">
+      <div className="flex items-center justify-center py-12 text-secondary">
         Loading logs...
       </div>
     )
@@ -62,17 +65,15 @@ export function LogsTab({ highlightSyncId }: Props) {
       </div>
 
       {logs.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center text-[var(--text-color-secondary)] py-12">
+        <div className="flex-1 flex flex-col items-center justify-center text-secondary py-12">
           <p>No sync attempts logged yet</p>
-          <p className="text-sm mt-1">
-            Sync attempts will appear here
-          </p>
+          <p className="text-sm mt-1">Sync attempts will appear here</p>
         </div>
       ) : (
         <div className="flex-1 overflow-auto -mx-4 px-4">
           <table className="w-full text-sm">
             <thead className="sticky top-0 bg-[var(--background-color-one)]">
-              <tr className="text-left text-[var(--text-color-secondary)] border-b">
+              <tr className="text-left text-secondary border-b">
                 <th className="pb-2 font-medium">Time</th>
                 <th className="pb-2 font-medium">Source</th>
                 <th className="pb-2 font-medium">Status</th>
@@ -83,7 +84,8 @@ export function LogsTab({ highlightSyncId }: Props) {
               {logs.map((log, index) => {
                 const showDate =
                   index === 0 ||
-                  formatDate(log.timestamp) !== formatDate(logs[index - 1].timestamp)
+                  formatDate(log.timestamp) !==
+                    formatDate(logs[index - 1].timestamp)
                 const isHighlighted = log.id === highlightSyncId
 
                 return (

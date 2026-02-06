@@ -16,11 +16,14 @@ import { existsSync } from 'fs'
 export {
   fetchChats,
   fetchMessages,
+  fetchMessagesBatch,
   getChatCount,
   getMessageCount,
+  getMessageCountSince,
   getWhatsAppContactsDbPath,
   getWhatsAppDatabasePath,
 } from './queries'
+export type { FetchMessagesBatchResult } from './queries'
 export type { WhatsappSqliteChat, WhatsappSqliteMessage } from './types'
 
 import { getWhatsAppDatabasePath } from './queries'

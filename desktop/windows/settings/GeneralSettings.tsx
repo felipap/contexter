@@ -25,7 +25,7 @@ function PasswordInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}
-        className={`w-full px-3 py-2 pr-10 rounded-md border bg-[var(--background-color-three)] focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+        className={`w-full px-3 py-2 pr-10 rounded-md border bg-threefocus:outline-none focus:ring-2 focus:ring-blue-500 ${
           hasError ? 'border-red-500' : ''
         }`}
         placeholder={placeholder}
@@ -33,7 +33,7 @@ function PasswordInput({
       <button
         type="button"
         onClick={() => setShowPassword(!showPassword)}
-        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-[var(--text-color-secondary)] hover:text-[var(--text-color-primary)] transition-colors"
+        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-secondary hover:text-contrast transition-colors"
       >
         {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
       </button>
@@ -89,7 +89,7 @@ export function GeneralSettings() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12 text-[var(--text-color-secondary)]">
+      <div className="flex items-center justify-center py-12 text-secondary">
         Loading settings...
       </div>
     )
@@ -108,12 +108,10 @@ export function GeneralSettings() {
           />
           <span className="text-sm">Start on login</span>
         </label>
-        <p className="text-xs text-[var(--text-color-secondary)] mt-1 ml-7">
+        <p className="text-xs text-secondary mt-1 ml-7">
           Automatically start Contexter when you log in to your computer
         </p>
-        <p className="text-xs text-[var(--text-color-secondary)] mt-4">
-          Version {appVersion}
-        </p>
+        <p className="text-xs text-secondary mt-4">Version {appVersion}</p>
       </div>
 
       <div>
@@ -137,7 +135,7 @@ export function GeneralSettings() {
               value={serverUrl}
               onChange={(e) => setServerUrl(e.target.value)}
               onBlur={handleServerUrlBlur}
-              className="w-full px-3 py-2 rounded-md border bg-[var(--background-color-three)] focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 rounded-md border bg-threefocus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="http://context.yourdomain.com"
             />
           </div>
@@ -152,7 +150,7 @@ export function GeneralSettings() {
               onBlur={handleDeviceSecretBlur}
               placeholder="Enter the secret from your server"
             />
-            <p className="text-xs text-[var(--text-color-secondary)] mt-1">
+            <p className="text-xs text-secondary mt-1">
               Must match API_WRITE_SECRET on the server
             </p>
           </div>
@@ -168,7 +166,7 @@ export function GeneralSettings() {
               placeholder="Required: passphrase for E2E encryption"
               hasError={!hasEncryptionKey}
             />
-            <p className="text-xs text-[var(--text-color-secondary)] mt-1">
+            <p className="text-xs text-secondary mt-1">
               All data is encrypted before upload. Use the same key on the
               dashboard to decrypt.
             </p>

@@ -36,7 +36,7 @@ function SidebarButton({
         active
           ? 'bg-blue-500 text-white'
           : disabled
-            ? 'text-[var(--text-color-secondary)] opacity-60 hover:bg-[var(--background-color-three)]'
+            ? 'text-secondary opacity-60 hover:bg-[var(--background-color-three)]'
             : 'text-[var(--color-contrast)] hover:bg-[var(--background-color-three)]'
       }`}
     >
@@ -50,7 +50,7 @@ function SidebarButton({
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-[var(--text-color-secondary)]">
+    <div className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-secondary">
       {children}
     </div>
   )
@@ -63,7 +63,7 @@ export function Sidebar({
   disabledSources,
 }: Props) {
   return (
-    <div className="w-52 shrink-0 border-r bg-[var(--background-color-two)] flex flex-col">
+    <div className="w-52 shrink-0 border-r bg-two flex flex-col">
       <div className="p-2 space-y-1">
         <SidebarButton
           active={activeTab === 'general'}

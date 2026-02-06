@@ -28,7 +28,7 @@ export function FullDiskPermission({ description, onPermissionChange }: Props) {
 
   if (isChecking) {
     return (
-      <div className="flex items-center gap-2 text-sm text-[var(--text-color-secondary)]">
+      <div className="flex items-center gap-2 text-sm text-secondary">
         <span className="animate-pulse">Checking permissions...</span>
       </div>
     )
