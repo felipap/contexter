@@ -1,5 +1,9 @@
 import { apiRequest } from '../../lib/contexter-api'
 import { computeSearchIndex, encryptText } from '../../lib/encryption'
+import {
+  normalizeChatNameForSearch,
+  normalizePhoneForSearch,
+} from '../../lib/search-index-utils'
 import { getDeviceId, getEncryptionKey } from '../../store'
 import type { WhatsAppMessage, WhatsAppSource } from './types'
 
@@ -20,7 +24,10 @@ function encryptMessages(
       ? encryptText(msg.chatName, encryptionKey)
       : msg.chatName,
     chatNameIndex: msg.chatName
-      ? computeSearchIndex(msg.chatName, encryptionKey)
+      ? computeSearchIndex(
+          normalizeChatNameForSearch(msg.chatName),
+          encryptionKey,
+        )
       : undefined,
     senderName: msg.senderName
       ? encryptText(msg.senderName, encryptionKey)
@@ -32,7 +39,10 @@ function encryptMessages(
       ? encryptText(msg.senderPhoneNumber, encryptionKey)
       : msg.senderPhoneNumber,
     senderPhoneNumberIndex: msg.senderPhoneNumber
-      ? computeSearchIndex(msg.senderPhoneNumber, encryptionKey)
+      ? computeSearchIndex(
+          normalizePhoneForSearch(msg.senderPhoneNumber),
+          encryptionKey,
+        )
       : undefined,
   }))
 }
