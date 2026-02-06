@@ -19,7 +19,7 @@ Authorization: Bearer {{readSecret}}
 
 ###
 
-GET {{host}}/api/whatsapp/chats/search?senderPhoneNumberIndex=
+GET {{host}}/api/whatsapp/chats/search?senderPhoneNumberIndex=f6b2583f59d23e929b522be19dd6874352fe19959bbfdb8b76387e72bf7b5f70
 Authorization: Bearer {{readSecret}}
 
 ####

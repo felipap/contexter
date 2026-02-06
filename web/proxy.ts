@@ -183,7 +183,7 @@ function getDashboardTokenFromCookie(request: NextRequest): string | undefined {
 
 function warnUnprotected(message: string) {
   // TODO something more dramatic?
-  console.error("🥊 WARNING:", message)
+  console.warn("🥊 WARNING:", message)
 }
 
 // Return 404 instead of 403 to avoid revealing that a protected resource
