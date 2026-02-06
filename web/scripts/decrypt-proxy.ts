@@ -20,13 +20,7 @@ const PBKDF2_ITERATIONS = 100000
 const SALT = "contexter-e2e-v1"
 const ENCRYPTED_PREFIX = "enc:v1:"
 
-const WHATSAPP_ENCRYPTED_FIELDS = [
-  "text",
-  "chatName",
-  "senderName",
-  "senderPhoneNumber",
-]
-const IMESSAGE_ENCRYPTED_FIELDS = ["text", "subject"]
+const MAX_DEPTH = 2
 
 async function deriveKey(passphrase: string): Promise<CryptoKey> {
   const encoder = new TextEncoder()
@@ -90,25 +84,26 @@ async function decryptText(
   return new TextDecoder().decode(decrypted)
 }
 
-async function decryptObject(
-  obj: unknown,
-  encryptedFields: string[]
-): Promise<unknown> {
+async function decryptObject(obj: unknown, depth = 0): Promise<unknown> {
   if (obj === null || obj === undefined) {
     return obj
   }
 
   if (Array.isArray(obj)) {
-    return Promise.all(obj.map((item) => decryptObject(item, encryptedFields)))
+    return Promise.all(obj.map((item) => decryptObject(item, depth)))
   }
 
   if (typeof obj === "object") {
     const result: Record<string, unknown> = {}
     for (const [key, value] of Object.entries(obj)) {
-      if (encryptedFields.includes(key) && typeof value === "string") {
+      if (typeof value === "string" && value.startsWith(ENCRYPTED_PREFIX)) {
         result[key] = await decryptText(value, ENCRYPTION_KEY)
-      } else if (typeof value === "object") {
-        result[key] = await decryptObject(value, encryptedFields)
+      } else if (
+        typeof value === "object" &&
+        value !== null &&
+        depth < MAX_DEPTH
+      ) {
+        result[key] = await decryptObject(value, depth + 1)
       } else {
         result[key] = value
       }
@@ -117,16 +112,6 @@ async function decryptObject(
   }
 
   return obj
-}
-
-function getEncryptedFieldsForPath(path: string): string[] {
-  if (path.includes("/whatsapp")) {
-    return WHATSAPP_ENCRYPTED_FIELDS
-  }
-  if (path.includes("/imessages")) {
-    return IMESSAGE_ENCRYPTED_FIELDS
-  }
-  return [...WHATSAPP_ENCRYPTED_FIELDS, ...IMESSAGE_ENCRYPTED_FIELDS]
 }
 
 async function handleRequest(req: IncomingMessage, res: ServerResponse) {
@@ -161,8 +146,7 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
 
   if (contentType.includes("application/json")) {
     const json = await response.json()
-    const encryptedFields = getEncryptedFieldsForPath(url.pathname)
-    const decrypted = await decryptObject(json, encryptedFields)
+    const decrypted = await decryptObject(json)
 
     res.writeHead(response.status, {
       "Content-Type": "application/json",

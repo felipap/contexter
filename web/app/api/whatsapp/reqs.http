@@ -1,6 +1,6 @@
 @readSecret = {{$dotenv API_READ_SECRET}}
 # @host = {{$dotenv WEBSITE_HOST}}
-@host = http://localhost:3030
+@host = http://localhost:3001
 
 ###
 
@@ -19,7 +19,7 @@ Authorization: Bearer {{readSecret}}
 
 ###
 
-GET {{host}}/api/whatsapp/chats/search?phone=5545999551968
+GET {{host}}/api/whatsapp/chats/search?senderPhoneNumberIndex=f6b2583f59d23e929b522be19dd6874352fe19959bbfdb8b76387e72bf7b5f70
 Authorization: Bearer {{readSecret}}
 
 ####
