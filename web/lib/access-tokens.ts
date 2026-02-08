@@ -3,8 +3,8 @@ import { AccessTokens } from "@/db/schema"
 import { and, eq, gt, isNull, or } from "drizzle-orm"
 import { createHash, randomBytes } from "crypto"
 
-const TOKEN_PREFIX = "ctx_"
-const DISPLAY_PREFIX_LENGTH = 12 // "ctx_" + 8 hex chars
+const TOKEN_PREFIX = "vault_"
+const DISPLAY_PREFIX_LENGTH = 14 // "vault_" + 8 hex chars
 
 function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex")
@@ -14,7 +14,7 @@ export function generateAccessToken(
   name: string,
   expiresAt?: Date
 ): { rawToken: string; values: typeof AccessTokens.$inferInsert } {
-  const randomPart = randomBytes(32).toString("hex")
+  const randomPart = randomBytes(25).toString("hex")
   const rawToken = `${TOKEN_PREFIX}${randomPart}`
   const tokenHash = hashToken(rawToken)
   const tokenPrefix = rawToken.slice(0, DISPLAY_PREFIX_LENGTH)
