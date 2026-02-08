@@ -2,7 +2,7 @@ import { db } from "@/db"
 import { WriteLogs, ReadLogs } from "@/db/schema"
 import { TokenIdentity } from "./api-auth"
 
-export type WriteLogType = "screenshot" | "imessage" | "attachment" | "contact" | "whatsapp"
+export type WriteLogType = "screenshot" | "imessage" | "attachment" | "contact" | "whatsapp" | "macos-sticky"
 export type ReadLogType =
   | "screenshot"
   | "imessage"
@@ -11,6 +11,7 @@ export type ReadLogType =
   | "location"
   | "stats"
   | "whatsapp"
+  | "macos-sticky"
 
 type LogWriteParams = {
   type: WriteLogType

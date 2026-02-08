@@ -98,6 +98,11 @@ export function DashboardClient() {
             value={stats.totalLocations.toLocaleString()}
             href="/dashboard/locations"
           />
+          <StatCard
+            label="macOS Stickies"
+            value={stats.totalStickies.toLocaleString()}
+            href="/dashboard/stickies"
+          />
         </div>
       </div>
 

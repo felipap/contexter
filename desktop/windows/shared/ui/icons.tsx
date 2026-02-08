@@ -253,6 +253,27 @@ export function ExternalLinkIcon({ size = 14, className }: Props) {
   )
 }
 
+export function StickiesIcon({ size = 18, className }: Props) {
+  return (
+    <svg
+      className={className}
+      width={size}
+      height={size}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5L15.5 3Z" />
+      <path d="M14 3v4a2 2 0 0 0 2 2h4" />
+      <path d="M7 13h10" />
+      <path d="M7 17h6" />
+    </svg>
+  )
+}
+
 export function WhatsappIcon({ size = 18, className }: Props) {
   return (
     <svg

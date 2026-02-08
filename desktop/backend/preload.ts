@@ -66,6 +66,14 @@ const api = {
     accountId?: string
   }) => ipcRenderer.invoke('set-whatsapp-unipile-config', config),
 
+  // macOS Stickies service
+  getMacosStickiesSyncConfig: () =>
+    ipcRenderer.invoke('get-macos-stickies-sync-config'),
+  setMacosStickiesSyncConfig: (config: {
+    enabled?: boolean
+    intervalMinutes?: number
+  }) => ipcRenderer.invoke('set-macos-stickies-sync-config', config),
+
   // Services status
   getServicesStatus: () => ipcRenderer.invoke('get-services-status'),
   runServiceNow: (name: string) => ipcRenderer.invoke('run-service-now', name),

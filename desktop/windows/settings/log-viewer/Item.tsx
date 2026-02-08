@@ -26,6 +26,7 @@ const SOURCE_LABELS: Record<SyncLogSource, string> = {
   contacts: 'Contacts',
   'whatsapp-sqlite': 'WhatsApp (SQLite)',
   'whatsapp-unipile': 'WhatsApp (Unipile)',
+  'macos-stickies': 'macOS Stickies',
 }
 
 function StatusBadge({ status }: { status: 'success' | 'error' }) {

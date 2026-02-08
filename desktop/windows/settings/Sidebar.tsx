@@ -2,6 +2,7 @@ import {
   ContactsIcon,
   IMessageIcon,
   ScreenCaptureIcon,
+  StickiesIcon,
   WhatsappIcon,
 } from '../shared/ui/icons'
 import { SyncLogSource } from '../electron'
@@ -31,6 +32,7 @@ const SYNC_SOURCE_ICONS: Record<
   contacts: ContactsIcon,
   'whatsapp-sqlite': WhatsappIcon,
   'whatsapp-unipile': WhatsappIcon,
+  'macos-stickies': StickiesIcon,
 }
 
 function SidebarButton({

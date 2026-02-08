@@ -152,6 +152,19 @@ export function registerIpcHandlers(): void {
     },
   )
 
+  ipcMain.handle('get-macos-stickies-sync-config', () => {
+    return store.get('macosStickiesSync')
+  })
+
+  ipcMain.handle(
+    'set-macos-stickies-sync-config',
+    (_event, config: { enabled?: boolean; intervalMinutes?: number }) => {
+      const current = store.get('macosStickiesSync')
+      store.set('macosStickiesSync', { ...current, ...config })
+      getService('macos-stickies')?.restart()
+    },
+  )
+
   ipcMain.handle('get-services-status', () => {
     return SERVICES.map((s) => ({
       name: s.name,

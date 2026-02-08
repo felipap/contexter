@@ -6,6 +6,7 @@ export type SyncLogSource =
   | 'contacts'
   | 'whatsapp-sqlite'
   | 'whatsapp-unipile'
+  | 'macos-stickies'
 
 export type SyncLog = {
   id: string
@@ -58,6 +59,11 @@ export type StoreSchema = {
     apiToken: string | null
     accountId: string | null
   }
+  macosStickiesSync: {
+    enabled: boolean
+    intervalMinutes: number
+    nextSyncAfter: string | null
+  }
   syncLogs: SyncLog[]
 }
 
@@ -102,6 +108,11 @@ export const DEFAULT_STATE: StoreSchema = {
     apiBaseUrl: null,
     apiToken: null,
     accountId: null,
+  },
+  macosStickiesSync: {
+    enabled: false,
+    intervalMinutes: 60,
+    nextSyncAfter: null,
   },
   syncLogs: [],
 }

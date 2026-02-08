@@ -18,12 +18,14 @@ import { screenshotsService } from './screenshots'
 import { imessageService } from './imessage'
 import { contactsService } from './contacts'
 import { whatsappSqliteService } from './whatsapp'
+import { macosStickiesService } from './stickies'
 
 export const SERVICES: Service[] = [
   imessageService,
   screenshotsService,
   contactsService,
   whatsappSqliteService,
+  macosStickiesService,
 ]
 
 export async function startAllServices(): Promise<void> {
@@ -51,4 +53,5 @@ export {
   imessageService,
   contactsService,
   whatsappSqliteService,
+  macosStickiesService,
 }

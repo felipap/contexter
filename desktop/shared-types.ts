@@ -4,6 +4,7 @@ export type SyncLogSource =
   | 'contacts'
   | 'whatsapp-sqlite'
   | 'whatsapp-unipile'
+  | 'macos-stickies'
 
 export interface SyncLog {
   id: string
@@ -106,6 +107,10 @@ export interface ElectronAPI {
   setWhatsappUnipileConfig: (
     config: Partial<WhatsappUnipileConfig>,
   ) => Promise<void>
+
+  // macOS Stickies service
+  getMacosStickiesSyncConfig: () => Promise<ServiceConfig>
+  setMacosStickiesSyncConfig: (config: Partial<ServiceConfig>) => Promise<void>
 
   // Services status
   getServicesStatus: () => Promise<ServiceStatus[]>

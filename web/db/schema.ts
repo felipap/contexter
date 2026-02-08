@@ -264,6 +264,29 @@ export type WhatsappMessage = typeof WhatsappMessages.$inferSelect
 //
 //
 
+// Encrypted: text
+export const MacosStickies = pgTable(
+  "macos_stickies",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    stickyId: text("sticky_id").notNull().unique(),
+    // encrypted
+    text: text("text").notNull(),
+    deviceId: text("device_id").notNull(),
+    syncTime: timestamp("sync_time").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+)
+
+export type NewMacosSticky = typeof MacosStickies.$inferInsert
+export type MacosSticky = typeof MacosStickies.$inferSelect
+
+//
+//
+//
+//
+
 export const AccessTokens = pgTable("access_tokens", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull(),

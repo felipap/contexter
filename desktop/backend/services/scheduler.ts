@@ -9,6 +9,7 @@ type ConfigKey =
   | 'contactsSync'
   | 'whatsappSqlite'
   | 'whatsappUnipile'
+  | 'macosStickiesSync'
 
 class MissingEncryptionKeyError extends Error {
   constructor() {

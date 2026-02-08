@@ -8,6 +8,7 @@ import { ScreenshotsSyncTab } from './sync-tabs/screenshots'
 import { IMessageSyncTab } from './sync-tabs/imessage'
 import { ContactsSyncTab } from './sync-tabs/contacts'
 import { WhatsappSqliteSyncTab } from './sync-tabs/whatsapp-sqlite'
+import { MacosStickiesSyncTab } from './sync-tabs/macos-stickies'
 import { SyncLogSource } from '../electron'
 
 const SOURCE_LABELS: Record<SyncLogSource, string> = {
@@ -16,6 +17,7 @@ const SOURCE_LABELS: Record<SyncLogSource, string> = {
   contacts: 'Contacts Sync',
   'whatsapp-sqlite': 'WhatsApp (SQLite)',
   'whatsapp-unipile': 'WhatsApp (Unipile)',
+  'macos-stickies': 'macOS Stickies',
 }
 
 function getInitialTab(): ActiveTab {
@@ -68,12 +70,13 @@ function SettingsPanel() {
   // Load data source configs and logs
   useEffect(() => {
     async function loadDataSources() {
-      const [screenshots, imessage, contacts, whatsappSqlite, syncLogs] =
+      const [screenshots, imessage, contacts, whatsappSqlite, macosStickies, syncLogs] =
         await Promise.all([
           window.electron.getScreenCaptureConfig(),
           window.electron.getIMessageExportConfig(),
           window.electron.getContactsSyncConfig(),
           window.electron.getWhatsappSqliteConfig(),
+          window.electron.getMacosStickiesSyncConfig(),
           window.electron.getSyncLogs(),
         ])
 
@@ -84,6 +87,7 @@ function SettingsPanel() {
         contacts: false,
         'whatsapp-sqlite': false,
         'whatsapp-unipile': false,
+        'macos-stickies': false,
       }
 
       for (const log of syncLogs) {
@@ -125,6 +129,12 @@ function SettingsPanel() {
           label: SOURCE_LABELS['whatsapp-sqlite'],
           enabled: whatsappSqlite.enabled,
           lastSyncFailed: lastSyncStatus['whatsapp-sqlite'],
+        },
+        {
+          source: 'macos-stickies',
+          label: SOURCE_LABELS['macos-stickies'],
+          enabled: macosStickies.enabled,
+          lastSyncFailed: lastSyncStatus['macos-stickies'],
         },
       ])
     }
@@ -225,6 +235,14 @@ function SettingsPanel() {
           <WhatsappSqliteSyncTab
             onEnabledChange={(enabled) =>
               handleSourceEnabledChange('whatsapp-sqlite', enabled)
+            }
+            highlightSyncId={highlightSyncId}
+          />
+        )}
+        {activeTab === 'macos-stickies' && (
+          <MacosStickiesSyncTab
+            onEnabledChange={(enabled) =>
+              handleSourceEnabledChange('macos-stickies', enabled)
             }
             highlightSyncId={highlightSyncId}
           />
