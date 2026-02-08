@@ -56,7 +56,7 @@ export function MessageDrawer({ message }: Props) {
   return (
     <Drawer title="Message Details">
       <div className="space-y-4">
-        <InfoRow label="Contact" value={message.contact} />
+        <InfoRow label="Contact" value={message.contact} copyable />
         <InfoRow
           label="Direction"
           value={message.isFromMe ? "Sent" : "Received"}

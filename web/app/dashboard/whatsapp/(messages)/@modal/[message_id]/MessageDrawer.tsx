@@ -14,16 +14,19 @@ export function MessageDrawer({ message }: Props) {
   return (
     <Drawer title="Message Details">
       <div className="space-y-4">
-        <InfoRow label="Message ID" value={message.messageId} />
-        <InfoRow label="Sender" value={message.senderName ?? message.senderJid ?? ""} />
+        <InfoRow label="Message ID" value={message.messageId} copyable />
+        <InfoRow
+          label="Sender"
+          value={message.senderName ?? message.senderJid ?? ""}
+        />
         {message.senderName && message.senderJid && (
-          <InfoRow label="JID" value={message.senderJid} />
+          <InfoRow label="JID" value={message.senderJid} copyable />
         )}
         <InfoRow
           label="Direction"
           value={message.isFromMe ? "Sent" : "Received"}
         />
-        <InfoRow label="Chat ID" value={message.chatId} />
+        <InfoRow label="Chat ID" value={message.chatId} copyable />
         <InfoRow
           label="Date"
           value={new Date(message.timestamp).toLocaleString()}

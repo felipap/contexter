@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Drawer } from "@/ui/Drawer"
+import { CopyButton } from "@/ui/CopyButton"
 import { maybeDecrypt } from "@/lib/encryption"
 import { type WhatsappChatWithMessages } from "../../actions"
 import { Chat } from "./Chat"
@@ -66,7 +67,10 @@ function ChatInfo({
             </span>
           )}
         </div>
-        <div className="font-mono text-zinc-400">{chat.chatId}</div>
+        <div className="flex items-center gap-1.5 font-mono text-zinc-400">
+          {chat.chatId}
+          <CopyButton text={chat.chatId} size={12} />
+        </div>
       </div>
     </div>
   )
