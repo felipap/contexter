@@ -1,98 +1,180 @@
 "use client"
 
-import { SearchIcon } from "@/ui/icons"
+import { SearchIcon, CloseIcon, LockIcon } from "@/ui/icons"
 import { useEffect, useRef, useState } from "react"
+import { twMerge } from "tailwind-merge"
+import { getEncryptionKey } from "@/lib/encryption"
+import type { ChatFilters } from "./useChatList"
 
-/**
- * WhatsApp chats search bar and explanation.
- *
- * Search behavior depends on which fields are encrypted and whether the
- * dashboard has the decryption key:
- *
- * - **Always searchable** (stored in plain): sender JID and chat ID. You can
- *   search by these without the dashboard being decrypted.
- *
- * - **Searchable only when the dashboard is decrypted**: sender phone number
- *   and sender name. When the key is available, search supports exact match
- *   on these decrypted fields.
- *
- * The current implementation matches on sender JID (digits only, e.g. phone
- * digits from the JID). Chat ID, sender phone, and sender name may be added
- * to the backend when decryption is available.
- */
 type Props = {
-  search: string
-  setSearch: (value: string) => void
+  filters: ChatFilters
+  hasActiveFilters: boolean
   total: number
+  searchOpen: boolean
+  onSearchToggle: () => void
+  onFilterChange: (field: keyof ChatFilters, value: string) => void
   debounceMs?: number
 }
 
 export function WhatsappChatsSearch({
-  search,
-  setSearch,
+  filters,
+  hasActiveFilters,
   total,
+  searchOpen,
+  onSearchToggle,
+  onFilterChange,
   debounceMs = 300,
 }: Props) {
+  const hasKey = getEncryptionKey() !== null
+
   return (
-    <div className="mb-4 flex flex-col gap-1">
+    <div className="mb-4 flex flex-col gap-3">
       <div className="flex items-center gap-4">
-        <SearchInput
-          placeholder="Search by sender JID or phone digits..."
-          onChange={setSearch}
-          debounceMs={debounceMs}
-        />
+        <button
+          onClick={onSearchToggle}
+          className={twMerge(
+            "flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm transition-colors",
+            searchOpen
+              ? "border-zinc-400 bg-zinc-100 text-zinc-900 dark:border-zinc-500 dark:bg-zinc-800 dark:text-zinc-100"
+              : "border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:bg-zinc-800"
+          )}
+        >
+          {searchOpen ? <CloseIcon size={14} /> : <SearchIcon size={14} />}
+          {searchOpen ? "Close search" : "Search"}
+        </button>
         <span className="text-sm text-zinc-500">
-          {total.toLocaleString()} {search ? "matching" : "total"} chats
+          {total.toLocaleString()} {hasActiveFilters ? "matching" : "total"}{" "}
+          chats
         </span>
       </div>
-      <p className="text-xs text-zinc-400">
-        Always searchable: sender JID and chat ID (plain). When the dashboard
-        has the decryption key, exact match on sender phone and sender name
-        also applies. Use digits for JID/phone (e.g. +1234567890).
-      </p>
+
+      {searchOpen && (
+        <div className="flex flex-col gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-900/50">
+          <div className="grid grid-cols-2 gap-3">
+            <SearchField
+              label="Sender JID"
+              placeholder="e.g. 1234567890@s.whatsapp.net"
+              value={filters.senderJid}
+              onChange={(v) => onFilterChange("senderJid", v)}
+              debounceMs={debounceMs}
+            />
+            <SearchField
+              label="Chat ID"
+              placeholder="e.g. 1234567890@s.whatsapp.net"
+              value={filters.chatId}
+              onChange={(v) => onFilterChange("chatId", v)}
+              debounceMs={debounceMs}
+            />
+            <SearchField
+              label="Phone"
+              placeholder={
+                hasKey ? "e.g. +1234567890" : "Requires decryption key"
+              }
+              value={filters.phone}
+              onChange={(v) => onFilterChange("phone", v)}
+              debounceMs={debounceMs}
+              disabled={!hasKey}
+              locked
+            />
+            <SearchField
+              label="Sender Name"
+              placeholder={hasKey ? "Exact match" : "Requires decryption key"}
+              value={filters.senderName}
+              onChange={(v) => onFilterChange("senderName", v)}
+              debounceMs={debounceMs}
+              disabled={!hasKey}
+              locked
+            />
+            <SearchField
+              label="Chat Name"
+              placeholder={hasKey ? "Exact match" : "Requires decryption key"}
+              value={filters.chatName}
+              onChange={(v) => onFilterChange("chatName", v)}
+              debounceMs={debounceMs}
+              disabled={!hasKey}
+              locked
+            />
+          </div>
+          {!hasKey && (
+            <p className="flex items-center gap-1.5 text-xs text-zinc-400">
+              <LockIcon size={12} />
+              Phone, sender name, and chat name search require the decryption
+              key. Enter it in the navbar to enable these fields.
+            </p>
+          )}
+          <p className="text-xs text-zinc-400">
+            Sender JID and Chat ID are always searchable (partial match). Phone,
+            sender name, and chat name use encrypted indexes (exact match).
+          </p>
+        </div>
+      )}
     </div>
   )
 }
 
-type SearchInputProps = {
+type SearchFieldProps = {
+  label: string
   placeholder?: string
+  value: string
   onChange: (value: string) => void
   debounceMs?: number
+  disabled?: boolean
+  locked?: boolean
 }
 
-function SearchInput({
+function SearchField({
+  label,
   placeholder,
+  value,
   onChange,
   debounceMs = 300,
-}: SearchInputProps) {
-  const [value, setValue] = useState("")
+  disabled = false,
+  locked = false,
+}: SearchFieldProps) {
+  const [localValue, setLocalValue] = useState(value)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const onChangeRef = useRef(onChange)
+  onChangeRef.current = onChange
+
+  // Sync local value when external value changes (e.g. clearing filters)
+  useEffect(() => {
+    setLocalValue(value)
+  }, [value])
 
   useEffect(() => {
+    if (disabled) {
+      return
+    }
     if (debounceRef.current !== null) {
       clearTimeout(debounceRef.current)
     }
     debounceRef.current = setTimeout(() => {
-      onChange(value)
+      onChangeRef.current(localValue)
     }, debounceMs)
     return () => {
       if (debounceRef.current !== null) {
         clearTimeout(debounceRef.current)
       }
     }
-  }, [value, debounceMs, onChange])
+  }, [localValue, debounceMs, disabled])
 
   return (
-    <div className="relative">
-      <div className="absolute top-2.5 left-2">
-        <SearchIcon size={16} className="text-zinc-400" />
-      </div>
+    <div className="flex flex-col gap-1">
+      <label className="flex items-center gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+        {label}
+        {locked && <LockIcon size={10} className="text-zinc-400" />}
+      </label>
       <input
         type="text"
         placeholder={placeholder}
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        className="w-[300px] rounded-lg border border-zinc-200 bg-white py-2 pl-7 pr-3 text-sm placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-600"
+        value={localValue}
+        onChange={(e) => setLocalValue(e.target.value)}
+        disabled={disabled}
+        className={twMerge(
+          "rounded-lg border border-zinc-200 bg-white py-1.5 px-2.5 text-sm placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-600",
+          disabled &&
+            "cursor-not-allowed opacity-50 bg-zinc-100 dark:bg-zinc-800"
+        )}
       />
     </div>
   )

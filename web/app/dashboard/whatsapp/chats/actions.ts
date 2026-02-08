@@ -27,25 +27,55 @@ export type WhatsappChatsPage = {
   totalPages: number
 }
 
+export type ChatSearchParams = {
+  senderJid?: string
+  chatId?: string
+  phoneIndex?: string
+  senderNameIndex?: string
+  chatNameIndex?: string
+}
+
 export async function getWhatsappChats(
   page: number = 1,
   pageSize: number = 20,
-  search: string = ""
+  searchParams: ChatSearchParams = {}
 ): Promise<WhatsappChatsPage> {
   if (!(await isAuthenticated())) {
     unauthorized()
   }
 
   const offset = (page - 1) * pageSize
-  // Use same normalization as desktop when building phone index (see lib/search-normalize.ts)
-  const normalizedSearch = normalizePhoneForSearch(search).replace(/\D/g, "")
-  const hasSearch = normalizedSearch.length > 0
+
+  const { senderJid, chatId, phoneIndex, senderNameIndex, chatNameIndex } =
+    searchParams
+  const normalizedJid = senderJid
+    ? normalizePhoneForSearch(senderJid).replace(/\D/g, "")
+    : ""
+  const hasJidSearch = normalizedJid.length > 0
+  const hasChatIdSearch = !!chatId
+  const hasPhoneSearch = !!phoneIndex
+  const hasSenderNameSearch = !!senderNameIndex
+  const hasChatNameSearch = !!chatNameIndex
+  const hasAnySearch =
+    hasJidSearch ||
+    hasChatIdSearch ||
+    hasPhoneSearch ||
+    hasSenderNameSearch ||
+    hasChatNameSearch
+
+  const filterClauses = sql`
+    ${hasJidSearch ? sql`AND REGEXP_REPLACE(sender_jid, '[^0-9]', '', 'g') LIKE '%' || ${normalizedJid} || '%'` : sql``}
+    ${hasChatIdSearch ? sql`AND chat_id = ${chatId}` : sql``}
+    ${hasPhoneSearch ? sql`AND sender_phone_number_index = ${phoneIndex}` : sql``}
+    ${hasSenderNameSearch ? sql`AND sender_name_index = ${senderNameIndex}` : sql``}
+    ${hasChatNameSearch ? sql`AND chat_name_index = ${chatNameIndex}` : sql``}
+  `
 
   const [countResult] = await db.execute<{ count: number }>(sql`
     SELECT COUNT(DISTINCT chat_id)::int as count
     FROM whatsapp_messages
     WHERE user_id = ${DEFAULT_USER_ID}
-      ${hasSearch ? sql`AND REGEXP_REPLACE(sender_jid, '[^0-9]', '', 'g') LIKE '%' || ${normalizedSearch} || '%'` : sql``}
+      ${filterClauses}
   `)
 
   const total = countResult.count
@@ -92,7 +122,7 @@ export async function getWhatsappChats(
       SELECT DISTINCT chat_id
       FROM whatsapp_messages
       WHERE user_id = ${DEFAULT_USER_ID}
-        ${hasSearch ? sql`AND REGEXP_REPLACE(sender_jid, '[^0-9]', '', 'g') LIKE '%' || ${normalizedSearch} || '%'` : sql``}
+        ${filterClauses}
     )
     SELECT
       rm.chat_id,
@@ -106,7 +136,7 @@ export async function getWhatsappChats(
       cp.message_count
     FROM ranked_messages rm
     JOIN chat_participants cp ON rm.chat_id = cp.chat_id
-    ${hasSearch ? sql`JOIN filtered_chats fc ON rm.chat_id = fc.chat_id` : sql``}
+    ${hasAnySearch ? sql`JOIN filtered_chats fc ON rm.chat_id = fc.chat_id` : sql``}
     WHERE rm.rn = 1
     ORDER BY rm.timestamp DESC NULLS LAST
     LIMIT ${pageSize}

@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useCallback } from "react"
 import { ChatsTable } from "./ChatsTable"
 import { useChatList } from "./useChatList"
 import { WhatsappChatsSearch } from "./WhatsappChatsSearch"
@@ -11,17 +12,33 @@ export default function Page() {
     page,
     totalPages,
     total,
-    search,
+    filters,
+    hasActiveFilters,
     setPage,
-    setSearch,
+    setFilter,
+    clearFilters,
   } = useChatList()
+
+  const [searchOpen, setSearchOpen] = useState(false)
+
+  const handleSearchToggle = useCallback(() => {
+    setSearchOpen((prev) => {
+      if (prev) {
+        clearFilters()
+      }
+      return !prev
+    })
+  }, [clearFilters])
 
   return (
     <>
       <WhatsappChatsSearch
-        search={search}
-        setSearch={setSearch}
+        filters={filters}
+        hasActiveFilters={hasActiveFilters}
         total={total}
+        searchOpen={searchOpen}
+        onSearchToggle={handleSearchToggle}
+        onFilterChange={setFilter}
         debounceMs={300}
       />
 
@@ -29,7 +46,9 @@ export default function Page() {
         <p className="text-zinc-500">Loading...</p>
       ) : chats.length === 0 ? (
         <p className="text-zinc-500">
-          {search ? "No chats match your search." : "No WhatsApp chats yet."}
+          {hasActiveFilters
+            ? "No chats match your search."
+            : "No WhatsApp chats yet."}
         </p>
       ) : (
         <ChatsTable
