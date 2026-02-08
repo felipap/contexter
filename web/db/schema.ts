@@ -277,3 +277,23 @@ export const AccessTokens = pgTable("access_tokens", {
 
 export type NewAccessToken = typeof AccessTokens.$inferInsert
 export type AccessToken = typeof AccessTokens.$inferSelect
+
+//
+//
+//
+//
+
+export const LoginAttempts = pgTable(
+  "login_attempts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    ip: text("ip").notNull(),
+    attemptedAt: timestamp("attempted_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("login_attempts_ip_idx").on(table.ip),
+    index("login_attempts_attempted_at_idx").on(table.attemptedAt),
+  ]
+)
