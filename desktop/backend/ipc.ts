@@ -53,7 +53,8 @@ export function registerIpcHandlers(): void {
   })
 
   ipcMain.handle('set-server-url', (_event, url: string) => {
-    store.set('serverUrl', url)
+    const normalized = /^https?:\/\//i.test(url) ? url : `https://${url}`
+    store.set('serverUrl', normalized)
   })
 
   ipcMain.handle('get-device-id', () => {

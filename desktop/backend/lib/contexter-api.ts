@@ -28,7 +28,11 @@ function getAuthHeaders(): Record<string, string> {
 }
 
 function getBaseUrl(): string | null {
-  return store.get('serverUrl')
+  const url = store.get('serverUrl')
+  if (!url) {
+    return null
+  }
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`
 }
 
 export async function apiRequest<T = unknown>({

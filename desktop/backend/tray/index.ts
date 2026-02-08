@@ -162,7 +162,10 @@ function updateTrayMenu(): void {
       enabled: canOpenDashboard,
       click: () => {
         if (serverUrl && encryptionKey) {
-          const url = new URL('/dashboard', serverUrl)
+          const base = /^https?:\/\//i.test(serverUrl)
+            ? serverUrl
+            : `https://${serverUrl}`
+          const url = new URL('/dashboard', base)
           url.searchParams.set('key', encryptionKey)
           shell.openExternal(url.toString())
         }
