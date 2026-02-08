@@ -4,10 +4,16 @@ export const metadata: Metadata = {
   title: "Contacts",
 }
 
-interface Props {
+type Props = {
   children: React.ReactNode
+  modal: React.ReactNode
 }
 
-export default function ContactsLayout({ children }: Props) {
-  return children
+export default function ContactsLayout({ children, modal }: Props) {
+  return (
+    <>
+      {children}
+      {modal}
+    </>
+  )
 }

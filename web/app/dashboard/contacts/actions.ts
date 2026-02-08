@@ -3,7 +3,7 @@
 import { isAuthenticated } from "@/lib/admin-auth"
 import { db } from "@/db"
 import { Contacts } from "@/db/schema"
-import { desc, sql } from "drizzle-orm"
+import { desc, eq, ilike, or, sql } from "drizzle-orm"
 import { unauthorized } from "next/navigation"
 
 export type Contact = {
@@ -16,6 +16,13 @@ export type Contact = {
   phoneNumbers: string[]
 }
 
+export type ContactDetail = Contact & {
+  deviceId: string
+  syncTime: Date
+  createdAt: Date
+  updatedAt: Date
+}
+
 export type ContactsPage = {
   contacts: Contact[]
   total: number
@@ -26,48 +33,43 @@ export type ContactsPage = {
 
 export async function getContacts(
   page: number = 1,
-  pageSize: number = 20
+  pageSize: number = 20,
+  query?: string
 ): Promise<ContactsPage> {
   if (!(await isAuthenticated())) {
     unauthorized()
   }
 
   const offset = (page - 1) * pageSize
+  const trimmedQuery = query?.trim()
+
+  const fullName = sql`COALESCE(${Contacts.firstName}, '') || ' ' || COALESCE(${Contacts.lastName}, '')`
+
+  const searchCondition = trimmedQuery
+    ? or(
+        ilike(Contacts.firstName, `%${trimmedQuery}%`),
+        ilike(Contacts.lastName, `%${trimmedQuery}%`),
+        ilike(Contacts.organization, `%${trimmedQuery}%`),
+        ilike(fullName, `%${trimmedQuery}%`)
+      )
+    : undefined
 
   const [countResult] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(Contacts)
+    .where(searchCondition)
 
   const total = countResult.count
 
-  const results = await db.query.Contacts.findMany({
-    orderBy: desc(Contacts.updatedAt),
-    limit: pageSize,
-    offset,
-  })
+  const results = await db
+    .select()
+    .from(Contacts)
+    .where(searchCondition)
+    .orderBy(desc(Contacts.updatedAt))
+    .limit(pageSize)
+    .offset(offset)
 
-  const contacts = results.map((row) => {
-    let emails: string[] = []
-    let phoneNumbers: string[] = []
-
-    try {
-      emails = JSON.parse(row.emails)
-    } catch {}
-
-    try {
-      phoneNumbers = JSON.parse(row.phoneNumbers)
-    } catch {}
-
-    return {
-      id: row.id,
-      contactId: row.contactId,
-      firstName: row.firstName,
-      lastName: row.lastName,
-      organization: row.organization,
-      emails,
-      phoneNumbers,
-    }
-  })
+  const contacts = results.map((row) => parseContact(row))
 
   return {
     contacts,
@@ -75,5 +77,67 @@ export async function getContacts(
     page,
     pageSize,
     totalPages: Math.ceil(total / pageSize),
+  }
+}
+
+export async function getContact(id: string): Promise<ContactDetail | null> {
+  if (!(await isAuthenticated())) {
+    unauthorized()
+  }
+
+  const result = await db.query.Contacts.findFirst({
+    where: eq(Contacts.id, id),
+  })
+
+  if (!result) {
+    return null
+  }
+
+  let emails: string[] = []
+  let phoneNumbers: string[] = []
+
+  try {
+    emails = JSON.parse(result.emails)
+  } catch {}
+
+  try {
+    phoneNumbers = JSON.parse(result.phoneNumbers)
+  } catch {}
+
+  return {
+    id: result.id,
+    contactId: result.contactId,
+    firstName: result.firstName,
+    lastName: result.lastName,
+    organization: result.organization,
+    emails,
+    phoneNumbers,
+    deviceId: result.deviceId,
+    syncTime: result.syncTime,
+    createdAt: result.createdAt,
+    updatedAt: result.updatedAt,
+  }
+}
+
+function parseContact(row: typeof Contacts.$inferSelect): Contact {
+  let emails: string[] = []
+  let phoneNumbers: string[] = []
+
+  try {
+    emails = JSON.parse(row.emails)
+  } catch {}
+
+  try {
+    phoneNumbers = JSON.parse(row.phoneNumbers)
+  } catch {}
+
+  return {
+    id: row.id,
+    contactId: row.contactId,
+    firstName: row.firstName,
+    lastName: row.lastName,
+    organization: row.organization,
+    emails,
+    phoneNumbers,
   }
 }

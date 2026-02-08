@@ -1,8 +1,10 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import Link from "next/link"
 import { getContacts, type Contact } from "./actions"
 import { Pagination } from "@/ui/Pagination"
+import { SearchIcon } from "@/ui/icons"
 
 export default function Page() {
   const [contacts, setContacts] = useState<Contact[]>([])
@@ -10,24 +12,46 @@ export default function Page() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
+  const [query, setQuery] = useState("")
+  const [debouncedQuery, setDebouncedQuery] = useState("")
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    if (debounceRef.current !== null) {
+      clearTimeout(debounceRef.current)
+    }
+    debounceRef.current = setTimeout(() => {
+      setDebouncedQuery(query)
+      setPage(1)
+    }, 300)
+    return () => {
+      if (debounceRef.current !== null) {
+        clearTimeout(debounceRef.current)
+      }
+    }
+  }, [query])
 
   useEffect(() => {
     async function load() {
       setLoading(true)
-      const data = await getContacts(page)
+      const data = await getContacts(page, 20, debouncedQuery || undefined)
       setContacts(data.contacts)
       setTotalPages(data.totalPages)
       setTotal(data.total)
       setLoading(false)
     }
     load()
-  }, [page])
+  }, [page, debouncedQuery])
 
   let inner
   if (loading) {
     inner = <p className="text-zinc-500">Loading...</p>
   } else if (contacts.length === 0) {
-    inner = <p className="text-zinc-500">No contacts yet.</p>
+    inner = (
+      <p className="text-zinc-500">
+        {debouncedQuery ? "No contacts matching your search." : "No contacts yet."}
+      </p>
+    )
   } else {
     inner = (
       <>
@@ -48,11 +72,26 @@ export default function Page() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold">Contacts</h1>
-        <span className="text-sm text-zinc-500">
-          {total.toLocaleString()} total
-        </span>
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <SearchIcon
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"
+            />
+            <input
+              type="text"
+              placeholder="Search contacts..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="rounded-lg border border-zinc-200 bg-white py-1.5 pl-9 pr-3 text-sm placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-600"
+            />
+          </div>
+          <span className="shrink-0 text-sm text-zinc-500">
+            {total.toLocaleString()} {debouncedQuery ? "matching" : "total"}
+          </span>
+        </div>
       </div>
 
       {inner}
@@ -66,7 +105,10 @@ function ContactCard({ contact }: { contact: Contact }) {
   const bgColor = getAvatarColor(contact.id)
 
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800">
+    <Link
+      href={`/dashboard/contacts/${contact.id}`}
+      className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+    >
       <div
         className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-medium ${bgColor}`}
       >
@@ -97,7 +139,7 @@ function ContactCard({ contact }: { contact: Contact }) {
           </div>
         )}
       </div>
-    </div>
+    </Link>
   )
 }
 
