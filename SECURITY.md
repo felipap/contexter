@@ -1,23 +1,22 @@
-This is a SHORT document, explaining the security measures in place. It's not
-the place for AI slop, or legaleeze.
-
-## Table of Contents
+# Table of Contents
 
 - [Table of Contents](#table-of-contents)
 - [Authentication](#authentication)
   - [Admin Dashboard](#admin-dashboard)
   - [Device Auth (Desktop App)](#device-auth-desktop-app)
+  - [Access Tokens (API Read)](#access-tokens-api-read)
 - [Server security](#server-security)
-- [End-to-End Encryption (E2EE)](#end-to-end-encryption-e2ee)
+- [E2E Encryption](#e2e-encryption)
+- [Encrypted Fields by Table](#encrypted-fields-by-table)
   - [Encryption Key Management](#encryption-key-management)
   - [Blind Indexing for Search](#blind-indexing-for-search)
 - [Rate Limiting](#rate-limiting)
 
-## Authentication
+# Authentication
 
 There are three auth flows: admin dashboard, device writes (Electron app), and API reads (access tokens).
 
-### Admin Dashboard
+## Admin Dashboard
 
 A passphrase-based system. The passphrase is set via `DASHBOARD_SECRET` env var on the server.
 
@@ -29,7 +28,7 @@ A passphrase-based system. The passphrase is set via `DASHBOARD_SECRET` env var 
 
 In development, if `DASHBOARD_SECRET` is unset, auth is bypassed entirely.
 
-### Device Auth (Desktop App)
+## Device Auth (Desktop App)
 
 Devices authenticate via a shared secret:
 
@@ -40,7 +39,7 @@ Devices authenticate via a shared secret:
 
 If `API_WRITE_SECRET` is unset on the server, device auth is bypassed (for development).
 
-### Access Tokens (API Read)
+## Access Tokens (API Read)
 
 API read endpoints are authenticated via DB-backed access tokens, managed in the dashboard settings page.
 
@@ -52,11 +51,11 @@ API read endpoints are authenticated via DB-backed access tokens, managed in the
 6. Tokens can be revoked from the dashboard (soft delete via `revoked_at`)
 7. `last_used_at` is updated on each successful validation
 
-## Server security
+# Server security
 
 API read is actually more sensitive than write.
 
-## End-to-End Encryption (E2EE)
+# E2E Encryption
 
 Messages and screenshots are encrypted on the desktop before upload. The encryption key **never leaves your browser**.
 
@@ -68,7 +67,58 @@ Messages and screenshots are encrypted on the desktop before upload. The encrypt
 
 The server has no way to decrypt your data. If you lose your encryption key, your data is unrecoverable.
 
-### Encryption Key Management
+# Encrypted Fields by Table
+
+Each table has a mix of encrypted fields (stored as `enc:v1:...` ciphertext) and plaintext fields the server can read. This section only covers the meaningful data fields — operational metadata like `createdAt`, `syncTime`, and `deviceId` are always plaintext but aren't listed since they don't represent user content.
+
+**screenshots**
+
+|           | Fields                                |
+| --------- | ------------------------------------- |
+| Encrypted | image data                            |
+| Plaintext | dimensions (width, height), file size |
+
+**imessages**
+
+|           | Fields                                                                                                     |
+| --------- | ---------------------------------------------------------------------------------------------------------- |
+| Encrypted | text, subject                                                                                              |
+| Plaintext | contact identifier, date, isFromMe, isRead, isSent, isDelivered, hasAttachments, service, chatId, chatName |
+
+**imessage_attachments**
+
+|           | Fields                        |
+| --------- | ----------------------------- |
+| Encrypted | file data                     |
+| Plaintext | filename, mimeType, file size |
+
+**contacts**
+
+|           | Fields                                                  |
+| --------- | ------------------------------------------------------- |
+| Encrypted | firstName, lastName, organization, emails, phoneNumbers |
+| Plaintext | contactId (source system ID)                            |
+
+**locations**
+
+|           | Fields              |
+| --------- | ------------------- |
+| Encrypted | latitude, longitude |
+| Plaintext | timestamp, accuracy |
+
+**whatsapp_messages**
+
+|                | Fields                                                         |
+| -------------- | -------------------------------------------------------------- |
+| Encrypted      | text, chatName, senderName, senderPhoneNumber                  |
+| Plaintext      | chatId, messageId, senderJid, timestamp, isFromMe, isGroupChat |
+| Search Indices | chatName, senderName, senderPhoneNumber                        |
+
+Search indices are blind indexes (HMAC) that support server-side exact-match search. See [Blind Indexing for Search](#blind-indexing-for-search).
+
+The remaining tables (`write_logs`, `read_logs`, `access_tokens`, `login_attempts`) are operational — they don't store user content and have no encrypted fields.
+
+## Encryption Key Management
 
 **What we do now:**
 
@@ -96,7 +146,7 @@ The server has no way to decrypt your data. If you lose your encryption key, you
 - Is PBKDF2 with 100k iterations still considered good? (Argon2 is "better" but more complex)
 - Should we ever implement key rotation, or is "re-encrypt everything" fine for a personal tool?
 
-### Blind Indexing for Search
+## Blind Indexing for Search
 
 The encryption uses random IVs, so the same plaintext encrypted twice produces different ciphertexts. This is a security feature (prevents pattern detection) but makes server-side search impossible.
 
@@ -133,7 +183,7 @@ The HMAC is computed using:
 - `senderNameIndex`
 - `senderPhoneNumberIndex`
 
-## Rate Limiting
+# Rate Limiting
 
 Configure rate limiting in the Vercel dashboard under **Firewall → + New Rule**.
 
