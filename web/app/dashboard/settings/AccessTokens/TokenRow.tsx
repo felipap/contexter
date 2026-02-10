@@ -1,7 +1,7 @@
 "use client"
 
 import { TrashIcon } from "@/ui/icons"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { formatRelative } from "./formatRelative"
 import { TokenInfo } from "./useAccessTokens"
 
@@ -13,8 +13,11 @@ type Props = {
 export function TokenRow({ token, onRevoke }: Props) {
   const [confirming, setConfirming] = useState(false)
 
-  const isExpired =
-    token.expiresAt && new Date(token.expiresAt).getTime() < Date.now()
+  const [now] = useState(() => Date.now())
+  const isExpired = useMemo(
+    () => token.expiresAt && new Date(token.expiresAt).getTime() < now,
+    [token.expiresAt, now]
+  )
 
   const scopeLabels = token.scopes.length === 0 ? ["All access"] : token.scopes
 

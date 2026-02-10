@@ -91,7 +91,9 @@ function SearchField({
   const [localValue, setLocalValue] = useState(value)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const onChangeRef = useRef(onChange)
-  onChangeRef.current = onChange
+  useEffect(() => {
+    onChangeRef.current = onChange
+  }, [onChange])
 
   // Sync local value when external value changes (e.g. clearing filters)
   useEffect(() => {

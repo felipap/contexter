@@ -18,7 +18,10 @@ export function useAccessTokens() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    loadTokens()
+    getAccessTokens().then((result) => {
+      setTokens(result)
+      setLoading(false)
+    })
   }, [])
 
   async function loadTokens() {
