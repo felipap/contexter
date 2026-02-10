@@ -6,23 +6,29 @@ Sync your data to the cloud, where agents can read it.
 
 The Vaulty client can sync the following data to your server:
 
-| Sync                  | Description                                       | Availability        |
-| --------------------- | ------------------------------------------------- | ------------------- |
-| **iMessages**         | Full message history and attachments              | Stable              |
-| **WhatsApp (Sqlite)** | Via local SQLite database or Unipile              | Stable              |
-| **Contacts**          | From macOS AddressBook                            | Stable              |
-| **Screenshots**       | Periodic screen captures (auto-deleted after 24h) | Beta                |
-| **Locations**         | GPS coordinates                                   | Beta, needs iOS app |
+| Sync                  | Description                               | Availability        |
+| --------------------- | ----------------------------------------- | ------------------- |
+| **Apple Messages**    | Message history and attachments           | Stable              |
+| **WhatsApp (Sqlite)** | Message history via local SQLite database | Stable              |
+| **Apple Contacts**    | From macOS AddressBook                    | Stable              |
+| **Screenshots**       | Periodic screen captures                  | Beta                |
+| **Locations**         | GPS coordinates via iOS app               | Beta, needs iOS app |
+
+### Components
+
+- **Desktop app** - Syncs data from your machine to the server
+- **Server (Next.js)** - Stores the data and exposes it via API
+- **iOS app** - For sharing realtime location
 
 ## Getting started
 
-### Download the client
+### Download the desktop client
 
 Download the latest macOS desktop app from [GitHub Releases](https://github.com/felipap/vaulty/releases).
 
 ### Deploy the server
 
-See [web/README.md](./web/README.md) for deployment instructions (includes one-click Vercel deploy).
+See [web/README.md](./web/README.md) for instructions.
 
 ## Roadmap
 

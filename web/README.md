@@ -1,15 +1,12 @@
 # Vaulty Web
 
-The server component of Vaulty. This is a self-hosted API that:
-
-1. **Receives data from the Desktop** — Screenshots, and eventually other personal data from your machine
-2. **Exposes MCP servers** — So AI agents can access your data with your permission
+The server component of Vaulty.
 
 ## Deploy
 
 ### One-Click Deploy to Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/felipap/vaulty&root-directory=web&env=DATABASE_URL,DASHBOARD_SECRET,API_WRITE_SECRET&envDescription=Required%20environment%20variables%20for%20Vaulty&envLink=https://github.com/felipap/vaulty/blob/main/web/README.md%23setup)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/felipap/vaulty&root-directory=web&env=DATABASE_URL,DASHBOARD_SECRET,API_WRITE_SECRET,CRON_SECRET&envDescription=Required%20environment%20variables%20for%20Vaulty&envLink=https://github.com/felipap/vaulty/blob/main/web/README.md%23setup)
 
 ## Environment Variables
 

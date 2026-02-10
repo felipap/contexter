@@ -15,8 +15,7 @@
     "**/pnpm-lock.yaml": true,
     // Prevent showing in streams
     ".env": true,
-    "**/.env": true,
-    "**/.env.example": true
+    "**/.env": true
   },
   "files.exclude": {
     // "**/.env": true,
