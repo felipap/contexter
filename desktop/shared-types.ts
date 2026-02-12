@@ -3,7 +3,6 @@ export type SyncLogSource =
   | 'imessage'
   | 'contacts'
   | 'whatsapp-sqlite'
-  | 'whatsapp-unipile'
   | 'macos-stickies'
 
 export interface SyncLog {
@@ -29,12 +28,6 @@ export interface WhatsappSqliteConfig extends ServiceConfig {
   ignoredChatIds?: string[]
 }
 
-export interface WhatsappUnipileConfig extends ServiceConfig {
-  apiBaseUrl: string | null
-  apiToken: string | null
-  accountId: string | null
-}
-
 export interface ServiceStatus {
   name: string
   isRunning: boolean
@@ -50,16 +43,6 @@ export interface BackfillProgress {
   messageCount?: number
   itemsUploaded?: number
   error?: string
-}
-
-export interface McpServerConfig {
-  enabled: boolean
-  port: number
-}
-
-export interface McpServerStatus {
-  running: boolean
-  port: number | null
 }
 
 export interface ElectronAPI {
@@ -102,12 +85,6 @@ export interface ElectronAPI {
     config: Partial<WhatsappSqliteConfig>,
   ) => Promise<void>
 
-  // WhatsApp Unipile service
-  getWhatsappUnipileConfig: () => Promise<WhatsappUnipileConfig>
-  setWhatsappUnipileConfig: (
-    config: Partial<WhatsappUnipileConfig>,
-  ) => Promise<void>
-
   // macOS Stickies service
   getMacosStickiesSyncConfig: () => Promise<ServiceConfig>
   setMacosStickiesSyncConfig: (config: Partial<ServiceConfig>) => Promise<void>
@@ -136,13 +113,6 @@ export interface ElectronAPI {
   getOpenAtLogin: () => Promise<boolean>
   setOpenAtLogin: (enabled: boolean) => Promise<void>
   getAppVersion: () => Promise<string>
-
-  // MCP Server
-  getMcpServerConfig: () => Promise<McpServerConfig>
-  setMcpServerConfig: (config: Partial<McpServerConfig>) => Promise<void>
-  getMcpServerStatus: () => Promise<McpServerStatus>
-  startMcpServer: () => Promise<number>
-  stopMcpServer: () => Promise<void>
 
   // Utility
   openUrl: (url: string) => Promise<void>

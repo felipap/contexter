@@ -5,7 +5,7 @@ import {
   normalizePhoneForSearch,
 } from '../../lib/search-index-utils'
 import { getDeviceId, getEncryptionKey } from '../../store'
-import type { WhatsAppMessage, WhatsAppSource } from './types'
+import type { WhatsAppMessage } from './types'
 
 type EncryptedWhatsAppMessage = WhatsAppMessage & {
   chatNameIndex?: string
@@ -52,7 +52,7 @@ function encryptMessages(
 
 export async function uploadWhatsAppMessages(
   messages: WhatsAppMessage[],
-  source: WhatsAppSource,
+  source: 'sqlite',
 ): Promise<{ error: string } | object> {
   if (messages.length === 0) {
     return {}

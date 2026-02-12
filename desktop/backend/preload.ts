@@ -55,17 +55,6 @@ const api = {
     intervalMinutes?: number
   }) => ipcRenderer.invoke('set-whatsapp-sqlite-config', config),
 
-  // WhatsApp Unipile service
-  getWhatsappUnipileConfig: () =>
-    ipcRenderer.invoke('get-whatsapp-unipile-config'),
-  setWhatsappUnipileConfig: (config: {
-    enabled?: boolean
-    intervalMinutes?: number
-    apiBaseUrl?: string
-    apiToken?: string
-    accountId?: string
-  }) => ipcRenderer.invoke('set-whatsapp-unipile-config', config),
-
   // macOS Stickies service
   getMacosStickiesSyncConfig: () =>
     ipcRenderer.invoke('get-macos-stickies-sync-config'),
@@ -107,13 +96,6 @@ const api = {
     ipcRenderer.invoke('set-open-at-login', enabled),
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
 
-  // MCP Server
-  getMcpServerConfig: () => ipcRenderer.invoke('get-mcp-server-config'),
-  setMcpServerConfig: (config: { enabled?: boolean; port?: number }) =>
-    ipcRenderer.invoke('set-mcp-server-config', config),
-  getMcpServerStatus: () => ipcRenderer.invoke('get-mcp-server-status'),
-  startMcpServer: () => ipcRenderer.invoke('start-mcp-server'),
-  stopMcpServer: () => ipcRenderer.invoke('stop-mcp-server'),
   // Utility
   openUrl: (url: string) => ipcRenderer.invoke('open-url', url),
 } satisfies ElectronAPI

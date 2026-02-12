@@ -8,7 +8,6 @@ type ConfigKey =
   | 'imessageExport'
   | 'contactsSync'
   | 'whatsappSqlite'
-  | 'whatsappUnipile'
   | 'macosStickiesSync'
 
 class MissingEncryptionKeyError extends Error {

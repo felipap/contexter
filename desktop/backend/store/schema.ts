@@ -5,7 +5,6 @@ export type SyncLogSource =
   | 'imessage'
   | 'contacts'
   | 'whatsapp-sqlite'
-  | 'whatsapp-unipile'
   | 'macos-stickies'
 
 export type SyncLog = {
@@ -23,10 +22,6 @@ export type StoreSchema = {
   deviceSecret: string | null
   encryptionKey: string | null
   serverUrl: string | null
-  mcpServer: {
-    enabled: boolean
-    port: number
-  }
   screenCapture: {
     enabled: boolean
     intervalMinutes: number
@@ -51,14 +46,6 @@ export type StoreSchema = {
     lastExportedMessageDate: string | null
     ignoredChatIds: string[]
   }
-  whatsappUnipile: {
-    enabled: boolean
-    intervalMinutes: number
-    nextSyncAfter: string | null
-    apiBaseUrl: string | null
-    apiToken: string | null
-    accountId: string | null
-  }
   macosStickiesSync: {
     enabled: boolean
     intervalMinutes: number
@@ -73,10 +60,6 @@ export const DEFAULT_STATE: StoreSchema = {
   deviceSecret: null,
   encryptionKey: null,
   serverUrl: null,
-  mcpServer: {
-    enabled: false,
-    port: 19513,
-  },
   screenCapture: {
     enabled: false,
     intervalMinutes: 5,
@@ -100,14 +83,6 @@ export const DEFAULT_STATE: StoreSchema = {
     nextSyncAfter: null,
     lastExportedMessageDate: null,
     ignoredChatIds: [],
-  },
-  whatsappUnipile: {
-    enabled: false,
-    intervalMinutes: 5,
-    nextSyncAfter: null,
-    apiBaseUrl: null,
-    apiToken: null,
-    accountId: null,
   },
   macosStickiesSync: {
     enabled: false,

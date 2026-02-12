@@ -1,4 +1,4 @@
-// Shared WhatsApp types used across all sources (SQLite, Unipile, etc.)
+// Shared WhatsApp types used across all sources
 
 export type WhatsAppMessage = {
   id: string
@@ -24,5 +24,3 @@ export type WhatsAppAttachment = {
   localPath: string | null
   dataBase64: string | null
 }
-
-export type WhatsAppSource = 'sqlite' | 'unipile'

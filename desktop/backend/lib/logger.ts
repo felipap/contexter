@@ -27,7 +27,6 @@ const SCOPE_COLORS: Record<string, string> = {
   imessage: '\x1b[32m', // green
   screenshots: '\x1b[35m', // magenta
   contacts: '\x1b[33m', // yellow
-  unipile: '\x1b[34m', // blue
   api: '\x1b[91m', // bright red
   store: '\x1b[90m', // gray
   keychain: '\x1b[90m', // gray

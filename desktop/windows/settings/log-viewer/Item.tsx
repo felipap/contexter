@@ -25,7 +25,6 @@ const SOURCE_LABELS: Record<SyncLogSource, string> = {
   imessage: 'iMessage',
   contacts: 'Contacts',
   'whatsapp-sqlite': 'WhatsApp (SQLite)',
-  'whatsapp-unipile': 'WhatsApp (Unipile)',
   'macos-stickies': 'macOS Stickies',
 }
 

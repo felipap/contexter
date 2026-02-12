@@ -2,46 +2,44 @@
 
 ## Now
 
-- [ ] Doc inspo? https://github.com/mitchellh/vouch
-- [ ] Explore WhatsApp via Unipile
-- [ ] Expose via MCP
-- [ ] Better request logs
-- [ ] Horizontal layout of settings
+- [ ] Explore docs approach (inspo: https://github.com/mitchellh/vouch)
 
 ## Later
 
 - [ ] Upgrade ESLint to v9 (requires flat config migration)
-- [ ] Rate-limit access tokens?
-- [ ] Install via npm?
-- [ ] Fix: providing the wrong key breaks the dashboard (stays in "Loading...")
-- [ ] LaunchAgent to awake during darkwakes?
-- [ ] Feat: implement an onboarding with info
-- [ ] Feat: whitelist or blacklist messages from particular numbers
-- [ ] Feat: Allow expire data after certain time
-- [ ] Think about real-time authentication by asking user directly
-- [ ] Desktop: Feat: blur the texts in screenshots
-- [ ] Ability to rotate keys?
+- [ ] Rate-limit access tokens
+- [ ] Install via npm
+- [ ] Fix dashboard breaking when providing the wrong key (stays in "Loading...")
+- [ ] Wake during darkwakes via LaunchAgent
+- [ ] Onboarding flow with info
+- [ ] Whitelist or blacklist messages from particular numbers
+- [ ] Expire data after a certain time
+- [ ] Real-time authentication by asking user directly
+- [ ] Blur texts in desktop screenshots
+- [ ] Key rotation
 
 ## Done
 
-- [x] Dashboard: Button to delete all data
-- [x] Ability to emit read keys
-- [x] Desktop: Whatsapp Sqlite import shouldn't load all into memory
-- [x] llms.txt - requires authentication
-- [x] Better name?
-- [x] Improve logger (electron-log?)
+- [x] Button to delete all data from dashboard
+- [x] Read-only access tokens
+- [x] Stream WhatsApp SQLite import instead of loading all into memory
+- [ ] - [x] Better request logs
+- [x] Authenticated llms.txt
+- [x] Rename project
+- [ ] - [x] Horizontal layout of settings
+- [x] Improve logger (electron-log)
 - [x] Encrypt locations
-- [x] Feat: /api/locations/latest endpoint
-- [x] Feat: _Don't_ auto upload data when starting the app
+- [x] /api/locations/latest endpoint
+- [x] Don't auto upload data when starting the app
 - [x] End-to-end encryption of message texts
-- [x] Security: store device secret in system keychain instead of plaintext JSON
+- [x] Store device secret in system keychain instead of plaintext JSON
 - [x] Auto delete screenshots after 24 hours
-- [x] Whitelisting IPs
-- [x] Fix: local packing taking too long
-- [x] Feat: desktop icon
+- [x] IP whitelisting
+- [x] Fix local packing taking too long
+- [x] Desktop icon
 - [x] Fix notarization
 - [x] Fix CI/CD
-- [x] Feat: export macOS contacts
-- [x] Feat: export iMessage
-- [x] Show animation when uploading a screenshot
-- [x] Fix non-existent dashboard authentication
+- [x] Export macOS contacts
+- [x] Export iMessage
+- [x] Upload screenshot animation
+- [x] Fix dashboard authentication

@@ -219,7 +219,7 @@ export const WhatsappMessages = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey(),
     userId: text("user_id").notNull(),
-    messageId: text("message_id").notNull().unique(), // Unipile message ID
+    messageId: text("message_id").notNull().unique(),
     chatId: text("chat_id").notNull(),
     // encrypted
     chatName: text("chat_name"),

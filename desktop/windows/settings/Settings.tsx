@@ -1,7 +1,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import { GeneralSettings } from './GeneralSettings'
 import { LogsTab } from './log-viewer/LogsTab'
-import { McpServerTab } from './mcp/McpServerTab'
 import { Onboarding } from './Onboarding/index'
 import { Sidebar, ActiveTab, DataSourceInfo } from './Sidebar'
 import { ScreenshotsSyncTab } from './sync-tabs/screenshots'
@@ -16,7 +15,6 @@ const SOURCE_LABELS: Record<SyncLogSource, string> = {
   imessage: 'iMessage Export',
   contacts: 'Contacts Sync',
   'whatsapp-sqlite': 'WhatsApp (SQLite)',
-  'whatsapp-unipile': 'WhatsApp (Unipile)',
   'macos-stickies': 'macOS Stickies',
 }
 
@@ -86,7 +84,6 @@ function SettingsPanel() {
         imessage: false,
         contacts: false,
         'whatsapp-sqlite': false,
-        'whatsapp-unipile': false,
         'macos-stickies': false,
       }
 
@@ -206,7 +203,6 @@ function SettingsPanel() {
       <div className="flex-1 overflow-auto p-4">
         {activeTab === 'general' && <GeneralSettings />}
         {activeTab === 'logs' && <LogsTab highlightSyncId={highlightSyncId} />}
-        {activeTab === 'mcp' && <McpServerTab />}
         {activeTab === 'screenshots' && (
           <ScreenshotsSyncTab
             onEnabledChange={(enabled) =>

@@ -7,7 +7,7 @@ import {
 } from '../shared/ui/icons'
 import { SyncLogSource } from '../electron'
 
-export type ActiveTab = 'general' | 'logs' | 'mcp' | SyncLogSource
+export type ActiveTab = 'general' | 'logs' | SyncLogSource
 
 export type DataSourceInfo = {
   source: SyncLogSource
@@ -31,7 +31,6 @@ const SYNC_SOURCE_ICONS: Record<
   imessage: IMessageIcon,
   contacts: ContactsIcon,
   'whatsapp-sqlite': WhatsappIcon,
-  'whatsapp-unipile': WhatsappIcon,
   'macos-stickies': StickiesIcon,
 }
 
@@ -100,12 +99,6 @@ export function Sidebar({
           onClick={() => onSelectTab('logs')}
         >
           All Logs
-        </SidebarButton>
-        <SidebarButton
-          active={activeTab === 'mcp'}
-          onClick={() => onSelectTab('mcp')}
-        >
-          MCP Server
         </SidebarButton>
       </div>
 
