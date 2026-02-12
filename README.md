@@ -1,3 +1,5 @@
+<img src="desktop/assets/icons/original.png" alt="vaulty" width="100" />
+
 # Vaulty
 
 Sync your personal data to your own server. Let your AI agents read it.
@@ -62,13 +64,13 @@ GET /api/llms.txt
 
 Access tokens are scoped — you can grant an agent access to contacts but not screenshots, for example. Tokens are managed through the dashboard and prefixed with `vault_`.
 
-Since responses contain encrypted fields, you can run the included [decrypt proxy](./web/scripts/decrypt-proxy.ts) locally to transparently decrypt API responses before they reach your agent.
+Since responses contain encrypted fields, you can run the included [decrypt proxy](./server/scripts/decrypt-proxy.ts) locally to transparently decrypt API responses before they reach your agent.
 
 ## Getting started
 
 ### 1. Deploy the server
 
-The server is a Next.js app designed for Vercel. See [web/README.md](./web/README.md) for setup instructions and environment variables.
+The server is a Next.js app designed for Vercel. See [server/README.md](./server/README.md) for setup instructions and environment variables.
 
 ### 2. Install the desktop app
 
