@@ -3,8 +3,7 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { twMerge } from "tailwind-merge"
-import { Button } from "@/ui/Button"
-import { TrashIcon } from "@/ui/icons"
+import { DeleteAllButton } from "@/ui/DeleteAllButton"
 import { deleteAllWhatsappMessages } from "./(messages)/actions"
 
 const subTabs = [
@@ -17,12 +16,6 @@ export function WhatsappNav() {
   const router = useRouter()
 
   async function handleDeleteAll() {
-    const confirmed = confirm(
-      "Delete all WhatsApp data? This will permanently delete all WhatsApp messages from the database."
-    )
-    if (!confirmed) {
-      return
-    }
     await deleteAllWhatsappMessages()
     router.refresh()
   }
@@ -31,14 +24,10 @@ export function WhatsappNav() {
     <>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">WhatsApp</h1>
-        <Button
-          variant="danger"
-          size="sm"
-          icon={<TrashIcon size={12} />}
-          onClick={handleDeleteAll}
-        >
-          Delete All
-        </Button>
+        <DeleteAllButton
+          confirmMessage="Delete all WhatsApp data? This will permanently delete all WhatsApp messages from the database."
+          onDelete={handleDeleteAll}
+        />
       </div>
 
       <div className="mb-6 flex gap-2">

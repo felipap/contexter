@@ -11,8 +11,8 @@ import {
 } from "./actions"
 import { DemoBlur } from "@/ui/DemoBlur"
 import { Pagination } from "@/ui/Pagination"
-import { Button } from "@/ui/Button"
-import { SearchIcon, TrashIcon } from "@/ui/icons"
+import { DeleteAllButton } from "@/ui/DeleteAllButton"
+import { SearchIcon } from "@/ui/icons"
 import { computeSearchIndex, getEncryptionKey } from "@/lib/encryption"
 import {
   normalizeStringForSearch,
@@ -90,12 +90,6 @@ export default function Page() {
   }, [page, debouncedQuery])
 
   async function handleDeleteAll() {
-    const confirmed = confirm(
-      "Delete all contacts? This will permanently remove all contacts from the database."
-    )
-    if (!confirmed) {
-      return
-    }
     await deleteAllContacts()
     router.refresh()
     setContacts([])
@@ -154,14 +148,10 @@ export default function Page() {
           <span className="shrink-0 text-sm text-zinc-500">
             {total.toLocaleString()} {debouncedQuery ? "matching" : "total"}
           </span>
-          <Button
-            variant="danger"
-            size="sm"
-            icon={<TrashIcon size={12} />}
-            onClick={handleDeleteAll}
-          >
-            Delete All
-          </Button>
+          <DeleteAllButton
+            confirmMessage="Delete all contacts? This will permanently remove all contacts from the database."
+            onDelete={handleDeleteAll}
+          />
         </div>
       </div>
 
