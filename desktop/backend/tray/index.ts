@@ -132,7 +132,7 @@ function updateTrayMenu(): void {
     ...serviceMenuItems,
     { type: 'separator' },
     {
-      label: `Vaulty Server... ${app.isPackaged ? '' : '(DEV)'}`,
+      label: `Vaulty Dashboard... ${app.isPackaged ? '' : '(DEV)'}`,
       enabled: canOpenDashboard,
       click: () => {
         if (serverUrl && encryptionKey) {

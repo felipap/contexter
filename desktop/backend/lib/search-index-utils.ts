@@ -19,6 +19,23 @@ export function normalizePhoneForSearch(phone: string): string {
   return `+${digits}`
 }
 
+/** Normalize a phone number to E.164 format (+ and digits only). Returns null if invalid. */
+export function normalizePhoneToE164(phone: string): string | null {
+  const hasPlus = phone.trimStart().startsWith('+')
+  const digits = phone.replace(/\D/g, '')
+  if (digits.length < 4) {
+    return null
+  }
+  if (hasPlus) {
+    return `+${digits}`
+  }
+  // Assume US +1 for numbers without a country code
+  if (digits.startsWith('1') && digits.length === 11) {
+    return `+${digits}`
+  }
+  return `+1${digits}`
+}
+
 /** Canonical string form for search: strip accents, lowercase, no punctuation or spaces */
 export function normalizeStringForSearch(name: string): string {
   return stripAccents(name)
