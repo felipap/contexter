@@ -2,6 +2,7 @@
 
 ## Now
 
+- [ ] Doc inspo? https://github.com/mitchellh/vouch
 - [ ] Explore WhatsApp via Unipile
 - [ ] Expose via MCP
 - [ ] Better request logs
