@@ -26,6 +26,10 @@ Vaulty fixes this. It syncs data from your devices to a server you control, encr
 | **Locations**      | GPS coordinates via iOS app               | Beta   |
 | **macOS Stickies** | Sticky notes from your desktop            | Stable |
 
+## Roadmap
+
+See [ROADMAP.md](./ROADMAP.md).
+
 ## How it works
 
 Vaulty has three pieces:
@@ -38,11 +42,12 @@ Data flows one way: from your devices, through encryption, to your server. The s
 
 ## Encryption
 
-All sensitive fields are encrypted on-device using AES-256-GCM before they ever leave your machine. The server stores only ciphertext. Decryption happens either in the browser (for the dashboard) or via a local decrypt proxy you can run alongside your agents.
+All sensitive fields are encrypted on-device using AES-256-GCM before they leave
+your machine. The server stores only ciphertext.
 
-Encrypted fields include message text, contact names, phone numbers, email addresses, screenshot image data, and GPS coordinates. Metadata like timestamps and chat IDs remain in the clear to support querying.
-
-For search over encrypted data (e.g. finding WhatsApp messages by sender), Vaulty uses HMAC-based blind indexes — the server can match queries without ever seeing the underlying values.
+For search over encrypted data (e.g. finding WhatsApp messages by sender),
+Vaulty uses HMAC-based blind indexes, so the server can match queries without
+seeing the underlying.
 
 See [SECURITY.md](./SECURITY.md) for the full breakdown.
 
@@ -79,11 +84,3 @@ Download the latest macOS release from [GitHub Releases](https://github.com/feli
 ### 3. Connect an agent
 
 Create an access token in the dashboard, then point your agent at your server with the token as a bearer credential. The `/api/llms.txt` endpoint describes all available endpoints in a format designed for LLM tool use.
-
-## Roadmap
-
-See [ROADMAP.md](./ROADMAP.md).
-
-## License
-
-MIT

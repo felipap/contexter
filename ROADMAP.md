@@ -2,7 +2,7 @@
 
 ## Now
 
-- [ ] Explore docs approach (inspo: https://github.com/mitchellh/vouch)
+- [ ] Fix onboarding flow
 
 ## Later
 
@@ -11,7 +11,6 @@
 - [ ] Install via npm
 - [ ] Fix dashboard breaking when providing the wrong key (stays in "Loading...")
 - [ ] Wake during darkwakes via LaunchAgent
-- [ ] Onboarding flow with info
 - [ ] Whitelist or blacklist messages from particular numbers
 - [ ] Expire data after a certain time
 - [ ] Real-time authentication by asking user directly
