@@ -42,7 +42,9 @@ body {
   --background-color-card: #fff;
 
   --color-contrast: #0a0a0a;
-  --color-secondary: #888;
+  --color-secondary: #444;
+  --color-tertiary: #888;
+
   --color-inverted: #fff;
   --color-link: #0a0a0a;
   --color-accent: #e5e5e5;
@@ -68,7 +70,9 @@ body {
   --border-color-stronger: #222;
 
   --color-contrast: #fafafa;
-  --color-secondary: #666;
+  --color-secondary: #aaa;
+  --color-tertiary: #666;
+
   --color-inverted: #0a0a0a;
   --color-primary: #ededed;
   --color-accent: #1a1a1a;
@@ -130,71 +134,10 @@ button {
   cursor: pointer;
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-@media (prefers-color-scheme: light) {
-  ::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.1);
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.2);
-  }
-}
-
-/* Auto-hide scrollbar - only shows on hover */
-.scrollbar-auto-hide::-webkit-scrollbar-thumb {
-  background: transparent;
-  transition: background 0.2s ease;
-}
-
-.scrollbar-auto-hide:hover::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.scrollbar-auto-hide:hover::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
-}
-
-@media (prefers-color-scheme: light) {
-  .scrollbar-auto-hide:hover::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.15);
-  }
-
-  .scrollbar-auto-hide:hover::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.25);
-  }
-}
-
-/* Hidden scrollbar - still scrollable */
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-
 /* Heading hierarchy */
 .heading-page {
-  @apply text-2xl font-semibold;
+  @apply text-xl font-semibold;
+  letter-spacing: 0.02em;
 }
 
 .heading-section {

@@ -5,10 +5,7 @@ import {
   CheckCircleIcon,
   LoadingSpinnerIcon,
 } from '../../shared/ui/icons'
-import {
-  useBackfillState,
-  formatElapsedTime,
-} from './useBackfillState'
+import { useBackfillState, formatElapsedTime } from './useBackfillState'
 
 export type HistoricalBackfillTheme = 'green' | 'blue'
 
@@ -125,17 +122,13 @@ export function HistoricalBackfill({
         <HistoryIcon className={`${classes.icon} shrink-0`} />
         <div className="flex-1">
           <p className={`text-sm font-medium ${classes.title}`}>{title}</p>
-          <p className={`text-xs ${classes.description} mt-1`}>
-            {description}
-          </p>
+          <p className={`text-xs ${classes.description} mt-1`}>{description}</p>
         </div>
       </div>
 
       {!isRunning && (
         <div className="flex items-center gap-2">
-          <label className={`text-xs ${classes.label}`}>
-            Days to import:
-          </label>
+          <label className={`text-xs ${classes.label}`}>Days to import:</label>
           <input
             type="number"
             min={1}
@@ -183,7 +176,10 @@ export function HistoricalBackfill({
               ...
             </span>
             <div className="flex items-center gap-3">
-              <ElapsedTime seconds={elapsedSeconds} className={classes.elapsed} />
+              <ElapsedTime
+                seconds={elapsedSeconds}
+                className={classes.elapsed}
+              />
               <span>{progressPercent}%</span>
             </div>
           </div>

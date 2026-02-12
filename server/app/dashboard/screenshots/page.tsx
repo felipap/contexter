@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import {
+  deleteAllScreenshots,
   getScreenshotRetentionHours,
   getScreenshots,
   type Screenshot,
@@ -14,6 +15,7 @@ import {
   EmptyState,
   LoadingState,
 } from "@/ui/PageHeader"
+import { DeleteAllButton } from "@/ui/DeleteAllButton"
 
 const IS_DEV = process.env.NODE_ENV === "development"
 
@@ -52,6 +54,14 @@ export default function Page() {
     load()
   }, [page])
 
+  async function handleDeleteAll() {
+    await deleteAllScreenshots()
+    setScreenshots([])
+    setTotal(0)
+    setTotalPages(1)
+    setPage(1)
+  }
+
   let inner
   if (loading) {
     inner = <LoadingState />
@@ -73,19 +83,27 @@ export default function Page() {
     <div>
       <PageHeader
         title="Screenshots"
-        subtitle={
-          retentionHours !== null ? (
-            <p className="text-sm text-secondary mt-1">
-              Auto-delete after {formatRetention(retentionHours)} (set{" "}
-              <code className="bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded text-xs">
-                SCREENSHOT_RETENTION_HOURS
-              </code>{" "}
-              env var to change) {IS_DEV ? "(inactive in dev)" : ""}
-            </p>
-          ) : undefined
-        }
+        // subtitle={
+        //   retentionHours !== null ? (
+        //     <p className="text-sm text-secondary mt-1">
+        //       Auto-delete after {formatRetention(retentionHours)} (set{" "}
+        //       <code className="bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded text-xs">
+        //         SCREENSHOT_RETENTION_HOURS
+        //       </code>{" "}
+        //       env var to change) {IS_DEV ? "(inactive in dev)" : ""}
+        //     </p>
+        //   ) : undefined
+        // }
       >
-        {total > 0 && <PageCount total={total} />}
+        {total > 0 && (
+          <>
+            <PageCount total={total} />
+            <DeleteAllButton
+              confirmMessage="Delete all screenshots? This will permanently remove all screenshots from the database."
+              onDelete={handleDeleteAll}
+            />
+          </>
+        )}
       </PageHeader>
 
       {inner}

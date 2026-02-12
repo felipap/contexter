@@ -5,39 +5,7 @@ import { type Route } from "next"
 import { useEffect, useState } from "react"
 import { ActivityLogs } from "./ActivityLogs"
 import { getDashboardStats, type DashboardStats } from "./actions"
-
-function formatBytes(bytes: number): string {
-  if (bytes === 0) {
-    return "0 B"
-  }
-  const k = 1024
-  const sizes = ["B", "KB", "MB", "GB"]
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
-}
-
-type StatCardProps = {
-  label: string
-  value: string
-  href: Route
-}
-
-function StatCard({ label, value, href }: StatCardProps) {
-  return (
-    <Link
-      href={href}
-      className="group flex flex-col justify-between rounded-lg border border-neutral-200 p-5 transition-colors hover:border-neutral-300 dark:border-neutral-800 dark:hover:border-neutral-700"
-    >
-      <p className="text-xs text-secondary">{label}</p>
-      <p className="mt-3 font-mono text-2xl tracking-tight text-contrast">
-        {value}
-      </p>
-      <p className="mt-3 text-xs text-secondary transition-colors group-hover:text-secondary">
-        View &rarr;
-      </p>
-    </Link>
-  )
-}
+import { LoadingState } from "@/ui/PageHeader"
 
 export function DashboardClient() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
@@ -54,7 +22,7 @@ export function DashboardClient() {
   }, [])
 
   if (loading) {
-    return <p className="font-mono text-sm text-secondary">Loading...</p>
+    return <LoadingState />
   }
 
   if (error) {
@@ -68,10 +36,8 @@ export function DashboardClient() {
   return (
     <div className="space-y-10">
       <div>
-        <h2 className="mb-5 heading-label">
-          Overview
-        </h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <h2 className="heading-page mb-5">Overview</h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <StatCard
             label="Screenshots"
             value={stats.totalScreenshots.toLocaleString()}
@@ -111,11 +77,42 @@ export function DashboardClient() {
       </div>
 
       <div>
-        <h2 className="mb-5 heading-label">
-          Activity
-        </h2>
+        <h2 className="heading-page mb-5 ">Activity</h2>
         <ActivityLogs />
       </div>
     </div>
+  )
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes === 0) {
+    return "0 B"
+  }
+  const k = 1024
+  const sizes = ["B", "KB", "MB", "GB"]
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
+}
+
+type StatCardProps = {
+  label: string
+  value: string
+  href: Route
+}
+
+function StatCard({ label, value, href }: StatCardProps) {
+  return (
+    <Link
+      href={href}
+      className="group flex flex-col justify-between rounded-lg border border-neutral-200 p-4 transition-colors hover:border-neutral-300 dark:border-neutral-800 dark:hover:border-neutral-700"
+    >
+      <p className="text-sm text-secondary">{label}</p>
+      <p className="mt-2 font-mono text-2xl tracking-tight text-contrast">
+        {value}
+      </p>
+      <p className="mt-2 text-xs text-tertiary transition-colors group-hover:text-secondary">
+        View &rarr;
+      </p>
+    </Link>
   )
 }

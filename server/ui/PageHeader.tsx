@@ -11,9 +11,7 @@ export function PageHeader({ title, subtitle, children }: Props) {
         <h1 className="heading-page">{title}</h1>
         {subtitle}
       </div>
-      {children && (
-        <div className="flex items-center gap-4">{children}</div>
-      )}
+      {children && <div className="flex items-center gap-4">{children}</div>}
     </div>
   )
 }
@@ -33,9 +31,9 @@ export function PageCount({
 }
 
 export function EmptyState({ message }: { message: string }) {
-  return <p className="text-secondary">{message}</p>
+  return <p className="text-secondary font-mono">{message}</p>
 }
 
 export function LoadingState() {
-  return <p className="text-secondary">Loading...</p>
+  return <p className="text-secondary font-mono">Loading...</p>
 }

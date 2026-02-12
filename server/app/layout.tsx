@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { GeistMono } from "geist/font/mono"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -28,7 +29,7 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className={``}>{children}</body>
+      <body className={GeistMono.variable}>{children}</body>
     </html>
   )
 }

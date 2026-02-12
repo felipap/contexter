@@ -68,16 +68,16 @@ export function DashboardNav() {
   return (
     <header className="border-b border-neutral-200 bg-white dark:border-neutral-800 dark:bg-[#0a0a0a]">
       <div className="mx-auto  px-5">
-        <div className="flex items-center justify-between py-5">
+        <div className="flex items-center justify-between py-4">
           <div className="flex items-end gap-3">
             <Link
               href="/dashboard"
-              className="flex items-center gap-2 text-lg font-semibold tracking-tight"
+              className="flex items-center gap-2 text-lg font-semibold"
             >
               <Logo className="w-6 h-6" />
               {/* Vaulty */}
             </Link>
-            <span className="font-mono text-sm text-secondary">
+            <span className="font-mono text-sm text-tertiary">
               v{process.env.APP_VERSION}
             </span>
           </div>
@@ -140,20 +140,20 @@ function Logo({ className }: { className?: string }) {
         width="118.066"
         height="118.066"
         rx="26.5"
-        stroke="white"
+        stroke="currentColor"
         stroke-width="7"
       />
-      <circle cx="91.6924" cy="91.6866" r="7.53226" fill="white" />
-      <circle cx="33.3877" cy="91.6866" r="7.53226" fill="white" />
-      <circle cx="91.6924" cy="33.3799" r="7.53226" fill="white" />
-      <circle cx="33.3877" cy="33.3799" r="7.53226" fill="white" />
+      <circle cx="91.6924" cy="91.6866" r="7.53226" fill="currentColor" />
+      <circle cx="33.3877" cy="91.6866" r="7.53226" fill="currentColor" />
+      <circle cx="91.6924" cy="33.3799" r="7.53226" fill="currentColor" />
+      <circle cx="33.3877" cy="33.3799" r="7.53226" fill="currentColor" />
       <line
         opacity="0.5"
         x1="33.3829"
         y1="91.2239"
         x2="50.7366"
         y2="73.8705"
-        stroke="white"
+        stroke="currentColor"
         stroke-width="10"
         stroke-linecap="round"
       />
@@ -163,7 +163,7 @@ function Logo({ className }: { className?: string }) {
         y1="50.302"
         x2="88.085"
         y2="36.5217"
-        stroke="white"
+        stroke="currentColor"
         stroke-width="10"
         stroke-linecap="round"
       />
@@ -173,7 +173,7 @@ function Logo({ className }: { className?: string }) {
         y1="73.9332"
         x2="89.7855"
         y2="89.5582"
-        stroke="white"
+        stroke="currentColor"
         stroke-width="10"
       />
       <line
@@ -182,14 +182,14 @@ function Logo({ className }: { className?: string }) {
         y1="33.234"
         x2="52.5539"
         y2="52.3262"
-        stroke="white"
+        stroke="currentColor"
         stroke-width="10"
       />
       <circle
         cx="62.543"
         cy="62.5332"
         r="12.4688"
-        stroke="white"
+        stroke="currentColor"
         stroke-width="12"
       />
     </svg>

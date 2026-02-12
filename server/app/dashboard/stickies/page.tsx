@@ -13,7 +13,9 @@ import {
 
 export default function Page() {
   const [stickies, setStickies] = useState<StickyNote[]>([])
-  const [decryptedTexts, setDecryptedTexts] = useState<Record<string, string | null>>({})
+  const [decryptedTexts, setDecryptedTexts] = useState<
+    Record<string, string | null>
+  >({})
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
@@ -71,7 +73,6 @@ export default function Page() {
       <PageHeader title="Stickies">
         {total > 0 && <PageCount total={total} />}
       </PageHeader>
-
       {inner}
     </div>
   )
@@ -87,9 +88,11 @@ function StickyCard({
   const displayText = decryptedText ?? sticky.text
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-      <p className="whitespace-pre-wrap text-sm leading-relaxed line-clamp-6">
-        {displayText || <span className="italic text-secondary">Empty note</span>}
+    <div className=" border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900">
+      <p className="whitespace-pre-wrap text-md leading-relaxed line-clamp-6">
+        {displayText || (
+          <span className="italic text-secondary">Empty note</span>
+        )}
       </p>
       <p className="mt-3 text-xs text-secondary">
         {formatDate(sticky.updatedAt)}

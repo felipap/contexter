@@ -74,6 +74,15 @@ export async function getScreenshotData(id: string): Promise<string | null> {
   return screenshot?.data ?? null
 }
 
+export async function deleteAllScreenshots(): Promise<{ deleted: number }> {
+  if (!(await isAuthenticated())) {
+    unauthorized()
+  }
+
+  const result = await db.delete(Screenshots).returning({ id: Screenshots.id })
+  return { deleted: result.length }
+}
+
 export async function getScreenshotRetentionHours(): Promise<number> {
   if (!(await isAuthenticated())) {
     unauthorized()

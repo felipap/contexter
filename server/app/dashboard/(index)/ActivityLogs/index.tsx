@@ -8,6 +8,7 @@ import {
   type WriteLogEntry,
   type ReadLogEntry,
 } from "./actions"
+import { Button } from "@/ui/Button"
 
 type LogTab = "writes" | "reads"
 
@@ -18,7 +19,9 @@ export function ActivityLogs() {
   return (
     <div>
       <div className="mb-4 flex gap-1">
-        <button
+        <Button
+          size="sm"
+          variant={activeTab === "writes" ? "default" : "secondary"}
           onClick={() => setActiveTab("writes")}
           className={twMerge(
             "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
@@ -28,8 +31,10 @@ export function ActivityLogs() {
           )}
         >
           Writes
-        </button>
-        <button
+        </Button>
+        <Button
+          size="sm"
+          variant={activeTab === "reads" ? "default" : "secondary"}
           onClick={() => setActiveTab("reads")}
           className={twMerge(
             "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
@@ -39,7 +44,7 @@ export function ActivityLogs() {
           )}
         >
           Reads
-        </button>
+        </Button>
       </div>
 
       {loading ? (
@@ -63,19 +68,19 @@ function WriteLogsTable({ logs }: { logs: WriteLogEntry[] }) {
       <table className="w-full">
         <thead>
           <tr className="border-b border-neutral-200 dark:border-neutral-800">
-            <th className="px-4 py-2.5 text-left text-xs font-medium text-secondary">
+            <th className="px-4 py-2.5 text-left text-sm font-medium text-secondary">
               Type
             </th>
-            <th className="px-4 py-2.5 text-left text-xs font-medium text-secondary">
+            <th className="px-4 py-2.5 text-left text-sm font-medium text-secondary">
               Description
             </th>
-            <th className="px-4 py-2.5 text-left text-xs font-medium text-secondary">
+            <th className="px-4 py-2.5 text-left text-sm font-medium text-secondary">
               Count
             </th>
-            <th className="px-4 py-2.5 text-left text-xs font-medium text-secondary">
+            <th className="px-4 py-2.5 text-left text-sm font-medium text-secondary">
               Token
             </th>
-            <th className="px-4 py-2.5 text-left text-xs font-medium text-secondary">
+            <th className="px-4 py-2.5 text-left text-sm font-medium text-secondary">
               Time
             </th>
           </tr>
@@ -167,9 +172,7 @@ function ReadLogsTable({ logs }: { logs: ReadLogEntry[] }) {
 
 function TokenLabel({ prefix }: { prefix: string | null }) {
   if (!prefix) {
-    return (
-      <span className="text-xs text-secondary">—</span>
-    )
+    return <span className="text-xs text-secondary">—</span>
   }
   return (
     <code className="rounded border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 font-mono text-[11px] text-secondary dark:border-neutral-800 dark:bg-neutral-900">
