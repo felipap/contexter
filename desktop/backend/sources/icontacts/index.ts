@@ -7,6 +7,7 @@ import { computeSearchIndex, encryptText } from '../../lib/encryption'
 import {
   normalizeStringForSearch,
   normalizePhoneForSearch,
+  normalizePhoneToE164,
 } from '../../lib/search-index-utils'
 import { getDeviceId, getEncryptionKey } from '../../store'
 
@@ -103,13 +104,19 @@ export function fetchContacts(): AppleContact[] {
         phone: string | null
       }>
 
+      const normalizedPhones = phones
+        .map((p) => p.phone)
+        // .filter(Boolean)
+        // .map((p) => normalizePhoneToE164(p!))
+        .filter(Boolean) as string[]
+
       return {
         id: person.id,
         firstName: person.firstName,
         lastName: person.lastName,
         organization: person.organization,
         emails: emails.map((e) => e.email).filter(Boolean) as string[],
-        phoneNumbers: phones.map((p) => p.phone).filter(Boolean) as string[],
+        phoneNumbers: normalizedPhones,
       }
     })
 
@@ -157,6 +164,8 @@ function encryptContacts(
   })
 }
 
+const UPLOAD_BATCH_SIZE = 100
+
 export async function uploadContacts(contacts: AppleContact[]): Promise<void> {
   if (contacts.length === 0) {
     return
@@ -167,14 +176,20 @@ export async function uploadContacts(contacts: AppleContact[]): Promise<void> {
     ? encryptContacts(contacts, encryptionKey)
     : contacts
 
-  await apiRequest({
-    path: '/api/icontacts',
-    body: {
-      contacts: contactsToUpload,
-      syncTime: new Date().toISOString(),
-      deviceId: getDeviceId(),
-    },
-  })
+  const syncTime = new Date().toISOString()
+  const deviceId = getDeviceId()
+
+  for (let i = 0; i < contactsToUpload.length; i += UPLOAD_BATCH_SIZE) {
+    const batch = contactsToUpload.slice(i, i + UPLOAD_BATCH_SIZE)
+    await apiRequest({
+      path: '/api/icontacts',
+      body: {
+        contacts: batch,
+        syncTime,
+        deviceId,
+      },
+    })
+  }
 
   console.log(`Uploaded ${contacts.length} contacts successfully`)
 }
