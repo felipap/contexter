@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.9](https://github.com/felipap/vaulty/compare/v0.2.7...v0.2.9) (2026-02-12)
+
+
+### Features
+
+* **web:** add DemoBlur component ([1dd586d](https://github.com/felipap/vaulty/commit/1dd586d63b1309830f6ebd851d6334b3ace4aa9d))
+
+
+### Bug Fixes
+
+* **web:** resolve eslint errors for React Compiler lint rules ([07c686f](https://github.com/felipap/vaulty/commit/07c686f94ef5f5ac678a0260d7fa806172423f62))
+
 ### [0.2.7](https://github.com/felipap/vaulty/compare/v0.2.5...v0.2.7) (2026-02-10)
 
 
