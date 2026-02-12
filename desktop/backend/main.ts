@@ -12,7 +12,6 @@ import {
   getMainWindow,
   showMainWindow,
 } from './windows/settings'
-import { startMcpServer, stopMcpServer } from './local-mcp'
 
 const log = createLogger('app')
 
@@ -121,15 +120,6 @@ app.whenReady().then(async () => {
 
   await startAllServices()
 
-  // Start local MCP server if enabled
-  const mcpConfig = store.get('mcpServer')
-  if (mcpConfig.enabled) {
-    const mcpPort = await startMcpServer(mcpConfig.port)
-    log.info(`MCP server started on port ${mcpPort}`)
-  } else {
-    log.info('MCP server disabled')
-  }
-
   // Start wake test heartbeat logger
   // startHeartbeat()
 
@@ -164,7 +154,6 @@ app.on('activate', () => {
 
 app.on('before-quit', () => {
   // stopHeartbeat()
-  stopMcpServer()
   stopAllServices()
   destroyTray()
 })

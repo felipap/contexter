@@ -23,10 +23,10 @@
 - [x] Button to delete all data from dashboard
 - [x] Read-only access tokens
 - [x] Stream WhatsApp SQLite import instead of loading all into memory
-- [ ] - [x] Better request logs
+- [x] Better request logs
 - [x] Authenticated llms.txt
 - [x] Rename project
-- [ ] - [x] Horizontal layout of settings
+- [x] Horizontal layout of settings
 - [x] Improve logger (electron-log)
 - [x] Encrypt locations
 - [x] /api/locations/latest endpoint

@@ -1,34 +1,82 @@
-# vaulty
+# Vaulty
 
-Sync your data to the cloud, where agents can read it.
+Sync your personal data to your own server. Let your AI agents read it.
 
-### Supported syncs
+<!-- screenshot of dashboard here -->
 
-The Vaulty client can sync the following data to your server:
+---
 
-| Sync                  | Description                               | Availability        |
-| --------------------- | ----------------------------------------- | ------------------- |
-| **Apple Messages**    | Message history and attachments           | Stable              |
-| **WhatsApp (Sqlite)** | Message history via local SQLite database | Stable              |
-| **Apple Contacts**    | From macOS AddressBook                    | Stable              |
-| **Screenshots**       | Periodic screen captures                  | Beta                |
-| **Locations**         | GPS coordinates via iOS app               | Beta, needs iOS app |
+Your messages, contacts, and location are scattered across apps that don't talk to each other — and certainly don't talk to your AI tools. Meanwhile, the agents you use every day are flying blind about your actual life.
 
-### Components
+Vaulty fixes this. It syncs data from your devices to a server you control, encrypts everything end-to-end, and exposes it through a simple API. Your agents get the personal context they need. Nobody else gets anything.
 
-- **Desktop app** - Syncs data from your machine to the server
-- **Server (Next.js)** - Stores the data and exposes it via API
-- **iOS app** - For sharing realtime location
+> [!NOTE]
+> Vaulty is early software. It works, it's encrypted, and it's being used daily — but expect rough edges.
+
+## What it syncs
+
+| Source             | Description                               | Status |
+| ------------------ | ----------------------------------------- | ------ |
+| **Apple Messages** | Message history and attachments           | Stable |
+| **WhatsApp**       | Message history via local SQLite database | Stable |
+| **Apple Contacts** | From macOS AddressBook                    | Stable |
+| **Screenshots**    | Periodic screen captures                  | Beta   |
+| **Locations**      | GPS coordinates via iOS app               | Beta   |
+| **macOS Stickies** | Sticky notes from your desktop            | Stable |
+
+## How it works
+
+Vaulty has three pieces:
+
+- **Desktop app** (macOS) — Reads your local data, encrypts it on your machine, and syncs it to your server on a schedule. Runs quietly in the menu bar.
+- **Server** (Next.js, deployable to Vercel) — Stores the encrypted data and exposes it through a REST API. Includes a dashboard for managing access tokens and browsing your data.
+- **iOS app** — Shares your realtime location.
+
+Data flows one way: from your devices, through encryption, to your server. The server never sees plaintext — it stores ciphertext and serves it to authorized clients.
+
+## Encryption
+
+All sensitive fields are encrypted on-device using AES-256-GCM before they ever leave your machine. The server stores only ciphertext. Decryption happens either in the browser (for the dashboard) or via a local decrypt proxy you can run alongside your agents.
+
+Encrypted fields include message text, contact names, phone numbers, email addresses, screenshot image data, and GPS coordinates. Metadata like timestamps and chat IDs remain in the clear to support querying.
+
+For search over encrypted data (e.g. finding WhatsApp messages by sender), Vaulty uses HMAC-based blind indexes — the server can match queries without ever seeing the underlying values.
+
+See [SECURITY.md](./SECURITY.md) for the full breakdown.
+
+## API
+
+Once your data is synced, agents can access it through bearer-token-authenticated endpoints:
+
+```
+GET /api/contacts
+GET /api/imessages?limit=20&after=2025-01-01T00:00:00Z
+GET /api/imessages/chats
+GET /api/imessages/with/{phone}
+GET /api/whatsapp/chats
+GET /api/whatsapp/chats/{chat_id}/messages
+GET /api/screenshots/latest?within_min=60
+GET /api/locations/latest?within_min=60
+GET /api/llms.txt
+```
+
+Access tokens are scoped — you can grant an agent access to contacts but not screenshots, for example. Tokens are managed through the dashboard and prefixed with `vault_`.
+
+Since responses contain encrypted fields, you can run the included [decrypt proxy](./web/scripts/decrypt-proxy.ts) locally to transparently decrypt API responses before they reach your agent.
 
 ## Getting started
 
-### Download the desktop client
+### 1. Deploy the server
 
-Download the latest macOS desktop app from [GitHub Releases](https://github.com/felipap/vaulty/releases).
+The server is a Next.js app designed for Vercel. See [web/README.md](./web/README.md) for setup instructions and environment variables.
 
-### Deploy the server
+### 2. Install the desktop app
 
-See [web/README.md](./web/README.md) for instructions.
+Download the latest macOS release from [GitHub Releases](https://github.com/felipap/vaulty/releases). On first launch, you'll configure your server URL and encryption passphrase.
+
+### 3. Connect an agent
+
+Create an access token in the dashboard, then point your agent at your server with the token as a bearer credential. The `/api/llms.txt` endpoint describes all available endpoints in a format designed for LLM tool use.
 
 ## Roadmap
 
