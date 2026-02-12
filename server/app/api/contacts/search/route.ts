@@ -7,7 +7,9 @@ import { requireReadAuth } from "@/lib/api-auth"
 
 export async function GET(request: NextRequest) {
   const auth = await requireReadAuth(request, "contacts")
-  if (!auth.authorized) { return auth.response }
+  if (!auth.authorized) {
+    return auth.response
+  }
 
   const searchParams = request.nextUrl.searchParams
   const query = searchParams.get("q")?.trim() || ""

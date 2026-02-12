@@ -8,13 +8,18 @@ import { requireReadAuth } from "@/lib/api-auth"
 
 export async function GET(request: NextRequest) {
   const auth = await requireReadAuth(request, "contacts")
-  if (!auth.authorized) { return auth.response }
+  if (!auth.authorized) {
+    return auth.response
+  }
 
   console.log("GET /api/contacts")
 
   const contacts = await db.query.Contacts.findMany({
     where: eq(Contacts.userId, DEFAULT_USER_ID),
-    orderBy: (contacts, { asc }) => [asc(contacts.firstName), asc(contacts.lastName)],
+    orderBy: (contacts, { asc }) => [
+      asc(contacts.firstName),
+      asc(contacts.lastName),
+    ],
   })
 
   const parsed = contacts.map((c) => ({
@@ -72,7 +77,11 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: parsed.error }, { status: 400 })
   }
 
-  const { contacts, syncTime = new Date().toISOString(), deviceId = "unknown" } = parsed.data
+  const {
+    contacts,
+    syncTime = new Date().toISOString(),
+    deviceId = "unknown",
+  } = parsed.data
 
   console.log(`Received ${contacts.length} contacts from device ${deviceId}`)
 

@@ -7,7 +7,9 @@ import { requireReadAuth } from "@/lib/api-auth"
 
 export async function GET(request: NextRequest) {
   const auth = await requireReadAuth(request, "imessages")
-  if (!auth.authorized) { return auth.response }
+  if (!auth.authorized) {
+    return auth.response
+  }
 
   const { searchParams } = new URL(request.url)
   const limitParam = searchParams.get("limit") || "20"

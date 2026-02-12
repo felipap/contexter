@@ -1,7 +1,13 @@
 "use server"
 
 import { db } from "@/db"
-import { DEFAULT_USER_ID, iMessages, Locations, MacosStickies, Screenshots } from "@/db/schema"
+import {
+  DEFAULT_USER_ID,
+  iMessages,
+  Locations,
+  MacosStickies,
+  Screenshots,
+} from "@/db/schema"
 import { isAuthenticated } from "@/lib/admin-auth"
 import { eq, sql } from "drizzle-orm"
 import { unauthorized } from "next/navigation"

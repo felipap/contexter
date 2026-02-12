@@ -5,7 +5,7 @@ import { db } from "@/db"
 import { Screenshots } from "@/db/schema"
 import { desc, eq, sql } from "drizzle-orm"
 import { unauthorized } from "next/navigation"
-import { SCREENSHOT_RETENTION_HOURS } from "@/app/api/cron/cleanup-screenshots/route"
+import { SCREENSHOT_RETENTION_HOURS } from "@/app/api/cron/cleanup/route"
 
 export type Screenshot = {
   id: string

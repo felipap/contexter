@@ -8,7 +8,9 @@ import { requireReadAuth, requireWriteAuth } from "@/lib/api-auth"
 
 export async function GET(request: NextRequest) {
   const auth = await requireReadAuth(request, "macos-stickies")
-  if (!auth.authorized) { return auth.response }
+  if (!auth.authorized) {
+    return auth.response
+  }
 
   console.log("GET /api/macos-stickies")
 
@@ -47,7 +49,9 @@ export async function POST(request: NextRequest) {
   console.log("POST /api/macos-stickies")
 
   const unauthorized = await requireWriteAuth(request)
-  if (unauthorized) { return unauthorized }
+  if (unauthorized) {
+    return unauthorized
+  }
 
   const json = await request.json()
 
@@ -57,9 +61,15 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: parsed.error }, { status: 400 })
   }
 
-  const { stickies, syncTime = new Date().toISOString(), deviceId = "unknown" } = parsed.data
+  const {
+    stickies,
+    syncTime = new Date().toISOString(),
+    deviceId = "unknown",
+  } = parsed.data
 
-  console.log(`Received ${stickies.length} macOS stickies from device ${deviceId}`)
+  console.log(
+    `Received ${stickies.length} macOS stickies from device ${deviceId}`
+  )
 
   if (stickies.length === 0) {
     return Response.json({

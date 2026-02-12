@@ -7,7 +7,9 @@ import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(request: NextRequest) {
   const auth = await requireReadAuth(request, "screenshots")
-  if (!auth.authorized) { return auth.response }
+  if (!auth.authorized) {
+    return auth.response
+  }
 
   const { searchParams } = new URL(request.url)
   const withinMinParam = searchParams.get("within_min")

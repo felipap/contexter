@@ -9,7 +9,9 @@ const MAX_LIMIT = 50
 
 export async function GET(request: NextRequest) {
   const auth = await requireReadAuth(request, "imessages")
-  if (!auth.authorized) { return auth.response }
+  if (!auth.authorized) {
+    return auth.response
+  }
 
   console.log("GET /api/imessages")
 

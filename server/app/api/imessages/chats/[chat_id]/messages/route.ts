@@ -9,7 +9,9 @@ type RouteParams = { params: Promise<{ chat_id: string }> }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   const auth = await requireReadAuth(request, "imessages")
-  if (!auth.authorized) { return auth.response }
+  if (!auth.authorized) {
+    return auth.response
+  }
 
   const { chat_id } = await params
   const chatId = decodeURIComponent(chat_id)

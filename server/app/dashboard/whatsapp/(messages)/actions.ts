@@ -54,7 +54,9 @@ export async function getWhatsappMessages(
   const total = countResult.count
 
   const orderByColumn =
-    sortBy === "syncTime" ? WhatsappMessages.syncTime : WhatsappMessages.timestamp
+    sortBy === "syncTime"
+      ? WhatsappMessages.syncTime
+      : WhatsappMessages.timestamp
 
   const messages = await db.query.WhatsappMessages.findMany({
     where: eq(WhatsappMessages.userId, DEFAULT_USER_ID),
@@ -95,7 +97,9 @@ export async function getWhatsappMessages(
   }
 }
 
-export async function getWhatsappMessage(id: string): Promise<WhatsappMessageDetail | null> {
+export async function getWhatsappMessage(
+  id: string
+): Promise<WhatsappMessageDetail | null> {
   if (!(await isAuthenticated())) {
     unauthorized()
   }
@@ -125,7 +129,9 @@ export async function getWhatsappMessage(id: string): Promise<WhatsappMessageDet
   }
 }
 
-export async function deleteAllWhatsappMessages(): Promise<{ deletedMessages: number }> {
+export async function deleteAllWhatsappMessages(): Promise<{
+  deletedMessages: number
+}> {
   if (!(await isAuthenticated())) {
     unauthorized()
   }

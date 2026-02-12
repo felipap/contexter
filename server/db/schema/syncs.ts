@@ -10,18 +10,16 @@ import {
   uuid,
 } from "drizzle-orm/pg-core"
 
-export const DEFAULT_USER_ID = "default"
-
 // Encrypted: data
 export const Screenshots = pgTable("screenshots", {
   id: uuid("id").defaultRandom().primaryKey(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
   // encrypted
   data: text("data").notNull(),
   width: integer("width").notNull(),
   height: integer("height").notNull(),
   sizeBytes: integer("size_bytes").notNull(),
   capturedAt: timestamp("captured_at").defaultNow().notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
 })
 
 export type NewScreenshot = typeof Screenshots.$inferInsert
@@ -38,6 +36,8 @@ export const iMessages = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey(),
     userId: text("user_id").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    //
     messageId: integer("message_id").notNull(),
     guid: text("guid").notNull().unique(),
     // encrypted
@@ -56,7 +56,6 @@ export const iMessages = pgTable(
     chatName: text("chat_name"),
     deviceId: text("device_id").notNull(),
     syncTime: timestamp("sync_time").notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => [
     index("imessages_contact_idx").on(table.contact),
@@ -92,56 +91,6 @@ export const iMessageAttachments = pgTable("imessage_attachments", {
 
 export type NewIMessageAttachment = typeof iMessageAttachments.$inferInsert
 export type IMessageAttachment = typeof iMessageAttachments.$inferSelect
-
-//
-//
-//
-//
-
-export const WriteLogs = pgTable(
-  "write_logs",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    type: text("type").notNull(), // 'screenshot' | 'imessage' | 'attachment'
-    description: text("description").notNull(),
-    count: integer("count").notNull().default(1),
-    metadata: text("metadata"), // JSON string for extra info
-    accessTokenId: uuid("access_token_id").references(() => AccessTokens.id, {
-      onDelete: "set null",
-    }),
-    tokenPrefix: text("token_prefix"),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-  },
-  (table) => [index("write_logs_created_at_idx").on(table.createdAt)]
-)
-
-export type NewWriteLog = typeof WriteLogs.$inferInsert
-export type WriteLog = typeof WriteLogs.$inferSelect
-
-//
-//
-//
-//
-
-export const ReadLogs = pgTable(
-  "read_logs",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    type: text("type").notNull(), // 'screenshot' | 'imessage' | 'chat' | 'contact' | 'stats'
-    description: text("description").notNull(),
-    count: integer("count"), // number of items returned
-    metadata: text("metadata"), // JSON string for extra info
-    accessTokenId: uuid("access_token_id").references(() => AccessTokens.id, {
-      onDelete: "set null",
-    }),
-    tokenPrefix: text("token_prefix"),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-  },
-  (table) => [index("read_logs_created_at_idx").on(table.createdAt)]
-)
-
-export type NewReadLog = typeof ReadLogs.$inferInsert
-export type ReadLog = typeof ReadLogs.$inferSelect
 
 //
 //
@@ -265,59 +214,16 @@ export type WhatsappMessage = typeof WhatsappMessages.$inferSelect
 //
 
 // Encrypted: text
-export const MacosStickies = pgTable(
-  "macos_stickies",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    stickyId: text("sticky_id").notNull().unique(),
-    // encrypted
-    text: text("text").notNull(),
-    deviceId: text("device_id").notNull(),
-    syncTime: timestamp("sync_time").notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  },
-)
+export const MacosStickies = pgTable("macos_stickies", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  // encrypted
+  stickyId: text("sticky_id").notNull().unique(),
+  text: text("text").notNull(),
+  deviceId: text("device_id").notNull(),
+  syncTime: timestamp("sync_time").notNull(),
+})
 
 export type NewMacosSticky = typeof MacosStickies.$inferInsert
 export type MacosSticky = typeof MacosStickies.$inferSelect
-
-//
-//
-//
-//
-
-export const AccessTokens = pgTable("access_tokens", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  name: text("name").notNull(),
-  tokenHash: text("token_hash").notNull().unique(),
-  tokenPrefix: text("token_prefix").notNull(), // e.g. "ctx_a1b2c3d4" for display
-  scopes: text("scopes").array().notNull().default([]),
-  expiresAt: timestamp("expires_at"),
-  lastUsedAt: timestamp("last_used_at"),
-  revokedAt: timestamp("revoked_at"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-})
-
-export type NewAccessToken = typeof AccessTokens.$inferInsert
-export type AccessToken = typeof AccessTokens.$inferSelect
-
-//
-//
-//
-//
-
-export const LoginAttempts = pgTable(
-  "login_attempts",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    ip: text("ip").notNull(),
-    attemptedAt: timestamp("attempted_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-  },
-  (table) => [
-    index("login_attempts_ip_idx").on(table.ip),
-    index("login_attempts_attempted_at_idx").on(table.attemptedAt),
-  ]
-)

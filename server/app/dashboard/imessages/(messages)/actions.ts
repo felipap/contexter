@@ -41,7 +41,9 @@ export type MessagesPage = {
   totalPages: number
 }
 
-export async function getMessage(id: string): Promise<MessageWithAttachments | null> {
+export async function getMessage(
+  id: string
+): Promise<MessageWithAttachments | null> {
   if (!(await isAuthenticated())) {
     unauthorized()
   }
@@ -116,7 +118,8 @@ export async function getMessages(
 
   const total = countResult.count
 
-  const orderByColumn = sortBy === "syncTime" ? iMessages.syncTime : iMessages.date
+  const orderByColumn =
+    sortBy === "syncTime" ? iMessages.syncTime : iMessages.date
 
   const messages = await db.query.iMessages.findMany({
     where: eq(iMessages.userId, DEFAULT_USER_ID),
@@ -155,7 +158,10 @@ export async function getMessages(
   }
 }
 
-export async function deleteAllIMessages(): Promise<{ deletedMessages: number; deletedAttachments: number }> {
+export async function deleteAllIMessages(): Promise<{
+  deletedMessages: number
+  deletedAttachments: number
+}> {
   if (!(await isAuthenticated())) {
     unauthorized()
   }
@@ -177,5 +183,3 @@ export async function deleteAllIMessages(): Promise<{ deletedMessages: number; d
     deletedAttachments: attachmentsResult.count,
   }
 }
-
-
