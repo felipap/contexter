@@ -1,6 +1,10 @@
+import { createLogger } from '../lib/logger'
 import { startAnimating, stopAnimating } from '../tray/animate'
-import { fetchStickies, uploadStickies } from '../sources/stickies'
+import { apiRequest } from '../lib/contexter-api'
+import { fetchStickies, type Sticky } from '../sources/stickies'
 import { createScheduledService } from './scheduler'
+
+const log = createLogger('macos-stickies')
 
 function yieldToEventLoop(): Promise<void> {
   return new Promise((resolve) => {
@@ -8,17 +12,25 @@ function yieldToEventLoop(): Promise<void> {
   })
 }
 
+async function uploadStickies(stickies: Sticky[]): Promise<void> {
+  await apiRequest({
+    path: '/api/macos-stickies',
+    body: { stickies },
+  })
+  log.info(`Uploaded ${stickies.length} macOS stickies`)
+}
+
 async function syncAndUpload(): Promise<void> {
-  console.log('[macos-stickies] Syncing...')
+  log.info('Syncing...')
   await yieldToEventLoop()
 
   const stickies = fetchStickies()
   if (stickies.length === 0) {
-    console.log('[macos-stickies] No stickies to sync')
+    log.info('No stickies to sync')
     return
   }
 
-  console.log(`Fetched ${stickies.length} macOS stickies`)
+  log.info(`Fetched ${stickies.length} macOS stickies`)
   await yieldToEventLoop()
 
   startAnimating('vault-rotation')

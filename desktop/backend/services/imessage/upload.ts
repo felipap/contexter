@@ -1,4 +1,5 @@
 import { apiRequest } from '../../lib/contexter-api'
+import { log } from './index'
 import {
   encryptText,
   encryptBinaryToString,
@@ -63,10 +64,10 @@ export async function uploadMessages(
     },
   })
   if ('error' in res) {
-    console.log('apiRequest to /api/imessages failed:', res.error)
+    log.error('apiRequest to /api/imessages failed:', res.error)
     return { error: res.error }
   }
 
-  console.log(`Uploaded ${messages.length} messages successfully`)
+  log.info(`Uploaded ${messages.length} messages successfully`)
   return {}
 }

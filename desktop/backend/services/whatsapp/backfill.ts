@@ -7,6 +7,7 @@ import {
 import { startAnimating } from '../../tray/animate'
 import { catchAndComplain } from '../../lib/utils'
 import { store } from '../../store'
+import { log } from './index'
 import type { WhatsAppMessage } from './types'
 import { uploadWhatsAppMessages } from './upload'
 
@@ -54,7 +55,7 @@ function toWhatsAppMessage(msg: WhatsappSqliteMessage): WhatsAppMessage {
 
 async function runBackfill(days = 120): Promise<void> {
   if (backfillInProgress) {
-    console.log('[whatsapp] Backfill already in progress')
+    log.info('Backfill already in progress')
     return
   }
 
@@ -67,7 +68,7 @@ async function runBackfill(days = 120): Promise<void> {
     total: 0,
   }
 
-  console.log(`[whatsapp] Starting backfill for ${days} days`)
+  log.info(`Starting backfill for ${days} days`)
 
   const stopAnimating = startAnimating('vault-rotation')
   let db: ReturnType<typeof openWhatsAppDatabase> | null = null
@@ -79,7 +80,7 @@ async function runBackfill(days = 120): Promise<void> {
       error instanceof Error
         ? error.message
         : 'Failed to open WhatsApp database'
-    console.error(`[whatsapp] ${errorMessage}`)
+    log.error(errorMessage)
     backfillProgress = {
       status: 'error',
       current: 0,
@@ -122,8 +123,8 @@ async function runBackfill(days = 120): Promise<void> {
     itemsUploaded: 0,
   }
 
-  console.log(
-    `[whatsapp] Backfilling up to ${messageCount.toLocaleString()} messages in batches (no full load)...`,
+  log.info(
+    `Backfilling up to ${messageCount.toLocaleString()} messages in batches (no full load)...`,
   )
 
   let nextAfterDate: number | undefined = undefined
@@ -147,7 +148,7 @@ async function runBackfill(days = 120): Promise<void> {
       const res = await catchAndComplain(uploadWhatsAppMessages(batch, 'sqlite'))
       if ('error' in res) {
         const errorMessage = `Failed to upload page ${batchNumber}. ${itemsUploaded} items uploaded in total.`
-        console.error(`[whatsapp] ${errorMessage} Error: ${res.error}`)
+        log.error(`${errorMessage} Error: ${res.error}`)
         backfillProgress = {
           ...backfillProgress,
           status: 'error',
@@ -168,8 +169,8 @@ async function runBackfill(days = 120): Promise<void> {
     backfillProgress.itemsUploaded = itemsUploaded
 
     if (batchNumber > 0 && batchNumber % 10 === 0) {
-      console.log(
-        `[whatsapp] Backfill progress: ${itemsUploaded.toLocaleString()} messages uploaded`,
+      log.info(
+        `Backfill progress: ${itemsUploaded.toLocaleString()} messages uploaded`,
       )
     }
 
@@ -186,18 +187,14 @@ async function runBackfill(days = 120): Promise<void> {
       status: 'cancelled',
       itemsUploaded,
     }
-    console.log(
-      `[whatsapp] Backfill cancelled. ${itemsUploaded} items uploaded.`,
-    )
+    log.info(`Backfill cancelled. ${itemsUploaded} items uploaded.`)
   } else {
     backfillProgress = {
       ...backfillProgress,
       status: 'completed',
       itemsUploaded,
     }
-    console.log(
-      `[whatsapp] Backfill completed. ${itemsUploaded} items uploaded.`,
-    )
+    log.info(`Backfill completed. ${itemsUploaded} items uploaded.`)
   }
 
   db.close()
@@ -208,7 +205,7 @@ async function runBackfill(days = 120): Promise<void> {
 function cancelBackfill(): void {
   if (backfillInProgress) {
     backfillCancelled = true
-    console.log('[whatsapp] Cancelling backfill...')
+    log.info('Cancelling backfill...')
   }
 }
 

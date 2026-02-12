@@ -1,4 +1,5 @@
 import { IMessageSDK } from '@photon-ai/imessage-kit'
+import { createLogger } from '../../lib/logger'
 import { catchAndComplain } from '../../lib/utils'
 import { createIMessageSDK, fetchMessages } from '../../sources/imessage'
 import {
@@ -12,6 +13,8 @@ import { uploadMessages } from './upload'
 
 export { imessageBackfill } from './backfill'
 
+export const log = createLogger('imessage')
+
 const BATCH_SIZE = 50
 
 function yieldToEventLoop(): Promise<void> {
@@ -23,7 +26,7 @@ function yieldToEventLoop(): Promise<void> {
 let sdk: IMessageSDK | null = null
 
 async function exportAndUpload(): Promise<void> {
-  console.log('[imessage] Exporting messages...')
+  log.info('Exporting messages...')
   await yieldToEventLoop()
 
   if (!sdk) {
@@ -40,7 +43,7 @@ async function exportAndUpload(): Promise<void> {
   })
 
   if (messages.length === 0) {
-    console.log('[imessage] No new messages to export')
+    log.info('No new messages to export')
     return
   }
 
@@ -49,9 +52,7 @@ async function exportAndUpload(): Promise<void> {
     messages[0].date,
   )
 
-  console.debug(
-    `[imessage] Found ${messages.length.toLocaleString()} new messages`,
-  )
+  log.debug(`Found ${messages.length.toLocaleString()} new messages`)
 
   await yieldToEventLoop()
 

@@ -14,11 +14,14 @@ export type Service = {
   getLastFailedSyncId: () => string | null
 }
 
+import { createLogger } from '../lib/logger'
 import { screenshotsService } from './screenshots'
 import { imessageService } from './imessage'
-import { iContactsService } from './icontacts'
+import { iContactsService } from './apple-contacts'
 import { whatsappSqliteService } from './whatsapp'
 import { macosStickiesService } from './stickies'
+
+const log = createLogger('services')
 
 export const SERVICES: Service[] = [
   imessageService,
@@ -29,13 +32,13 @@ export const SERVICES: Service[] = [
 ]
 
 export async function startAllServices(): Promise<void> {
-  console.log('Starting all services...')
+  log.info('Starting all services...')
 
   for (const service of SERVICES) {
-    console.debug(`Will start service ${service.name}`)
+    log.debug(`Will start service ${service.name}`)
     await service.start()
   }
-  console.log('All services started')
+  log.info('All services started')
 }
 
 export function stopAllServices(): void {

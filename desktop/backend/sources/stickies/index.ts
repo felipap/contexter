@@ -1,7 +1,6 @@
 import { readFileSync, readdirSync } from 'fs'
 import { homedir } from 'os'
 import { join } from 'path'
-import { apiRequest } from '../../lib/contexter-api'
 
 export type Sticky = {
   id: string
@@ -64,17 +63,4 @@ export function fetchStickies(): Sticky[] {
   }
 
   return stickies
-}
-
-export async function uploadStickies(stickies: Sticky[]): Promise<void> {
-  if (stickies.length === 0) {
-    return
-  }
-
-  await apiRequest({
-    path: '/api/macos-stickies',
-    body: { stickies },
-  })
-
-  console.log(`Uploaded ${stickies.length} macOS stickies successfully`)
 }

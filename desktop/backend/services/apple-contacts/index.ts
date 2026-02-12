@@ -1,6 +1,10 @@
-import { startAnimating, stopAnimating } from '../tray/animate'
-import { fetchContacts, uploadContacts } from '../sources/icontacts'
-import { createScheduledService } from './scheduler'
+import { createLogger } from '../../lib/logger'
+import { startAnimating, stopAnimating } from '../../tray/animate'
+import { fetchContacts } from '../../sources/icontacts'
+import { uploadContacts } from './upload'
+import { createScheduledService } from '../scheduler'
+
+const log = createLogger('icontacts-service')
 
 function yieldToEventLoop(): Promise<void> {
   return new Promise((resolve) => {
@@ -9,16 +13,16 @@ function yieldToEventLoop(): Promise<void> {
 }
 
 async function syncAndUpload(): Promise<void> {
-  console.log('[contacts] Syncing...')
+  log.info('Syncing...')
   await yieldToEventLoop()
 
   const contacts = fetchContacts()
   if (contacts.length === 0) {
-    console.log('[contacts] No contacts to sync')
+    log.info('No contacts to sync')
     return
   }
 
-  console.log(`Fetched ${contacts.length} contacts`)
+  log.info(`Fetched ${contacts.length} contacts`)
   await yieldToEventLoop()
 
   startAnimating('vault-rotation')

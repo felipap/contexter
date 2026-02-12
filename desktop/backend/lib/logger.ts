@@ -33,6 +33,8 @@ const SCOPE_COLORS: Record<string, string> = {
   encryption: '\x1b[90m', // gray
   updater: '\x1b[96m', // bright cyan
   services: '\x1b[94m', // bright blue
+  whatsapp: '\x1b[92m', // bright green
+  'macos-stickies': '\x1b[93m', // bright yellow
   utils: '\x1b[90m', // gray
 }
 const RESET = '\x1b[0m'

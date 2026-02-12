@@ -8,6 +8,7 @@ import {
 import { store } from '../../store'
 import { startAnimating } from '../../tray/animate'
 import { createScheduledService } from '../scheduler'
+import { log } from './index'
 import type { WhatsAppMessage } from './types'
 import { uploadWhatsAppMessages } from './upload'
 
@@ -56,7 +57,7 @@ function setLastExportedDate(date: Date): void {
 }
 
 async function exportAndUpload(): Promise<void> {
-  console.log('[whatsapp-sqlite] Exporting messages...')
+  log.info('Exporting messages...')
   await yieldToEventLoop()
 
   if (!db) {
@@ -113,12 +114,10 @@ async function exportAndUpload(): Promise<void> {
   stopAnimating()
 
   if (totalUploaded > 0 && latestTimestamp) {
-    console.debug(
-      `[whatsapp-sqlite] Uploaded ${totalUploaded.toLocaleString()} new messages`,
-    )
+    log.debug(`Uploaded ${totalUploaded.toLocaleString()} new messages`)
     setLastExportedDate(new Date(latestTimestamp))
   } else if (totalUploaded === 0) {
-    console.log('[whatsapp-sqlite] No new messages to export')
+    log.info('No new messages to export')
   }
 }
 

@@ -1,9 +1,13 @@
-import { startAnimating, stopAnimating } from '../tray/animate'
-import { captureScreen, uploadScreenshot } from '../sources/screenshots'
-import { createScheduledService } from './scheduler'
+import { createLogger } from '../../lib/logger'
+import { startAnimating, stopAnimating } from '../../tray/animate'
+import { captureScreen } from '../../sources/screenshots'
+import { uploadScreenshot } from './upload'
+import { createScheduledService } from '../scheduler'
+
+const log = createLogger('screenshots')
 
 async function captureAndUpload(): Promise<void> {
-  console.log('[screenshots] Capturing screen...')
+  log.info('Capturing screen...')
 
   const imageBuffer = await captureScreen()
   if (!imageBuffer) {

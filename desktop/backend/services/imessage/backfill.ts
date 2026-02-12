@@ -2,6 +2,7 @@ import { createIMessageSDK, fetchMessages } from '../../sources/imessage'
 import { store } from '../../store'
 import { startAnimating } from '../../tray/animate'
 import { catchAndComplain } from '../../lib/utils'
+import { log } from './index'
 import { uploadMessages } from './upload'
 
 type BackfillStatus = 'idle' | 'running' | 'completed' | 'error' | 'cancelled'
@@ -47,7 +48,7 @@ function cleanup(
 
 async function runBackfill(days = 120): Promise<void> {
   if (backfillInProgress) {
-    console.log('[imessage] Backfill already in progress')
+    log.info('Backfill already in progress')
     return
   }
 
@@ -60,7 +61,7 @@ async function runBackfill(days = 120): Promise<void> {
     total: 0,
   }
 
-  console.log(`[imessage] Starting backfill for ${days} days`)
+  log.info(`Starting backfill for ${days} days`)
 
   const config = store.get('imessageExport')
   const backfillSdk = createIMessageSDK()
@@ -68,9 +69,7 @@ async function runBackfill(days = 120): Promise<void> {
 
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 
-  console.log(
-    `[imessage] Fetching all messages since ${since.toISOString()}...`,
-  )
+  log.info(`Fetching all messages since ${since.toISOString()}...`)
   const fetchStart = Date.now()
 
   const messages = await fetchMessages(backfillSdk, since, {
@@ -78,8 +77,8 @@ async function runBackfill(days = 120): Promise<void> {
   })
 
   const fetchEnd = Date.now()
-  console.log(
-    `[imessage] Found ${messages.length.toLocaleString()} messages to backfill in ${fetchEnd - fetchStart}ms`,
+  log.info(
+    `Found ${messages.length.toLocaleString()} messages to backfill in ${fetchEnd - fetchStart}ms`,
   )
 
   if (messages.length === 0) {
@@ -114,7 +113,7 @@ async function runBackfill(days = 120): Promise<void> {
     const res = await catchAndComplain(uploadMessages(batch))
     if ('error' in res) {
       const errorMessage = `Failed to upload page ${pageNumber}. ${itemsUploaded} items uploaded in total.`
-      console.error(`[imessage] ${errorMessage} Error: ${res.error}`)
+      log.error(`${errorMessage} Error: ${res.error}`)
       backfillProgress = {
         ...backfillProgress,
         status: 'error',
@@ -129,8 +128,8 @@ async function runBackfill(days = 120): Promise<void> {
     itemsUploaded += batch.length
     backfillProgress.current++
     backfillProgress.itemsUploaded = itemsUploaded
-    console.log(
-      `[imessage] Backfill progress: ${backfillProgress.current}/${totalBatches} batches ` +
+    log.info(
+      `Backfill progress: ${backfillProgress.current}/${totalBatches} batches ` +
         `(${itemsUploaded}/${messages.length} messages)`,
     )
   }
@@ -141,18 +140,14 @@ async function runBackfill(days = 120): Promise<void> {
       status: 'cancelled',
       itemsUploaded,
     }
-    console.log(
-      `[imessage] Backfill cancelled. ${itemsUploaded} items uploaded.`,
-    )
+    log.info(`Backfill cancelled. ${itemsUploaded} items uploaded.`)
   } else {
     backfillProgress = {
       ...backfillProgress,
       status: 'completed',
       itemsUploaded,
     }
-    console.log(
-      `[imessage] Backfill completed. ${itemsUploaded} items uploaded.`,
-    )
+    log.info(`Backfill completed. ${itemsUploaded} items uploaded.`)
   }
 
   cleanup(backfillSdk, stopAnimating)
@@ -161,7 +156,7 @@ async function runBackfill(days = 120): Promise<void> {
 function cancelBackfill(): void {
   if (backfillInProgress) {
     backfillCancelled = true
-    console.log('[imessage] Cancelling backfill...')
+    log.info('Cancelling backfill...')
   }
 }
 
