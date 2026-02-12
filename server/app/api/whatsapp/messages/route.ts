@@ -4,8 +4,9 @@ import { logRead, logWrite } from "@/lib/activity-log"
 import { getDataWindowCutoff, requireReadAuth } from "@/lib/api-auth"
 import { WHATSAPP_ENCRYPTED_COLUMNS } from "@/lib/encryption-schema"
 import { and, eq, gte } from "drizzle-orm"
-import { NextRequest } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
+import { SyncSuccessResponse, SyncErrorResponse, formatZodError } from "@/app/api/types"
 
 const ENCRYPTED_PREFIX = "enc:v1:"
 
@@ -154,7 +155,10 @@ export async function POST(request: NextRequest) {
   const parsed = PostSchema.safeParse(json)
   if (!parsed.success) {
     console.warn("Invalid request body", { error: parsed.error })
-    return Response.json({ error: parsed.error }, { status: 400 })
+    return NextResponse.json<SyncErrorResponse>(
+      { error: formatZodError(parsed.error) },
+      { status: 400 }
+    )
   }
 
   const { messages, syncTime, deviceId, messageCount } = parsed.data
@@ -164,11 +168,13 @@ export async function POST(request: NextRequest) {
   )
 
   if (messages.length === 0) {
-    return Response.json({
+    return NextResponse.json<SyncSuccessResponse>({
       success: true,
-      message: "No messages to sync",
-      messageCount: 0,
       syncedAt: new Date().toISOString(),
+      insertedCount: 0,
+      updatedCount: 0,
+      rejectedCount: 0,
+      skippedCount: 0,
     })
   }
 
@@ -200,24 +206,14 @@ export async function POST(request: NextRequest) {
     })
   }
 
-  return Response.json({
+  return NextResponse.json<SyncSuccessResponse>({
     success: true,
-    message: `Stored ${insertedMessages.length} encrypted WhatsApp messages`,
-    messageCount: insertedMessages.length,
+    syncedAt: new Date().toISOString(),
+    insertedCount: insertedMessages.length,
+    updatedCount: 0,
     rejectedCount: rejectedMessages.length,
     skippedCount,
-    encrypted: true,
-    syncedAt: new Date().toISOString(),
   })
-}
-
-function formatZodError(error: z.ZodError): string {
-  return error.issues
-    .map((issue) => {
-      const path = issue.path.length > 0 ? `${issue.path.join(".")}: ` : ""
-      return `${path}${issue.message}`
-    })
-    .join("; ")
 }
 
 function truncateForLog(obj: unknown): unknown {

@@ -1,10 +1,11 @@
 import { db } from "@/db"
 import { Contacts, DEFAULT_USER_ID } from "@/db/schema"
 import { and, eq, gte, sql } from "drizzle-orm"
-import { NextRequest } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
 import { logRead, logWrite } from "@/lib/activity-log"
 import { getDataWindowCutoff, requireReadAuth } from "@/lib/api-auth"
+import { SyncSuccessResponse, SyncErrorResponse, formatZodError } from "@/app/api/types"
 
 export async function GET(request: NextRequest) {
   const auth = await requireReadAuth(request, "contacts")
@@ -83,7 +84,10 @@ export async function POST(request: NextRequest) {
   const parsed = PostSchema.safeParse(json)
   if (!parsed.success) {
     console.warn("Invalid request body", { error: parsed.error })
-    return Response.json({ error: parsed.error }, { status: 400 })
+    return NextResponse.json<SyncErrorResponse>(
+      { error: formatZodError(parsed.error) },
+      { status: 400 }
+    )
   }
 
   const {
@@ -95,11 +99,13 @@ export async function POST(request: NextRequest) {
   console.log(`Received ${contacts.length} contacts from device ${deviceId}`)
 
   if (contacts.length === 0) {
-    return Response.json({
+    return NextResponse.json<SyncSuccessResponse>({
       success: true,
-      message: "No contacts to sync",
-      contactCount: 0,
       syncedAt: new Date().toISOString(),
+      insertedCount: 0,
+      updatedCount: 0,
+      rejectedCount: 0,
+      skippedCount: 0,
     })
   }
 
@@ -157,10 +163,12 @@ export async function POST(request: NextRequest) {
     })
   }
 
-  return Response.json({
+  return NextResponse.json<SyncSuccessResponse>({
     success: true,
-    message: `Synced ${insertedCount} contacts`,
-    contactCount: insertedCount,
     syncedAt: new Date().toISOString(),
+    insertedCount,
+    updatedCount: 0,
+    rejectedCount: 0,
+    skippedCount: 0,
   })
 }
