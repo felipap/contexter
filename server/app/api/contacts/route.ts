@@ -61,7 +61,8 @@ const ContactSchema = z.object({
   id: z.string(),
   firstName: z.string().nullable(),
   lastName: z.string().nullable(),
-  nameIndex: z.string().nullable().optional(), // HMAC blind index for name search
+  firstNameIndex: z.string().nullable().optional(), // HMAC blind index for first name search
+  lastNameIndex: z.string().nullable().optional(), // HMAC blind index for last name search
   organization: z.string().nullable(),
   emails: z.array(z.string()),
   phoneNumbers: z.array(z.string()),
@@ -112,7 +113,8 @@ export async function POST(request: NextRequest) {
       contactId: c.id,
       firstName: c.firstName,
       lastName: c.lastName,
-      nameIndex: c.nameIndex ?? null,
+      firstNameIndex: c.firstNameIndex ?? null,
+      lastNameIndex: c.lastNameIndex ?? null,
       organization: c.organization,
       emails: JSON.stringify(c.emails),
       phoneNumbers: JSON.stringify(c.phoneNumbers),
@@ -129,7 +131,8 @@ export async function POST(request: NextRequest) {
         set: {
           firstName: sql`excluded.first_name`,
           lastName: sql`excluded.last_name`,
-          nameIndex: sql`excluded.name_index`,
+          firstNameIndex: sql`excluded.first_name_index`,
+          lastNameIndex: sql`excluded.last_name_index`,
           organization: sql`excluded.organization`,
           emails: sql`excluded.emails`,
           phoneNumbers: sql`excluded.phone_numbers`,

@@ -5,7 +5,7 @@ import { join } from 'path'
 import { apiRequest } from '../../lib/contexter-api'
 import { computeSearchIndex, encryptText } from '../../lib/encryption'
 import {
-  normalizeChatNameForSearch,
+  normalizeStringForSearch,
   normalizePhoneForSearch,
 } from '../../lib/search-index-utils'
 import { getDeviceId, getEncryptionKey } from '../../store'
@@ -20,7 +20,8 @@ export type Contact = {
 }
 
 type EncryptedContact = Contact & {
-  nameIndex?: string
+  firstNameIndex?: string
+  lastNameIndex?: string
   phoneNumbersIndex?: string[]
 }
 
@@ -116,9 +117,11 @@ function encryptContacts(
   encryptionKey: string,
 ): EncryptedContact[] {
   return contacts.map((c) => {
-    const fullName = [c.firstName, c.lastName].filter(Boolean).join(' ').trim()
-    const normalizedName = fullName
-      ? normalizeChatNameForSearch(fullName)
+    const normalizedFirst = c.firstName
+      ? normalizeStringForSearch(c.firstName)
+      : null
+    const normalizedLast = c.lastName
+      ? normalizeStringForSearch(c.lastName)
       : null
 
     return {
@@ -129,8 +132,11 @@ function encryptContacts(
       lastName: c.lastName
         ? encryptText(c.lastName, encryptionKey)
         : c.lastName,
-      nameIndex: normalizedName
-        ? computeSearchIndex(normalizedName, encryptionKey)
+      firstNameIndex: normalizedFirst
+        ? computeSearchIndex(normalizedFirst, encryptionKey)
+        : undefined,
+      lastNameIndex: normalizedLast
+        ? computeSearchIndex(normalizedLast, encryptionKey)
         : undefined,
       organization: c.organization
         ? encryptText(c.organization, encryptionKey)

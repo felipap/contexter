@@ -12,13 +12,14 @@ export async function GET(request: NextRequest) {
   }
 
   const searchParams = request.nextUrl.searchParams
-  const nameIndex = searchParams.get("nameIndex") // HMAC blind index for name
+  const firstNameIndex = searchParams.get("firstNameIndex") // HMAC blind index for first name
+  const lastNameIndex = searchParams.get("lastNameIndex") // HMAC blind index for last name
   const phoneNumberIndex = searchParams.get("phoneNumberIndex") // HMAC blind index for phone
   const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100)
 
-  if (!nameIndex && !phoneNumberIndex) {
+  if (!firstNameIndex && !lastNameIndex && !phoneNumberIndex) {
     return Response.json(
-      { error: "nameIndex or phoneNumberIndex parameter is required" },
+      { error: "firstNameIndex, lastNameIndex, or phoneNumberIndex parameter is required" },
       { status: 400 }
     )
   }
@@ -27,7 +28,8 @@ export async function GET(request: NextRequest) {
   const whereConditions = [
     eq(Contacts.userId, DEFAULT_USER_ID),
     or(
-      nameIndex ? eq(Contacts.nameIndex, nameIndex) : undefined,
+      firstNameIndex ? eq(Contacts.firstNameIndex, firstNameIndex) : undefined,
+      lastNameIndex ? eq(Contacts.lastNameIndex, lastNameIndex) : undefined,
       phoneNumberIndex
         ? sql`${phoneNumberIndex} = ANY(${Contacts.phoneNumbersIndex})`
         : undefined
@@ -70,7 +72,7 @@ export async function GET(request: NextRequest) {
 
   await logRead({
     type: "contact",
-    description: `Searched contacts by ${nameIndex ? "name" : "phone"} index`,
+    description: `Searched contacts by ${firstNameIndex || lastNameIndex ? "name" : "phone"} index`,
     count: parsed.length,
     token: auth.token,
   })

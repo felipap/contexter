@@ -32,7 +32,8 @@ export type ContactsPage = {
 }
 
 export type ContactSearchParams = {
-  nameIndex?: string
+  firstNameIndex?: string
+  lastNameIndex?: string
   phoneNumberIndex?: string
 }
 
@@ -47,14 +48,16 @@ export async function getContacts(
 
   const offset = (page - 1) * pageSize
 
-  const { nameIndex, phoneNumberIndex } = searchParams
-  const hasNameSearch = !!nameIndex
+  const { firstNameIndex, lastNameIndex, phoneNumberIndex } = searchParams
+  const hasFirstNameSearch = !!firstNameIndex
+  const hasLastNameSearch = !!lastNameIndex
   const hasPhoneSearch = !!phoneNumberIndex
-  const hasSearch = hasNameSearch || hasPhoneSearch
+  const hasSearch = hasFirstNameSearch || hasLastNameSearch || hasPhoneSearch
 
   const searchCondition = hasSearch
     ? or(
-        hasNameSearch ? eq(Contacts.nameIndex, nameIndex) : undefined,
+        hasFirstNameSearch ? eq(Contacts.firstNameIndex, firstNameIndex) : undefined,
+        hasLastNameSearch ? eq(Contacts.lastNameIndex, lastNameIndex) : undefined,
         hasPhoneSearch
           ? sql`${phoneNumberIndex} = ANY(${Contacts.phoneNumbersIndex})`
           : undefined

@@ -19,8 +19,8 @@ export function normalizePhoneForSearch(phone: string): string {
   return `+${digits}`
 }
 
-/** Canonical chat/name form: strip accents, lowercase, no punctuation or spaces */
-export function normalizeChatNameForSearch(name: string): string {
+/** Canonical string form for search: strip accents, lowercase, no punctuation or spaces */
+export function normalizeStringForSearch(name: string): string {
   return stripAccents(name)
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "")

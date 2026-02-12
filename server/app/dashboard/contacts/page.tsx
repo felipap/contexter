@@ -15,13 +15,12 @@ import { Button } from "@/ui/Button"
 import { SearchIcon, TrashIcon } from "@/ui/icons"
 import { computeSearchIndex, getEncryptionKey } from "@/lib/encryption"
 import {
-  normalizeChatNameForSearch,
+  normalizeStringForSearch,
   normalizePhoneForSearch,
 } from "@/lib/search-normalize"
+import { Decrypted } from "@/ui/Decrypted"
 
-async function buildSearchParams(
-  query: string
-): Promise<ContactSearchParams> {
+async function buildSearchParams(query: string): Promise<ContactSearchParams> {
   const trimmed = query.trim()
   if (!trimmed) {
     return {}
@@ -34,10 +33,12 @@ async function buildSearchParams(
 
   const params: ContactSearchParams = {}
 
-  // Compute name index (normalized: stripped accents, lowercase, no punctuation)
-  const normalizedName = normalizeChatNameForSearch(trimmed)
+  // Compute name index (matches against both first and last name)
+  const normalizedName = normalizeStringForSearch(trimmed)
   if (normalizedName) {
-    params.nameIndex = await computeSearchIndex(normalizedName, key)
+    const nameIndex = await computeSearchIndex(normalizedName, key)
+    params.firstNameIndex = nameIndex
+    params.lastNameIndex = nameIndex
   }
 
   // If query looks like a phone number, also compute phone index
@@ -109,7 +110,9 @@ export default function Page() {
   } else if (contacts.length === 0) {
     inner = (
       <p className="text-zinc-500">
-        {debouncedQuery ? "No contacts matching your search." : "No contacts yet."}
+        {debouncedQuery
+          ? "No contacts matching your search."
+          : "No contacts yet."}
       </p>
     )
   } else {
@@ -175,7 +178,7 @@ function ContactCard({ contact }: { contact: Contact }) {
   return (
     <Link
       href={`/dashboard/contacts/${contact.id}`}
-      className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+      className="overflow-hidden flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
     >
       <div
         className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-medium ${bgColor}`}
@@ -183,7 +186,11 @@ function ContactCard({ contact }: { contact: Contact }) {
         {initial}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium"><DemoBlur>{displayName}</DemoBlur></p>
+        <p className="truncate text-sm font-medium">
+          <DemoBlur>
+            <Decrypted>{displayName}</Decrypted>
+          </DemoBlur>
+        </p>
         {contact.organization && (
           <p className="truncate text-xs text-zinc-500">
             {contact.organization}
@@ -196,7 +203,7 @@ function ContactCard({ contact }: { contact: Contact }) {
                 key={i}
                 className="inline-block rounded bg-zinc-100 px-1.5 py-0.5 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
               >
-                <DemoBlur>{formatPhone(phone)}</DemoBlur>
+                <Decrypted>{formatPhone(phone)}</Decrypted>
               </span>
             ))}
             {contact.phoneNumbers.length > 2 && (

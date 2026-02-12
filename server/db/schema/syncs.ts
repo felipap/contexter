@@ -111,8 +111,10 @@ export const Contacts = pgTable(
     firstName: text("first_name"),
     // encrypted
     lastName: text("last_name"),
-    // HMAC blind index for full name search
-    nameIndex: text("name_index"),
+    // HMAC blind index for first name search
+    firstNameIndex: text("first_name_index"),
+    // HMAC blind index for last name search
+    lastNameIndex: text("last_name_index"),
     // encrypted
     organization: text("organization"),
     // encrypted, JSON array
@@ -129,7 +131,8 @@ export const Contacts = pgTable(
   (table) => [
     unique("contacts_user_contact_unique").on(table.userId, table.contactId),
     index("contacts_user_id_idx").on(table.userId),
-    index("contacts_name_index_idx").on(table.nameIndex),
+    index("contacts_first_name_index_idx").on(table.firstNameIndex),
+    index("contacts_last_name_index_idx").on(table.lastNameIndex),
     index("contacts_phone_numbers_index_idx")
       .using("gin", table.phoneNumbersIndex),
   ]

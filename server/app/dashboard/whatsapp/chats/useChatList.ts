@@ -15,7 +15,7 @@ import {
 } from "@/lib/encryption"
 import {
   normalizePhoneForSearch,
-  normalizeChatNameForSearch,
+  normalizeStringForSearch,
 } from "@/lib/search-normalize"
 
 export type DecryptedChat = WhatsappChat & {
@@ -64,13 +64,13 @@ async function buildSearchParams(
       }
     }
     if (filters.senderName) {
-      const normalized = normalizeChatNameForSearch(filters.senderName)
+      const normalized = normalizeStringForSearch(filters.senderName)
       if (normalized) {
         params.senderNameIndex = await computeSearchIndex(normalized, key)
       }
     }
     if (filters.chatName) {
-      const normalized = normalizeChatNameForSearch(filters.chatName)
+      const normalized = normalizeStringForSearch(filters.chatName)
       if (normalized) {
         params.chatNameIndex = await computeSearchIndex(normalized, key)
       }

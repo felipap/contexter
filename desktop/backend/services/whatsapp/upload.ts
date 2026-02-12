@@ -1,7 +1,7 @@
 import { apiRequest } from '../../lib/contexter-api'
 import { computeSearchIndex, encryptText } from '../../lib/encryption'
 import {
-  normalizeChatNameForSearch,
+  normalizeStringForSearch,
   normalizePhoneForSearch,
 } from '../../lib/search-index-utils'
 import { getDeviceId, getEncryptionKey } from '../../store'
@@ -25,7 +25,7 @@ function encryptMessages(
       : msg.chatName,
     chatNameIndex: msg.chatName
       ? computeSearchIndex(
-          normalizeChatNameForSearch(msg.chatName),
+          normalizeStringForSearch(msg.chatName),
           encryptionKey,
         )
       : undefined,
@@ -34,7 +34,7 @@ function encryptMessages(
       : msg.senderName,
     senderNameIndex: msg.senderName
       ? computeSearchIndex(
-          normalizeChatNameForSearch(msg.senderName),
+          normalizeStringForSearch(msg.senderName),
           encryptionKey,
         )
       : undefined,
