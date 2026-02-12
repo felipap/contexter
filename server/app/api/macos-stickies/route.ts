@@ -81,7 +81,6 @@ export async function POST(request: NextRequest) {
   if (stickies.length === 0) {
     return NextResponse.json<SyncSuccessResponse>({
       success: true,
-      syncedAt: new Date().toISOString(),
       insertedCount: 0,
       updatedCount: 0,
       rejectedCount: 0,
@@ -130,7 +129,6 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json<SyncSuccessResponse>({
     success: true,
-    syncedAt: new Date().toISOString(),
     insertedCount: upsertedCount,
     updatedCount: 0,
     rejectedCount: 0,

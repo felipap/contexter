@@ -2,7 +2,6 @@ import { z } from "zod"
 
 export type SyncSuccessResponse = {
   success: true
-  syncedAt: string
   insertedCount: number
   updatedCount: number
   rejectedCount: number
