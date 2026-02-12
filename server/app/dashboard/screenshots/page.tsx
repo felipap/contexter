@@ -48,9 +48,9 @@ export default function Page() {
 
   let inner
   if (loading) {
-    inner = <p className="text-zinc-500">Loading...</p>
+    inner = <p className="text-secondary">Loading...</p>
   } else if (screenshots.length === 0) {
-    inner = <p className="text-zinc-500">No screenshots yet.</p>
+    inner = <p className="text-secondary">No screenshots yet.</p>
   } else {
     inner = (
       <ScreenshotsTable
@@ -69,7 +69,7 @@ export default function Page() {
         <div>
           <h1 className="heading-page">Screenshots</h1>
           {retentionHours !== null && (
-            <p className="text-sm text-zinc-500 mt-1">
+            <p className="text-sm text-secondary mt-1">
               Auto-delete after {formatRetention(retentionHours)} (set{" "}
               <code className="bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded text-xs">
                 SCREENSHOT_RETENTION_HOURS
@@ -78,7 +78,7 @@ export default function Page() {
             </p>
           )}
         </div>
-        <span className="text-sm text-zinc-500">
+        <span className="text-sm text-secondary">
           {total.toLocaleString()} total
         </span>
       </div>

@@ -28,7 +28,7 @@ export function DangerZone() {
         <h2 className="heading-section">Danger Zone</h2>
       </div>
 
-      <p className="mt-2 text-sm font-text text-zinc-500 dark:text-zinc-400">
+      <p className="mt-2 text-sm font-text text-secondary">
         Permanently delete all your data. This action cannot be undone.
       </p>
 

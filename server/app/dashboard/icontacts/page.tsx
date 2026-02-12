@@ -101,10 +101,10 @@ export default function Page() {
 
   let inner
   if (loading) {
-    inner = <p className="text-zinc-500">Loading...</p>
+    inner = <p className="text-secondary">Loading...</p>
   } else if (contacts.length === 0) {
     inner = (
-      <p className="text-zinc-500">
+      <p className="text-secondary">
         {debouncedQuery
           ? "No contacts matching your search."
           : "No contacts yet."}
@@ -137,17 +137,17 @@ export default function Page() {
             <div className="relative">
               <SearchIcon
                 size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary"
               />
               <input
                 type="text"
                 placeholder="Search contacts..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="rounded-lg border border-zinc-200 bg-white py-1.5 pl-9 pr-3 text-sm placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-600"
+                className="rounded-lg border border-zinc-200 bg-white py-1.5 pl-9 pr-3 text-sm placeholder:text-secondary focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-600"
               />
             </div>
-            <span className="shrink-0 text-sm text-zinc-500">
+            <span className="shrink-0 text-sm text-secondary">
               {total.toLocaleString()} {debouncedQuery ? "matching" : "total"}
             </span>
             <DeleteAllButton
@@ -187,13 +187,13 @@ function ContactCard({ contact }: { contact: Contact }) {
             {contact.phoneNumbers.slice(0, 2).map((phone, i) => (
               <span
                 key={i}
-                className="inline-block rounded bg-zinc-100 px-1.5 py-0.5 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+                className="inline-block rounded bg-zinc-100 px-1.5 py-0.5 text-xs text-secondary dark:bg-zinc-800"
               >
                 <Decrypted>{phone}</Decrypted>
               </span>
             ))}
             {contact.phoneNumbers.length > 2 && (
-              <span className="text-xs text-zinc-400">
+              <span className="text-xs text-secondary">
                 +{contact.phoneNumbers.length - 2}
               </span>
             )}

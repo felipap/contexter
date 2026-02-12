@@ -53,7 +53,7 @@ export function TokenRow({ token, onRevoke }: Props) {
           {scopeLabels.map((scope) => (
             <span
               key={scope}
-              className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300"
+              className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs text-secondary dark:bg-zinc-700"
             >
               {scope}
             </span>
@@ -64,7 +64,7 @@ export function TokenRow({ token, onRevoke }: Props) {
             </span>
           )}
         </div>
-        <div className="flex items-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
+        <div className="flex items-center gap-3 text-sm text-secondary">
           <code>{token.tokenPrefix}...</code>
           <span>Created {formatRelative(token.createdAt)}</span>
           {token.lastUsedAt && (
@@ -78,7 +78,7 @@ export function TokenRow({ token, onRevoke }: Props) {
       <div>
         {confirming ? (
           <div className="flex items-center gap-2">
-            <span className="text-xs text-zinc-500">Revoke?</span>
+            <span className="text-xs text-secondary">Revoke?</span>
             <button
               onClick={() => {
                 onRevoke()
@@ -98,7 +98,7 @@ export function TokenRow({ token, onRevoke }: Props) {
         ) : (
           <button
             onClick={() => setConfirming(true)}
-            className="flex items-center gap-1 rounded-md border border-zinc-200 px-2.5 py-1 text-xs text-zinc-500 hover:border-red-300 hover:text-red-600 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-red-700 dark:hover:text-red-400"
+            className="flex items-center gap-1 rounded-md border border-zinc-200 px-2.5 py-1 text-xs text-secondary hover:border-red-300 hover:text-red-600 dark:border-zinc-700 dark:hover:border-red-700 dark:hover:text-red-400"
           >
             <TrashIcon size={12} />
             Revoke

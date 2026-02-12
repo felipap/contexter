@@ -17,8 +17,7 @@ type Props<TData> = BaseProps<TData> &
     | { onRowClick: (row: Row<TData>) => void; getRowHref?: never }
   )
 
-const defaultTdClassName =
-  "px-4 py-2.5 text-sm text-neutral-600 dark:text-neutral-400"
+const defaultTdClassName = "px-4 py-2.5 text-sm text-contrast/60"
 
 export function DataTable<TData>({
   table,
@@ -53,7 +52,7 @@ export function DataTable<TData>({
               {headerGroup.headers.map((header) => (
                 <th
                   key={header.id}
-                  className="px-4 py-2.5 text-left text-sm font-medium text-neutral-400"
+                  className="px-4 py-2.5 text-left text-sm font-450 text-contrast/80"
                   style={
                     getTdStyle
                       ? {

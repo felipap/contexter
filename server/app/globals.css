@@ -97,6 +97,10 @@ body {
   font-family: var(--font-serif);
 }
 
+.font-450 {
+  @apply font-medium antialiased;
+}
+
 .font-display {
   @apply font-sans;
   /* letter-spacing: -0.01em; */
@@ -198,7 +202,7 @@ button {
 }
 
 .heading-label {
-  @apply text-sm font-medium text-neutral-900 dark:text-neutral-100;
+  @apply text-sm font-medium text-contrast;
 }
 
 .reset-btn {

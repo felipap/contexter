@@ -13,7 +13,7 @@ export default async function Page() {
         <h1 className="mb-1 text-center text-xl font-semibold tracking-tight">
           Vaulty
         </h1>
-        <p className="mb-8 text-center text-xs text-neutral-400">
+        <p className="mb-8 text-center text-xs text-secondary">
           Enter your admin passphrase
         </p>
 

@@ -47,7 +47,7 @@ export function AccessTokens() {
           </Button>
         </div>
 
-        <p className="mt-1 font-text text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-1 font-text text-sm text-secondary">
           Tokens grant read access to your data via the API. Use them to connect
           AI assistants, scripts, or other tools.
         </p>
@@ -88,10 +88,10 @@ export function AccessTokens() {
 
       <div className="mt-4">
         {loading ? (
-          <p className="text-sm text-zinc-500">Loading tokens...</p>
+          <p className="text-sm text-secondary">Loading tokens...</p>
         ) : tokens.length === 0 ? (
           <div className="rounded-lg border border-dashed border-zinc-300 p-8 text-center dark:border-zinc-700">
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm text-secondary">
               No access tokens yet.
             </p>
           </div>

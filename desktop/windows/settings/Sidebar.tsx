@@ -56,7 +56,7 @@ function SidebarButton({
         active
           ? 'bg-blue-500 text-white'
           : disabled
-            ? 'text-secondary opacity-60 hover:bg-[var(--background-color-three)]'
+            ? 'text-tertiary opacity-60 hover:bg-[var(--background-color-three)]'
             : 'text-[var(--color-contrast)] hover:bg-[var(--background-color-three)]'
       }`}
     >
@@ -73,7 +73,7 @@ function SidebarButton({
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-secondary">
+    <div className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-tertiary">
       {children}
     </div>
   )

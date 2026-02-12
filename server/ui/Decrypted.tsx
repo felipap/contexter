@@ -41,7 +41,7 @@ export function Decrypted({ children, showLockIcon }: Props) {
   if (decrypted) {
     if (showLockIcon && wasEncrypted) {
       return (
-        <span className="flex items-center gap-2 text-sm text-zinc-800 dark:text-zinc-200">
+        <span className="flex items-center gap-2 text-sm text-contrast">
           <span className="text-green-500" title="Decrypted">
             <LockIcon size={14} />
           </span>
@@ -62,7 +62,7 @@ export function Decrypted({ children, showLockIcon }: Props) {
   }
 
   if (showLockIcon) {
-    return <span className="text-sm italic text-zinc-400">No content</span>
+    return <span className="text-sm italic text-secondary">No content</span>
   }
 
   return null

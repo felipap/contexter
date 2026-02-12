@@ -82,9 +82,9 @@ export default function Page() {
 
   let inner
   if (loading) {
-    inner = <p className="text-zinc-500">Loading...</p>
+    inner = <p className="text-secondary">Loading...</p>
   } else if (locations.length === 0) {
-    inner = <p className="text-zinc-500">No locations yet.</p>
+    inner = <p className="text-secondary">No locations yet.</p>
   } else {
     inner = (
       <>
@@ -119,7 +119,7 @@ export default function Page() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="heading-page">Locations</h1>
-        <span className="text-sm text-zinc-500">
+        <span className="text-sm text-secondary">
           {total.toLocaleString()} total
         </span>
       </div>
@@ -139,14 +139,14 @@ function LocationRow({ location }: { location: DecryptedLocation }) {
   return (
     <tr className="bg-white transition-colors hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900">
       <td className="px-4 py-3">
-        <span className="text-zinc-900 dark:text-zinc-100">
+        <span className="text-contrast">
           {formatDate(location.timestamp)}
         </span>
-        <span className="ml-2 text-zinc-500">
+        <span className="ml-2 text-secondary">
           {formatTime(location.timestamp)}
         </span>
       </td>
-      <td className="px-4 py-3 font-mono text-xs text-zinc-600 dark:text-zinc-400">
+      <td className="px-4 py-3 font-mono text-xs text-secondary">
         {hasCoordinates ? (
           <span className="flex items-center gap-1.5">
             {location.isLocationEncrypted && (
@@ -165,11 +165,11 @@ function LocationRow({ location }: { location: DecryptedLocation }) {
       </td>
       <td className="px-4 py-3">
         {location.accuracy !== null ? (
-          <span className="text-zinc-600 dark:text-zinc-400">
+          <span className="text-secondary">
             ±{location.accuracy}m
           </span>
         ) : (
-          <span className="text-zinc-400">—</span>
+          <span className="text-secondary">—</span>
         )}
       </td>
       <td className="px-4 py-3">
@@ -184,7 +184,7 @@ function LocationRow({ location }: { location: DecryptedLocation }) {
             View
           </a>
         ) : (
-          <span className="text-zinc-400">—</span>
+          <span className="text-secondary">—</span>
         )}
       </td>
     </tr>

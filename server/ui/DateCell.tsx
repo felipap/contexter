@@ -11,11 +11,11 @@ export function DateCell({
 }: Props) {
   return (
     <div className="flex flex-col">
-      <span className="text-zinc-700 dark:text-zinc-300">
+      <span className="text-contrast/80">
         {primaryDate ? new Date(primaryDate).toLocaleString() : "—"}
       </span>
       {secondaryDate && (
-        <span className="text-xs text-zinc-400">
+        <span className="text-xs text-contrast/60">
           {secondaryLabel}: {new Date(secondaryDate).toLocaleString()}
         </span>
       )}

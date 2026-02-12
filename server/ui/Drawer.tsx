@@ -57,12 +57,10 @@ export function Drawer({ title, children, onClose }: Props) {
         }}
       >
         <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4 dark:border-neutral-800">
-          <h2 className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
-            {title}
-          </h2>
+          <h2 className="text-sm font-medium text-contrast">{title}</h2>
           <button
             onClick={handleClose}
-            className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
+            className="rounded-md p-1.5 text-secondary transition-colors hover:bg-neutral-100 hover:text-secondary dark:hover:bg-neutral-800"
           >
             <CloseIcon size={16} />
           </button>

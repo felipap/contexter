@@ -61,7 +61,7 @@ export function ServerStep({ onNext, onBack }: Props) {
     <div className="flex flex-col h-full px-6 py-8">
       <div className="mb-6">
         <h2 className="text-lg font- track-10 mb-1">Connect to your vault</h2>
-        <p className="text-secondary text-md font-text leading-normal">
+        <p className="text-tertiary text-md font-text leading-normal">
           Enter your server details to start syncing data. Follow the{' '}
           <button
             type="button"
@@ -113,7 +113,7 @@ export function ServerStep({ onNext, onBack }: Props) {
             placeholder="The secret from your server"
             onGenerate={() => setDeviceSecret(generatePassword())}
           />
-          <p className="font-text text-xs text-secondary mt-1 track-10">
+          <p className="font-text text-xs text-tertiary mt-1 track-10">
             Must match API_WRITE_SECRET on the server.
           </p>
         </div>
@@ -127,7 +127,7 @@ export function ServerStep({ onNext, onBack }: Props) {
             hasError={false}
             onGenerate={() => setEncryptionKey(generatePassword())}
           />
-          <p className="font-text text-xs text-secondary mt-1 track-10">
+          <p className="font-text text-xs text-tertiary mt-1 track-10">
             All data is encrypted before upload. Use the same key on the
             dashboard to decrypt.
           </p>

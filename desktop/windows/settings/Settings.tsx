@@ -46,7 +46,7 @@ export function Settings() {
   if (onboardingCompleted === null) {
     return (
       <div className="h-screen flex items-center justify-center bg-[var(--background-color-one)]">
-        <p className="text-secondary text-sm">Loading...</p>
+        <p className="text-tertiary text-sm">Loading...</p>
       </div>
     )
   }
@@ -68,15 +68,21 @@ function SettingsPanel() {
   // Load data source configs and logs
   useEffect(() => {
     async function loadDataSources() {
-      const [screenshots, imessage, contacts, whatsappSqlite, macosStickies, syncLogs] =
-        await Promise.all([
-          window.electron.getScreenCaptureConfig(),
-          window.electron.getIMessageExportConfig(),
-          window.electron.getContactsSyncConfig(),
-          window.electron.getWhatsappSqliteConfig(),
-          window.electron.getMacosStickiesSyncConfig(),
-          window.electron.getSyncLogs(),
-        ])
+      const [
+        screenshots,
+        imessage,
+        contacts,
+        whatsappSqlite,
+        macosStickies,
+        syncLogs,
+      ] = await Promise.all([
+        window.electron.getScreenCaptureConfig(),
+        window.electron.getIMessageExportConfig(),
+        window.electron.getContactsSyncConfig(),
+        window.electron.getWhatsappSqliteConfig(),
+        window.electron.getMacosStickiesSyncConfig(),
+        window.electron.getSyncLogs(),
+      ])
 
       // Find last sync status for each source
       const lastSyncStatus: Record<SyncLogSource, boolean> = {

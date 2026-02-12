@@ -30,7 +30,7 @@ const columns = [
   columnHelper.accessor("capturedAt", {
     header: "Captured",
     cell: (info) => (
-      <span className="text-zinc-500">
+      <span className="text-secondary">
         {new Date(info.getValue()).toLocaleString()}
       </span>
     ),

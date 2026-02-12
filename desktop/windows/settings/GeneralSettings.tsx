@@ -47,7 +47,7 @@ function PasswordInput({
         <button
           type="button"
           onClick={() => setShowPassword(!showPassword)}
-          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-secondary hover:text-contrast transition-colors"
+          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-tertiary hover:text-contrast transition-colors"
         >
           {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
         </button>
@@ -56,7 +56,7 @@ function PasswordInput({
         <button
           type="button"
           onClick={onGenerate}
-          className="flex items-center gap-1 px-2.5 py-2 rounded-md border text-sm text-secondary hover:text-contrast hover:bg-(--surface-hover) transition-colors shrink-0"
+          className="flex items-center gap-1 px-2.5 py-2 rounded-md border text-sm text-tertiary hover:text-contrast hover:bg-(--surface-hover) transition-colors shrink-0"
           title="Generate a random value"
         >
           <DiceIcon size={15} />
@@ -115,7 +115,7 @@ export function GeneralSettings() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12 text-secondary">
+      <div className="flex items-center justify-center py-12 text-tertiary">
         Loading settings...
       </div>
     )
@@ -134,10 +134,10 @@ export function GeneralSettings() {
           />
           <span className="text-sm">Start on login</span>
         </label>
-        <p className="text-xs text-secondary mt-1 ml-7">
+        <p className="text-xs text-tertiary mt-1 ml-7">
           Automatically start Vaulty when you log in to your computer
         </p>
-        <p className="text-xs text-secondary mt-4">Version {appVersion}</p>
+        <p className="text-xs text-tertiary mt-4">Version {appVersion}</p>
       </div>
 
       <div>
@@ -177,7 +177,7 @@ export function GeneralSettings() {
                 window.electron.setDeviceSecret(password)
               }}
             />
-            <p className="text-xs text-secondary mt-1">
+            <p className="text-xs text-tertiary mt-1">
               Must match API_WRITE_SECRET on the server
             </p>
           </div>
@@ -198,7 +198,7 @@ export function GeneralSettings() {
                 window.electron.setEncryptionKey(password)
               }}
             />
-            <p className="text-xs text-secondary mt-1">
+            <p className="text-xs text-tertiary mt-1">
               All data is encrypted before upload. Use the same key on the
               dashboard to decrypt.
             </p>

@@ -81,21 +81,21 @@ export function ScreenshotPreview({ screenshot, onClose }: Props) {
           </span>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+            className="rounded-lg p-1 text-secondary transition-colors hover:bg-zinc-100 hover:text-contrast dark:hover:bg-zinc-800"
           >
             <CloseIcon />
           </button>
         </div>
         <div className="flex min-h-[200px] items-center justify-center overflow-auto p-2">
           {loading ? (
-            <span className="text-zinc-500">Loading...</span>
+            <span className="text-secondary">Loading...</span>
           ) : decryptionFailed ? (
             <div className="flex flex-col items-center gap-3 p-8 text-center">
               <LockIcon size={32} />
               <span className="text-amber-500">
                 Encrypted screenshot - enter key to decrypt
               </span>
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs text-secondary">
                 Click the lock icon in the navigation bar
               </span>
             </div>
@@ -107,7 +107,7 @@ export function ScreenshotPreview({ screenshot, onClose }: Props) {
               className="max-h-[80vh] rounded-lg object-contain"
             />
           ) : (
-            <span className="text-zinc-500">Failed to load screenshot</span>
+            <span className="text-secondary">Failed to load screenshot</span>
           )}
         </div>
       </div>

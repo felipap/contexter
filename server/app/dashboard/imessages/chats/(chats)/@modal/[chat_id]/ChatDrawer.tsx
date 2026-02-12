@@ -32,11 +32,7 @@ export function ChatDrawer({ chat, contactLookup }: Props) {
     decrypt()
   }, [chat.participants])
 
-  const chatTitle = getChatTitle(
-    chat,
-    decryptedParticipants,
-    contactLookup
-  )
+  const chatTitle = getChatTitle(chat, decryptedParticipants, contactLookup)
 
   return (
     <Drawer title={chatTitle}>
@@ -73,11 +69,11 @@ function ChatInfo({
         <div className="min-w-0 flex-1">
           {chat.isGroupChat ? (
             <>
-              <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+              <p className="text-sm font-medium text-contrast">
                 Group Chat ({chat.participantCount} participants)
               </p>
               <DemoBlur>
-                <p className="truncate text-xs text-zinc-500">
+                <p className="truncate text-xs text-secondary">
                   {decryptedParticipants
                     .map((p) => resolveContactName(p, contactLookup))
                     .join(", ")}
@@ -87,7 +83,7 @@ function ChatInfo({
           ) : (
             <>
               <DemoBlur>
-                <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                <p className="text-sm font-medium text-contrast">
                   {resolveContactName(
                     decryptedParticipants[0] || chat.chatId,
                     contactLookup
@@ -95,7 +91,7 @@ function ChatInfo({
                 </p>
               </DemoBlur>
               <DemoBlur>
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-secondary">
                   {formatContact(decryptedParticipants[0] || chat.chatId)}
                 </p>
               </DemoBlur>
@@ -103,7 +99,7 @@ function ChatInfo({
           )}
         </div>
       </div>
-      <div className="mt-3 flex gap-4 text-xs text-zinc-500">
+      <div className="mt-3 flex gap-4 text-xs text-secondary">
         <span>{chat.messageCount.toLocaleString()} messages</span>
         {chat.lastMessageDate && (
           <span>

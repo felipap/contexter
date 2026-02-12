@@ -27,7 +27,7 @@ export function ScreenRecordingPermission({ onPermissionChange }: Props) {
 
   if (isChecking) {
     return (
-      <div className="flex items-center gap-2 text-sm text-secondary">
+      <div className="flex items-center gap-2 text-sm text-tertiary">
         <span className="animate-pulse">Checking permissions...</span>
       </div>
     )

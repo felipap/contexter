@@ -37,7 +37,7 @@ export function MessageDrawer({ message }: Props) {
           value={message.isFromMe ? "Sent" : "Received"}
         />
         <div>
-          <label className="mb-1 block text-sm font-medium text-zinc-500">
+          <label className="mb-1 block text-sm font-medium text-secondary">
             Chat
           </label>
           <Link
@@ -60,7 +60,7 @@ export function MessageDrawer({ message }: Props) {
           value={new Date(message.syncTime).toLocaleString()}
         />
         <div>
-          <label className="mb-1 block text-sm font-medium text-zinc-500">
+          <label className="mb-1 block text-sm font-medium text-secondary">
             Message
           </label>
           <div className="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-950">

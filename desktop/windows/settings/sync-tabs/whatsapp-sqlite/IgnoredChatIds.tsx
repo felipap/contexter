@@ -22,7 +22,7 @@ export function IgnoredChatIds({ ignoredChatIds, onAdd, onRemove }: Props) {
       <label className="block text-sm font-medium mb-1.5">
         Ignored chat IDs
       </label>
-      <p className="text-xs text-secondary mb-2">
+      <p className="text-xs text-tertiary mb-2">
         Messages from these chats will not be synced. Enter the chat JID (e.g.,
         123456789@g.us).
       </p>

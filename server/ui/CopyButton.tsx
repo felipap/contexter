@@ -20,7 +20,7 @@ export function CopyButton({ text, size = 14 }: Props) {
   return (
     <button
       onClick={handleCopy}
-      className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+      className="text-secondary hover:text-secondary"
       title="Copy to clipboard"
     >
       {copied ? <CheckIcon size={size} /> : <CopyIcon size={size} />}

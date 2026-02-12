@@ -12,7 +12,7 @@ type Props = {
 export function MessageCell({ message }: Props) {
   if (!message.text) {
     return (
-      <span className="italic text-zinc-400">
+      <span className="italic text-secondary">
         {message.hasAttachments ? "📎 Attachment" : "No content"}
       </span>
     )

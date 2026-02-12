@@ -20,7 +20,7 @@ export function Pagination({ page, totalPages, onPageChange }: Props) {
       <button
         onClick={() => onPageChange(page - 1)}
         disabled={page === 1}
-        className="rounded-md px-3 py-1.5 text-xs font-medium text-neutral-500 transition-colors hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-30 dark:text-neutral-400 dark:hover:bg-neutral-800"
+        className="rounded-md px-3 py-1.5 text-xs font-medium text-secondary transition-colors hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-30 dark:hover:bg-neutral-800"
       >
         Previous
       </button>
@@ -28,10 +28,7 @@ export function Pagination({ page, totalPages, onPageChange }: Props) {
       {pages.map((p, i) => {
         if (p === "...") {
           return (
-            <span
-              key={`ellipsis-${i}`}
-              className="px-1 text-neutral-300 dark:text-neutral-600"
-            >
+            <span key={`ellipsis-${i}`} className="px-1 text-secondary">
               ...
             </span>
           )
@@ -44,8 +41,8 @@ export function Pagination({ page, totalPages, onPageChange }: Props) {
             className={twMerge(
               "min-w-[32px] rounded-md px-2 py-1.5 font-mono text-xs font-medium transition-colors",
               p === page
-                ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
-                : "text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+                ? "bg-neutral-900 text-inverted dark:bg-neutral-100"
+                : "text-secondary hover:bg-neutral-100 dark:hover:bg-neutral-800"
             )}
           >
             {p}
@@ -56,7 +53,7 @@ export function Pagination({ page, totalPages, onPageChange }: Props) {
       <button
         onClick={() => onPageChange(page + 1)}
         disabled={page === totalPages}
-        className="rounded-md px-3 py-1.5 text-xs font-medium text-neutral-500 transition-colors hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-30 dark:text-neutral-400 dark:hover:bg-neutral-800"
+        className="rounded-md px-3 py-1.5 text-xs font-medium text-secondary transition-colors hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-30 dark:hover:bg-neutral-800"
       >
         Next
       </button>

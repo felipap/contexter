@@ -43,9 +43,9 @@ export default function Page() {
       />
 
       {loading ? (
-        <p className="text-zinc-500">Loading...</p>
+        <p className="text-secondary">Loading...</p>
       ) : chats.length === 0 ? (
-        <p className="text-zinc-500">
+        <p className="text-secondary">
           {hasActiveFilters
             ? "No chats match your search."
             : "No WhatsApp chats yet."}

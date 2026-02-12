@@ -24,16 +24,16 @@ export function MessagesTable({ messages, page, totalPages, onPageChange }: Prop
         <table className="w-full">
           <thead className="bg-zinc-50 dark:bg-zinc-900">
             <tr>
-              <th className="px-4 py-3 text-left text-sm font-medium text-zinc-500">
+              <th className="px-4 py-3 text-left text-sm font-medium text-secondary">
                 Direction
               </th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-zinc-500">
+              <th className="px-4 py-3 text-left text-sm font-medium text-secondary">
                 Contact
               </th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-zinc-500">
+              <th className="px-4 py-3 text-left text-sm font-medium text-secondary">
                 Message
               </th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-zinc-500">
+              <th className="px-4 py-3 text-left text-sm font-medium text-secondary">
                 Date
               </th>
             </tr>
@@ -66,7 +66,7 @@ function MessageRow({ message }: { message: DecryptedMessage }) {
           <span className="text-sm">{formatContact(message.decryptedContact)}</span>
         </div>
       </td>
-      <td className="max-w-[300px] truncate px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">
+      <td className="max-w-[300px] truncate px-4 py-3 text-sm text-secondary">
         {displayText ? (
           <span className="flex items-center gap-1.5">
             {isMessageEncrypted && (
@@ -82,12 +82,12 @@ function MessageRow({ message }: { message: DecryptedMessage }) {
             Encrypted - enter key to decrypt
           </span>
         ) : (
-          <span className="italic text-zinc-400">
+          <span className="italic text-secondary">
             {message.hasAttachments ? "📎 Attachment" : "No content"}
           </span>
         )}
       </td>
-      <td className="px-4 py-3 text-sm text-zinc-500">
+      <td className="px-4 py-3 text-sm text-secondary">
         {message.date ? new Date(message.date).toLocaleString() : "—"}
       </td>
     </tr>

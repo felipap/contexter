@@ -39,11 +39,11 @@ const columns = [
             <span className="truncate text-sm font-medium">
               <Decrypted>{chat.chatName}</Decrypted>
             </span>
-            <span className="truncate text-xs text-zinc-500">
+            <span className="truncate text-xs text-secondary">
               {chat.chatId}
             </span>
             {isGroup && (
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs text-secondary">
                 {chat.participantCount} participants
               </span>
             )}
@@ -62,13 +62,11 @@ const columns = [
       const displayText = chat.decryptedLastMessage
 
       return (
-        <div className="flex max-w-[200px] min-w-0 items-center gap-0.5 text-sm text-zinc-600 dark:text-zinc-400">
+        <div className="flex max-w-[200px] min-w-0 items-center gap-0.5 text-sm text-secondary">
           {displayText ? (
             <>
               {chat.lastMessageFromMe && (
-                <span className="shrink-0 text-zinc-400 dark:text-zinc-500">
-                  You:{" "}
-                </span>
+                <span className="shrink-0 text-secondary">You: </span>
               )}
               {isChatEncrypted && (
                 <span
@@ -98,7 +96,7 @@ const columns = [
     cell: (info) => {
       const date = info.getValue()
       return (
-        <span className="text-zinc-500">
+        <span className="text-secondary">
           {date ? formatRelativeDate(new Date(date)) : "—"}
         </span>
       )

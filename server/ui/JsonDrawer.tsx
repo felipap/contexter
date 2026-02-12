@@ -54,18 +54,16 @@ export function JsonDrawer({ isOpen, onClose, title, data }: Props) {
         }}
       >
         <div className="flex items-center justify-between border-b border-zinc-200 px-6 py-4 dark:border-zinc-800">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            {title}
-          </h2>
+          <h2 className="text-lg font-semibold text-contrast">{title}</h2>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+            className="rounded-lg p-2 text-secondary transition-colors hover:bg-zinc-100 hover:text-contrast dark:hover:bg-zinc-800"
           >
             <CloseIcon size={20} />
           </button>
         </div>
         <div className="h-[calc(100vh-73px)] overflow-auto p-6">
-          <pre className="whitespace-pre-wrap break-all rounded-lg bg-zinc-50 p-4 font-mono text-sm text-zinc-800 dark:bg-zinc-950 dark:text-zinc-200">
+          <pre className="whitespace-pre-wrap break-all rounded-lg bg-zinc-50 p-4 font-mono text-sm text-contrast dark:bg-zinc-950">
             {JSON.stringify(data, null, 2)}
           </pre>
         </div>

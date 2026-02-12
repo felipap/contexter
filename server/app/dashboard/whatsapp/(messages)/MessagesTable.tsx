@@ -59,7 +59,9 @@ export function MessagesTable({
                 <span className="truncate text-sm">
                   <Decrypted>{chatName}</Decrypted>
                 </span>
-                <span className="truncate text-xs text-zinc-500">{chatId}</span>
+                <span className="truncate text-xs text-secondary">
+                  {chatId}
+                </span>
               </div>
             </div>
           )
@@ -73,7 +75,7 @@ export function MessagesTable({
           const { senderName, isFromMe } = info.row.original
 
           if (isFromMe) {
-            return <span className="text-sm text-zinc-500">You</span>
+            return <span className="text-sm text-secondary">You</span>
           }
 
           return (
@@ -83,7 +85,9 @@ export function MessagesTable({
                   <Decrypted>{senderName}</Decrypted>
                 </span>
                 {senderJid && (
-                  <span className="truncate text-xs text-zinc-500">{senderJid}</span>
+                  <span className="truncate text-xs text-secondary">
+                    {senderJid}
+                  </span>
                 )}
               </div>
             </DemoBlur>

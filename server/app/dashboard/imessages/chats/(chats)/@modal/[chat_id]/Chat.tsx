@@ -26,12 +26,12 @@ export function Chat({
 
   return (
     <div>
-      <label className="mb-2 block text-sm font-medium text-zinc-500">
+      <label className="mb-2 block text-sm font-medium text-secondary">
         Messages ({messages.length} of {totalCount})
       </label>
       <div className="space-y-2">
         {isLoading ? (
-          <p className="text-sm text-zinc-500">Loading messages...</p>
+          <p className="text-sm text-secondary">Loading messages...</p>
         ) : (
           messages.map((msg) => (
             <MessageBubble
@@ -45,7 +45,7 @@ export function Chat({
           <button
             onClick={loadMore}
             disabled={isPending}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-200 disabled:opacity-50 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-zinc-100 px-4 py-2 text-sm font-medium text-contrast transition-colors hover:bg-zinc-200 disabled:opacity-50 dark:bg-zinc-800 dark:hover:bg-zinc-700"
           >
             {isPending ? (
               <>
@@ -57,7 +57,7 @@ export function Chat({
             )}
           </button>
         ) : messages.length > 0 ? (
-          <div className="flex items-center justify-center gap-2 py-2 text-sm text-zinc-400 dark:text-zinc-500">
+          <div className="flex items-center justify-center gap-2 py-2 text-sm text-secondary">
             <CheckIcon size={16} />
             All messages loaded
           </div>
@@ -89,12 +89,14 @@ function MessageBubble({
           "max-w-[85%] rounded-lg px-3 py-2",
           message.isFromMe
             ? "bg-blue-500 text-white"
-            : "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
+            : "bg-zinc-100 text-contrast dark:bg-zinc-800"
         )}
       >
         {!message.isFromMe && (
-          <p className="mb-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-            <DemoBlur>{resolveContactName(message.decryptedContact, contactLookup)}</DemoBlur>
+          <p className="mb-1 text-xs font-medium text-secondary">
+            <DemoBlur>
+              {resolveContactName(message.decryptedContact, contactLookup)}
+            </DemoBlur>
           </p>
         )}
         <div className="flex items-start gap-1.5">
@@ -132,9 +134,7 @@ function MessageBubble({
           <p
             className={twMerge(
               "mt-1 text-[10px]",
-              message.isFromMe
-                ? "text-blue-200"
-                : "text-zinc-400 dark:text-zinc-500"
+              message.isFromMe ? "text-blue-200" : "text-secondary"
             )}
           >
             {new Date(message.date).toLocaleString([], {

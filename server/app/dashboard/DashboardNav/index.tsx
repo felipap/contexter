@@ -69,14 +69,15 @@ export function DashboardNav() {
     <header className="border-b border-neutral-200 bg-white dark:border-neutral-800 dark:bg-[#0a0a0a]">
       <div className="mx-auto  px-5">
         <div className="flex items-center justify-between py-5">
-          <div className="flex items-center gap-3">
+          <div className="flex items-end gap-3">
             <Link
               href="/dashboard"
-              className="text-lg font-semibold tracking-tight"
+              className="flex items-center gap-2 text-lg font-semibold tracking-tight"
             >
-              Vaulty
+              <Logo className="w-6 h-6" />
+              {/* Vaulty */}
             </Link>
-            <span className="font-mono text-sm text-neutral-400 dark:text-neutral-500">
+            <span className="font-mono text-sm text-secondary">
               v{process.env.APP_VERSION}
             </span>
           </div>
@@ -107,8 +108,8 @@ export function DashboardNav() {
                 className={twMerge(
                   "flex  items-center gap-1.5 track-20 rounded-sm px-2 py-1 text-[13px] transition-colors mb-2",
                   isActive
-                    ? "bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100"
-                    : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-300"
+                    ? "bg-neutral-100 text-contrast dark:bg-neutral-800"
+                    : "text-secondary hover:bg-neutral-50 hover:text-contrast dark:hover:bg-neutral-900"
                 )}
               >
                 {item.icon}
@@ -119,5 +120,78 @@ export function DashboardNav() {
         </nav>
       </div>
     </header>
+  )
+}
+
+function Logo({ className }: { className?: string }) {
+  return (
+    <svg
+      width="50"
+      height="50"
+      viewBox="0 0 126 126"
+      fill="none"
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect
+        opacity="0.9"
+        x="3.5"
+        y="3.5"
+        width="118.066"
+        height="118.066"
+        rx="26.5"
+        stroke="white"
+        stroke-width="7"
+      />
+      <circle cx="91.6924" cy="91.6866" r="7.53226" fill="white" />
+      <circle cx="33.3877" cy="91.6866" r="7.53226" fill="white" />
+      <circle cx="91.6924" cy="33.3799" r="7.53226" fill="white" />
+      <circle cx="33.3877" cy="33.3799" r="7.53226" fill="white" />
+      <line
+        opacity="0.5"
+        x1="33.3829"
+        y1="91.2239"
+        x2="50.7366"
+        y2="73.8705"
+        stroke="white"
+        stroke-width="10"
+        stroke-linecap="round"
+      />
+      <line
+        opacity="0.5"
+        x1="74.3047"
+        y1="50.302"
+        x2="88.085"
+        y2="36.5217"
+        stroke="white"
+        stroke-width="10"
+        stroke-linecap="round"
+      />
+      <line
+        opacity="0.5"
+        x1="74.1605"
+        y1="73.9332"
+        x2="89.7855"
+        y2="89.5582"
+        stroke="white"
+        stroke-width="10"
+      />
+      <line
+        opacity="0.5"
+        x1="33.4613"
+        y1="33.234"
+        x2="52.5539"
+        y2="52.3262"
+        stroke="white"
+        stroke-width="10"
+      />
+      <circle
+        cx="62.543"
+        cy="62.5332"
+        r="12.4688"
+        stroke="white"
+        stroke-width="12"
+      />
+    </svg>
   )
 }

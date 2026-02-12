@@ -65,7 +65,7 @@ export const SyncLogItem = forwardRef<HTMLTableRowElement, Props>(
         >
           <td className="py-2.5 font-mono text-xs">
             {showDate && (
-              <span className="text-secondary mr-1.5">
+              <span className="text-tertiary mr-1.5">
                 {formatDate(log.timestamp)}
               </span>
             )}
@@ -75,7 +75,7 @@ export const SyncLogItem = forwardRef<HTMLTableRowElement, Props>(
           <td className="py-2.5">
             <StatusBadge status={log.status} />
           </td>
-          <td className="py-2.5 text-right font-mono text-xs text-secondary">
+          <td className="py-2.5 text-right font-mono text-xs text-tertiary">
             {log.duration}ms
           </td>
         </tr>
@@ -84,20 +84,20 @@ export const SyncLogItem = forwardRef<HTMLTableRowElement, Props>(
             <td colSpan={4} className="px-4 py-3 text-sm">
               <div className="space-y-1">
                 <div>
-                  <span className="text-secondary">Source:</span>{' '}
+                  <span className="text-tertiary">Source:</span>{' '}
                   {SOURCE_LABELS[log.source]}
                 </div>
                 <div>
-                  <span className="text-secondary">Status:</span>{' '}
+                  <span className="text-tertiary">Status:</span>{' '}
                   {log.status === 'success' ? 'Success' : 'Failed'}
                 </div>
                 <div>
-                  <span className="text-secondary">Duration:</span>{' '}
+                  <span className="text-tertiary">Duration:</span>{' '}
                   {log.duration}ms
                 </div>
                 {log.errorMessage && (
                   <div>
-                    <span className="text-secondary">Error:</span>{' '}
+                    <span className="text-tertiary">Error:</span>{' '}
                     <span className="text-red-600 dark:text-red-400 font-mono text-xs">
                       {log.errorMessage}
                     </span>

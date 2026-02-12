@@ -185,7 +185,7 @@ function EncryptionKeyPopover({
             <span className="font-medium text-emerald-600 dark:text-emerald-400">
               Encryption key active
             </span>
-            <p className="mt-1 font-mono text-xs text-neutral-500">
+            <p className="mt-1 font-mono text-xs text-secondary">
               {expiryLabel}
             </p>
           </div>
@@ -196,7 +196,7 @@ function EncryptionKeyPopover({
       ) : (
         <div className="space-y-3">
           <div>
-            <label className="mb-1 block text-xs font-medium text-neutral-500">
+            <label className="mb-1 block text-xs font-medium text-secondary">
               Encryption Key
             </label>
             <input
@@ -209,7 +209,7 @@ function EncryptionKeyPopover({
               autoFocus
             />
           </div>
-          <p className="text-xs text-neutral-400">
+          <p className="text-xs text-secondary">
             Enter the same key used in the desktop app to decrypt messages. Key
             expires after 1 hour.
           </p>

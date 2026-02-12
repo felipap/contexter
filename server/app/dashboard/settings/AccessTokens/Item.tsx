@@ -10,7 +10,7 @@ export function Item({ label, children, description }: Props) {
       <label className="mb-1 block text-sm font-medium">{label}</label>
       {children}
       {description && (
-        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+        <p className="mt-1 text-xs text-secondary">
           {description}
         </p>
       )}

@@ -35,9 +35,9 @@ export default function Page() {
 
   let inner
   if (loading) {
-    inner = <p className="text-zinc-500">Loading...</p>
+    inner = <p className="text-secondary">Loading...</p>
   } else if (stickies.length === 0) {
-    inner = <p className="text-zinc-500">No macOS stickies yet.</p>
+    inner = <p className="text-secondary">No macOS stickies yet.</p>
   } else {
     inner = (
       <>
@@ -64,7 +64,7 @@ export default function Page() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="heading-page">macOS Stickies</h1>
-        <span className="text-sm text-zinc-500">
+        <span className="text-sm text-secondary">
           {total.toLocaleString()} total
         </span>
       </div>
@@ -86,9 +86,9 @@ function StickyCard({
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
       <p className="whitespace-pre-wrap text-sm leading-relaxed line-clamp-6">
-        {displayText || <span className="italic text-zinc-400">Empty note</span>}
+        {displayText || <span className="italic text-secondary">Empty note</span>}
       </p>
-      <p className="mt-3 text-xs text-zinc-400">
+      <p className="mt-3 text-xs text-secondary">
         {formatDate(sticky.updatedAt)}
       </p>
     </div>

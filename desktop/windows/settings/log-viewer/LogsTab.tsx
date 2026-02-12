@@ -44,7 +44,7 @@ export function LogsTab({ highlightSyncId }: Props) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12 text-secondary">
+      <div className="flex items-center justify-center py-12 text-tertiary">
         Loading logs...
       </div>
     )
@@ -65,7 +65,7 @@ export function LogsTab({ highlightSyncId }: Props) {
       </div>
 
       {logs.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center text-secondary py-12">
+        <div className="flex-1 flex flex-col items-center justify-center text-tertiary py-12">
           <p>No sync attempts logged yet</p>
           <p className="text-sm mt-1">Sync attempts will appear here</p>
         </div>
@@ -73,7 +73,7 @@ export function LogsTab({ highlightSyncId }: Props) {
         <div className="flex-1 overflow-auto -mx-4 px-4">
           <table className="w-full text-sm">
             <thead className="sticky top-0 bg-[var(--background-color-one)]">
-              <tr className="text-left text-secondary border-b">
+              <tr className="text-left text-tertiary border-b">
                 <th className="pb-2 font-medium">Time</th>
                 <th className="pb-2 font-medium">Source</th>
                 <th className="pb-2 font-medium">Status</th>

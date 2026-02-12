@@ -26,12 +26,12 @@ export function DoneStep({ onFinish }: Props) {
 
       <h2 className="text-2xl font-semibold mb-3">You're all set!</h2>
 
-      <p className="text-secondary text-sm leading-relaxed max-w-md mb-2">
+      <p className="text-tertiary text-sm leading-relaxed max-w-md mb-2">
         Vaulty is now connected to your server. You can enable data sources from
         the settings panel.
       </p>
 
-      <p className="text-secondary text-sm leading-relaxed max-w-md mb-8">
+      <p className="text-tertiary text-sm leading-relaxed max-w-md mb-8">
         Look for the Vaulty icon in your menu bar &mdash; it will always be
         there, keeping things in sync.
       </p>

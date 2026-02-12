@@ -35,14 +35,14 @@ export function WhatsappChatsSearch({
           className={twMerge(
             "flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm transition-colors",
             searchOpen
-              ? "border-zinc-400 bg-zinc-100 text-zinc-900 dark:border-zinc-500 dark:bg-zinc-800 dark:text-zinc-100"
-              : "border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:bg-zinc-800"
+              ? "border-zinc-400 bg-zinc-100 text-contrast dark:border-zinc-500 dark:bg-zinc-800"
+              : "border-zinc-200 bg-white text-secondary hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-600 dark:hover:bg-zinc-800"
           )}
         >
           {searchOpen ? <CloseIcon size={14} /> : <SearchIcon size={14} />}
           {searchOpen ? "Close search" : "Search"}
         </button>
-        <span className="text-sm text-zinc-500">
+        <span className="text-sm text-secondary">
           {total.toLocaleString()} {hasActiveFilters ? "matching" : "total"}{" "}
           chats
         </span>
@@ -96,13 +96,13 @@ export function WhatsappChatsSearch({
             />
           </div>
           {!hasKey && (
-            <p className="flex items-center gap-1.5 text-xs text-zinc-400">
+            <p className="flex items-center gap-1.5 text-xs text-secondary">
               <LockIcon size={12} />
               Phone, sender name, and chat name search require the decryption
               key. Enter it in the navbar to enable these fields.
             </p>
           )}
-          <p className="text-xs text-zinc-400">
+          <p className="text-xs text-secondary">
             Sender JID and Chat ID are always searchable (partial match). Phone,
             sender name, and chat name use encrypted indexes (exact match).
           </p>
@@ -162,9 +162,9 @@ function SearchField({
 
   return (
     <div className="flex flex-col gap-1">
-      <label className="flex items-center gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+      <label className="flex items-center gap-1.5 text-xs font-medium text-secondary">
         {label}
-        {locked && <LockIcon size={10} className="text-zinc-400" />}
+        {locked && <LockIcon size={10} className="text-secondary" />}
       </label>
       <input
         type="text"
@@ -173,7 +173,7 @@ function SearchField({
         onChange={(e) => setLocalValue(e.target.value)}
         disabled={disabled}
         className={twMerge(
-          "rounded-lg border border-zinc-200 bg-white py-1.5 px-2.5 text-sm placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-600",
+          "rounded-lg border border-zinc-200 bg-white py-1.5 px-2.5 text-sm placeholder:text-secondary focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-600",
           disabled &&
             "cursor-not-allowed opacity-50 bg-zinc-100 dark:bg-zinc-800"
         )}

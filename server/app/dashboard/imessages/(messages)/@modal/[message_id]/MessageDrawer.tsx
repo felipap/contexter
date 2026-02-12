@@ -87,14 +87,14 @@ export function MessageDrawer({ message }: Props) {
           value={message.date ? new Date(message.date).toLocaleString() : "—"}
         />
         <div>
-          <label className="mb-1 block text-sm font-medium text-zinc-500">
+          <label className="mb-1 block text-sm font-medium text-secondary">
             Message
           </label>
           <div className="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-950">
             {message.text ? (
               <Decrypted showLockIcon>{message.text}</Decrypted>
             ) : (
-              <span className="text-sm italic text-zinc-400">
+              <span className="text-sm italic text-secondary">
                 {message.hasAttachments ? "📎 Attachment" : "No content"}
               </span>
             )}
@@ -102,7 +102,7 @@ export function MessageDrawer({ message }: Props) {
         </div>
         {message.attachments.length > 0 && (
           <div>
-            <label className="mb-2 block text-sm font-medium text-zinc-500">
+            <label className="mb-2 block text-sm font-medium text-secondary">
               Attachments ({message.attachments.length})
             </label>
             <div className="space-y-3">
@@ -171,17 +171,17 @@ function AttachmentCard({ attachment }: { attachment: DecryptedAttachment }) {
         </div>
         <div className="flex items-center justify-between gap-2 border-t border-zinc-200 bg-zinc-50 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950">
           <div className="flex items-center gap-2 min-w-0">
-            <ImageIcon size={16} className="shrink-0 text-zinc-500" />
-            <span className="truncate text-sm text-zinc-700 dark:text-zinc-300">
+            <ImageIcon size={16} className="shrink-0 text-secondary" />
+            <span className="truncate text-sm text-contrast">
               {attachment.filename}
             </span>
-            <span className="shrink-0 text-xs text-zinc-400">
+            <span className="shrink-0 text-xs text-secondary">
               {formatSize(attachment.size)}
             </span>
           </div>
           <button
             onClick={handleDownload}
-            className="shrink-0 rounded p-1.5 text-zinc-500 transition-colors hover:bg-zinc-200 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+            className="shrink-0 rounded p-1.5 text-secondary transition-colors hover:bg-zinc-200 hover:text-contrast dark:hover:bg-zinc-800"
             title="Download"
           >
             <DownloadIcon size={16} />
@@ -196,13 +196,13 @@ function AttachmentCard({ attachment }: { attachment: DecryptedAttachment }) {
       <div className="flex items-center gap-3 min-w-0">
         <div className="shrink-0 rounded-lg bg-zinc-200 p-2 dark:bg-zinc-800">
           {attachment.isImage ? (
-            <ImageIcon size={18} className="text-zinc-600 dark:text-zinc-400" />
+            <ImageIcon size={18} className="text-secondary" />
           ) : (
-            <FileIcon size={18} className="text-zinc-600 dark:text-zinc-400" />
+            <FileIcon size={18} className="text-secondary" />
           )}
         </div>
         <div className="min-w-0">
-          <p className="flex items-center gap-2 truncate text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <p className="flex items-center gap-2 truncate text-sm font-medium text-contrast">
             {isEncryptedAttachment && hasData && (
               <span className="text-green-500" title="Decrypted">
                 <LockIcon size={12} />
@@ -210,7 +210,7 @@ function AttachmentCard({ attachment }: { attachment: DecryptedAttachment }) {
             )}
             {attachment.filename}
           </p>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-secondary">
             {attachment.mimeType} • {formatSize(attachment.size)}
           </p>
         </div>
@@ -218,7 +218,7 @@ function AttachmentCard({ attachment }: { attachment: DecryptedAttachment }) {
       {hasData ? (
         <button
           onClick={handleDownload}
-          className="shrink-0 rounded p-1.5 text-zinc-500 transition-colors hover:bg-zinc-200 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+          className="shrink-0 rounded p-1.5 text-secondary transition-colors hover:bg-zinc-200 hover:text-contrast dark:hover:bg-zinc-800"
           title="Download"
         >
           <DownloadIcon size={16} />
@@ -229,7 +229,7 @@ function AttachmentCard({ attachment }: { attachment: DecryptedAttachment }) {
           Encrypted
         </span>
       ) : (
-        <span className="shrink-0 text-xs text-zinc-400">No data</span>
+        <span className="shrink-0 text-xs text-secondary">No data</span>
       )}
     </div>
   )

@@ -23,17 +23,17 @@ export default function Page() {
   } = useMessageList()
 
   if (loading) {
-    return <p className="text-zinc-500">Loading...</p>
+    return <p className="text-secondary">Loading...</p>
   }
 
   if (messages.length === 0) {
-    return <p className="text-zinc-500">No WhatsApp messages yet.</p>
+    return <p className="text-secondary">No WhatsApp messages yet.</p>
   }
 
   return (
     <>
       <div className="mb-4 flex items-center justify-between">
-        <span className="text-sm text-zinc-500">
+        <span className="text-sm text-secondary">
           {total.toLocaleString()} total messages
         </span>
         <SortSelector

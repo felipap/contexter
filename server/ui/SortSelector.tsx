@@ -13,7 +13,7 @@ export function SortSelector<T extends string>({
 }: Props<T>) {
   return (
     <div className="flex items-center gap-2 text-sm w-[200px]">
-      <span className="text-zinc-500">Sort by:</span>
+      <span className="text-secondary">Sort by:</span>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value as T)}

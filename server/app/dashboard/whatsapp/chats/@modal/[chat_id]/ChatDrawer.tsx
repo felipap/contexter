@@ -12,7 +12,9 @@ type Props = {
 }
 
 export function ChatDrawer({ chat }: Props) {
-  const [decryptedChatName, setDecryptedChatName] = useState<string | null>(null)
+  const [decryptedChatName, setDecryptedChatName] = useState<string | null>(
+    null
+  )
 
   useEffect(() => {
     maybeDecrypt(chat.chatName).then(setDecryptedChatName)
@@ -48,17 +50,15 @@ function ChatInfo({
       <div className="flex items-center gap-3">
         <ChatAvatar chat={chat} displayName={displayName} />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-            {displayName}
-          </p>
+          <p className="text-sm font-medium text-contrast">{displayName}</p>
           {isGroup && (
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-secondary">
               {chat.participantCount} participants
             </p>
           )}
         </div>
       </div>
-      <div className="mt-3 space-y-1 text-xs text-zinc-500">
+      <div className="mt-3 space-y-1 text-xs text-secondary">
         <div className="flex gap-4">
           <span>{chat.messageCount.toLocaleString()} messages</span>
           {chat.lastMessageDate && (
@@ -67,7 +67,7 @@ function ChatInfo({
             </span>
           )}
         </div>
-        <div className="flex items-center gap-1.5 font-mono text-zinc-400">
+        <div className="flex items-center gap-1.5 font-mono text-secondary">
           {chat.chatId}
           <CopyButton text={chat.chatId} size={12} />
         </div>

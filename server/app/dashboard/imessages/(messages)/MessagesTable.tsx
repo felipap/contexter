@@ -63,7 +63,7 @@ export function MessagesTable({
                 <div className="flex flex-col">
                   <span className="text-sm">{resolvedName}</span>
                   {hasContactName && (
-                    <span className="text-xs text-zinc-500">
+                    <span className="text-xs text-secondary">
                       {formatContact(contact)}
                     </span>
                   )}

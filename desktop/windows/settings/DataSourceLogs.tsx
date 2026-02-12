@@ -30,14 +30,14 @@ export const DataSourceLogs = withBoundary(function DataSourceLogs({
       <h3 className="text-md font-medium mb-3">Recent Syncs</h3>
 
       {logs.length === 0 ? (
-        <div className="text-sm text-secondary py-4">
+        <div className="text-sm text-tertiary py-4">
           No sync attempts for {sourceLabel} yet.
         </div>
       ) : (
         <div className="overflow-auto max-h-64 border rounded-lg">
           <table className="w-full text-sm">
             <thead className="sticky top-0 bg-two">
-              <tr className="text-left text-secondary border-b">
+              <tr className="text-left text-tertiary border-b">
                 <th className="px-3 py-2 font-medium">Time</th>
                 <th className="px-3 py-2 font-medium">Status</th>
                 <th className="px-3 py-2 font-medium text-right">Duration</th>
@@ -115,7 +115,7 @@ const DataSourceLogItem = forwardRef<HTMLTableRowElement, ItemProps>(
         >
           <td className="px-3 py-2 font-mono text-xs">
             {showDate && (
-              <span className="text-secondary mr-1.5">
+              <span className="text-tertiary mr-1.5">
                 {formatDate(log.timestamp)}
               </span>
             )}
@@ -124,7 +124,7 @@ const DataSourceLogItem = forwardRef<HTMLTableRowElement, ItemProps>(
           <td className="px-3 py-2">
             <StatusBadge status={log.status} />
           </td>
-          <td className="px-3 py-2 text-right font-mono text-xs text-secondary">
+          <td className="px-3 py-2 text-right font-mono text-xs text-tertiary">
             {log.duration}ms
           </td>
         </tr>

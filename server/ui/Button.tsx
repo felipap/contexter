@@ -8,20 +8,20 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200 border border-neutral-200 dark:border-neutral-800",
+          "bg-neutral-900 text-inverted hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 border border-neutral-200 dark:border-neutral-800",
         primary:
-          "bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200",
+          "bg-neutral-900 text-inverted hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200",
         secondary:
-          "bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700",
-        link: "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100",
+          "bg-neutral-100 text-contrast hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700",
+        link: "text-secondary hover:text-contrast",
         outline:
-          "border border-neutral-200 text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900",
+          "border border-neutral-200 text-contrast hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900",
         danger:
           "bg-red-50 border dark:border-red-400/20 text-red-600 hover:bg-red-100 dark:bg-red-950/50 dark:text-red-400 dark:hover:bg-red-950",
       },
       size: {
         sm: "h-7 px-2 text-[13px] rounded-md",
-        md: "h-7 px-3 text-[13px] pb-[1px] rounded-md track-20",
+        md: "h-8 px-2.5 text-[13px] pb-[1px] rounded-md track-20",
         lg: "h-10 px-5 text-[15px] rounded-md",
       },
     },

@@ -28,11 +28,11 @@ function StatCard({ label, value, href }: StatCardProps) {
       href={href}
       className="group flex flex-col justify-between rounded-lg border border-neutral-200 p-5 transition-colors hover:border-neutral-300 dark:border-neutral-800 dark:hover:border-neutral-700"
     >
-      <p className="text-xs text-neutral-500 dark:text-neutral-400">{label}</p>
-      <p className="mt-3 font-mono text-2xl tracking-tight text-neutral-900 dark:text-neutral-100">
+      <p className="text-xs text-secondary">{label}</p>
+      <p className="mt-3 font-mono text-2xl tracking-tight text-contrast">
         {value}
       </p>
-      <p className="mt-3 text-xs text-neutral-400 transition-colors group-hover:text-neutral-600 dark:text-neutral-600 dark:group-hover:text-neutral-400">
+      <p className="mt-3 text-xs text-secondary transition-colors group-hover:text-secondary">
         View &rarr;
       </p>
     </Link>
@@ -54,7 +54,7 @@ export function DashboardClient() {
   }, [])
 
   if (loading) {
-    return <p className="font-mono text-sm text-neutral-400">Loading...</p>
+    return <p className="font-mono text-sm text-secondary">Loading...</p>
   }
 
   if (error) {
