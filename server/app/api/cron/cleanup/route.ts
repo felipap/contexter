@@ -12,7 +12,10 @@ import {
 } from "@/db/schema"
 import { lt } from "drizzle-orm"
 import { NextResponse } from "next/server"
+import { createLogger } from "@/lib/logger"
 import { verifyCronAuth } from "../auth"
+
+const logger = createLogger("cleanup")
 
 function hoursFromEnv(key: string, fallback: number): number {
   const raw = process.env[key]
@@ -62,8 +65,11 @@ type CleanupResult = {
 export async function GET(request: Request) {
   const authError = verifyCronAuth(request)
   if (authError) {
+    logger.warn("Auth error")
     return authError
   }
+
+  logger.log("Starting cleanup cron")
 
   const results: Record<string, CleanupResult | "disabled"> = {}
 
@@ -78,8 +84,12 @@ export async function GET(request: Request) {
       retentionHours: SCREENSHOT_RETENTION_HOURS,
       cutoffTime: cutoff.toISOString(),
     }
+    logger.log(
+      `screenshots: deleted ${deleted.length} (retention: ${SCREENSHOT_RETENTION_HOURS}h, cutoff: ${cutoff.toISOString()})`
+    )
   } else {
     results.screenshots = "disabled"
+    logger.log("screenshots: disabled")
   }
 
   if (IMESSAGE_RETENTION_HOURS > 0) {
@@ -97,8 +107,12 @@ export async function GET(request: Request) {
       retentionHours: IMESSAGE_RETENTION_HOURS,
       cutoffTime: cutoff.toISOString(),
     }
+    logger.log(
+      `imessages: deleted ${deletedMessages.length} messages + ${deletedAttachments.length} attachments (retention: ${IMESSAGE_RETENTION_HOURS}h, cutoff: ${cutoff.toISOString()})`
+    )
   } else {
     results.imessages = "disabled"
+    logger.log("imessages: disabled")
   }
 
   if (WHATSAPP_RETENTION_HOURS > 0) {
@@ -112,8 +126,12 @@ export async function GET(request: Request) {
       retentionHours: WHATSAPP_RETENTION_HOURS,
       cutoffTime: cutoff.toISOString(),
     }
+    logger.log(
+      `whatsapp: deleted ${deleted.length} (retention: ${WHATSAPP_RETENTION_HOURS}h, cutoff: ${cutoff.toISOString()})`
+    )
   } else {
     results.whatsapp = "disabled"
+    logger.log("whatsapp: disabled")
   }
 
   if (CONTACT_RETENTION_HOURS > 0) {
@@ -127,8 +145,12 @@ export async function GET(request: Request) {
       retentionHours: CONTACT_RETENTION_HOURS,
       cutoffTime: cutoff.toISOString(),
     }
+    logger.log(
+      `contacts: deleted ${deleted.length} (retention: ${CONTACT_RETENTION_HOURS}h, cutoff: ${cutoff.toISOString()})`
+    )
   } else {
     results.contacts = "disabled"
+    logger.log("contacts: disabled")
   }
 
   if (LOCATION_RETENTION_HOURS > 0) {
@@ -142,8 +164,12 @@ export async function GET(request: Request) {
       retentionHours: LOCATION_RETENTION_HOURS,
       cutoffTime: cutoff.toISOString(),
     }
+    logger.log(
+      `locations: deleted ${deleted.length} (retention: ${LOCATION_RETENTION_HOURS}h, cutoff: ${cutoff.toISOString()})`
+    )
   } else {
     results.locations = "disabled"
+    logger.log("locations: disabled")
   }
 
   if (STICKIES_RETENTION_HOURS > 0) {
@@ -157,8 +183,12 @@ export async function GET(request: Request) {
       retentionHours: STICKIES_RETENTION_HOURS,
       cutoffTime: cutoff.toISOString(),
     }
+    logger.log(
+      `stickies: deleted ${deleted.length} (retention: ${STICKIES_RETENTION_HOURS}h, cutoff: ${cutoff.toISOString()})`
+    )
   } else {
     results.stickies = "disabled"
+    logger.log("stickies: disabled")
   }
 
   if (LOG_RETENTION_HOURS > 0) {
@@ -176,9 +206,19 @@ export async function GET(request: Request) {
       retentionHours: LOG_RETENTION_HOURS,
       cutoffTime: cutoff.toISOString(),
     }
+    logger.log(
+      `logs: deleted ${deletedWriteLogs.length} write + ${deletedReadLogs.length} read (retention: ${LOG_RETENTION_HOURS}h, cutoff: ${cutoff.toISOString()})`
+    )
   } else {
     results.logs = "disabled"
+    logger.log("logs: disabled")
   }
+
+  const totalDeleted = Object.values(results).reduce(
+    (sum, r) => sum + (r === "disabled" ? 0 : r.deletedCount),
+    0
+  )
+  logger.log(`Done. Total deleted: ${totalDeleted}`)
 
   return NextResponse.json({ success: true, results })
 }
