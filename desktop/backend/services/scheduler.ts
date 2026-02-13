@@ -9,6 +9,7 @@ type ConfigKey =
   | 'icontactsSync'
   | 'whatsappSqlite'
   | 'macosStickiesSync'
+  | 'winStickyNotesSync'
 
 class MissingEncryptionKeyError extends Error {
   constructor() {

@@ -20,6 +20,7 @@ import { imessageService } from './imessage'
 import { iContactsService } from './apple-contacts'
 import { whatsappSqliteService } from './whatsapp'
 import { macosStickiesService } from './stickies'
+import { winStickyNotesService } from './win-sticky-notes'
 
 const log = createLogger('services')
 
@@ -29,6 +30,7 @@ export const SERVICES: Service[] = [
   iContactsService,
   whatsappSqliteService,
   macosStickiesService,
+  ...(process.platform === 'win32' ? [winStickyNotesService] : []),
 ]
 
 export async function startAllServices(): Promise<void> {
@@ -57,4 +59,5 @@ export {
   iContactsService as contactsService,
   whatsappSqliteService,
   macosStickiesService,
+  winStickyNotesService,
 }

@@ -9,6 +9,7 @@ export type WriteLogType =
   | "contact"
   | "whatsapp"
   | "macos-sticky"
+  | "win-sticky-note"
 export type ReadLogType =
   | "screenshot"
   | "imessage"
@@ -18,6 +19,7 @@ export type ReadLogType =
   | "stats"
   | "whatsapp"
   | "macos-sticky"
+  | "win-sticky-note"
 
 type LogWriteParams = {
   type: WriteLogType

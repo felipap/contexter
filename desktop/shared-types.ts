@@ -4,6 +4,7 @@ export type SyncLogSource =
   | 'contacts'
   | 'whatsapp-sqlite'
   | 'macos-stickies'
+  | 'win-sticky-notes'
 
 export interface SyncLog {
   id: string
@@ -88,6 +89,10 @@ export interface ElectronAPI {
   // macOS Stickies service
   getMacosStickiesSyncConfig: () => Promise<ServiceConfig>
   setMacosStickiesSyncConfig: (config: Partial<ServiceConfig>) => Promise<void>
+
+  // Windows Sticky Notes service
+  getWinStickyNotesSyncConfig: () => Promise<ServiceConfig>
+  setWinStickyNotesSyncConfig: (config: Partial<ServiceConfig>) => Promise<void>
 
   // Services status
   getServicesStatus: () => Promise<ServiceStatus[]>

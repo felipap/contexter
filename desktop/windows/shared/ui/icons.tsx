@@ -274,6 +274,27 @@ export function StickiesIcon({ size = 18, className }: Props) {
   )
 }
 
+export function WinStickiesIcon({ size = 18, className }: Props) {
+  return (
+    <svg
+      className={className}
+      width={size}
+      height={size}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M7 8h10" />
+      <path d="M7 12h7" />
+      <path d="M7 16h4" />
+    </svg>
+  )
+}
+
 export function WhatsappIcon({ size = 18, className }: Props) {
   return (
     <svg

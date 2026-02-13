@@ -6,6 +6,7 @@ export type SyncLogSource =
   | 'icontacts'
   | 'whatsapp-sqlite'
   | 'macos-stickies'
+  | 'win-sticky-notes'
 
 export type SyncLog = {
   id: string
@@ -51,6 +52,11 @@ export type StoreSchema = {
     intervalMinutes: number
     nextSyncAfter: string | null
   }
+  winStickyNotesSync: {
+    enabled: boolean
+    intervalMinutes: number
+    nextSyncAfter: string | null
+  }
   syncLogs: SyncLog[]
 }
 
@@ -85,6 +91,11 @@ export const DEFAULT_STATE: StoreSchema = {
     ignoredChatIds: [],
   },
   macosStickiesSync: {
+    enabled: false,
+    intervalMinutes: 60,
+    nextSyncAfter: null,
+  },
+  winStickyNotesSync: {
     enabled: false,
     intervalMinutes: 60,
     nextSyncAfter: null,

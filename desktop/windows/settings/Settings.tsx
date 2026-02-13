@@ -8,7 +8,10 @@ import { IMessageSyncTab } from './sync-tabs/imessage'
 import { ContactsSyncTab } from './sync-tabs/contacts'
 import { WhatsappSqliteSyncTab } from './sync-tabs/whatsapp-sqlite'
 import { MacosStickiesSyncTab } from './sync-tabs/macos-stickies'
+import { WinStickyNotesSyncTab } from './sync-tabs/win-sticky-notes'
 import { SyncLogSource } from '../electron'
+
+const isWindows = window.electron.platform === 'win32'
 
 const SOURCE_LABELS: Record<SyncLogSource, string> = {
   screenshots: 'Screen Capture',
@@ -16,6 +19,7 @@ const SOURCE_LABELS: Record<SyncLogSource, string> = {
   contacts: 'Contacts Sync',
   'whatsapp-sqlite': 'WhatsApp (SQLite)',
   'macos-stickies': 'macOS Stickies',
+  'win-sticky-notes': 'Windows Sticky Notes',
 }
 
 function getInitialTab(): ActiveTab {
@@ -74,6 +78,7 @@ function SettingsPanel() {
         contacts,
         whatsappSqlite,
         macosStickies,
+        winStickyNotes,
         syncLogs,
       ] = await Promise.all([
         window.electron.getScreenCaptureConfig(),
@@ -81,23 +86,12 @@ function SettingsPanel() {
         window.electron.getContactsSyncConfig(),
         window.electron.getWhatsappSqliteConfig(),
         window.electron.getMacosStickiesSyncConfig(),
+        window.electron.getWinStickyNotesSyncConfig(),
         window.electron.getSyncLogs(),
       ])
 
       // Find last sync status for each source
-      const lastSyncStatus: Record<SyncLogSource, boolean> = {
-        screenshots: false,
-        imessage: false,
-        contacts: false,
-        'whatsapp-sqlite': false,
-        'macos-stickies': false,
-      }
-
-      for (const log of syncLogs) {
-        if (lastSyncStatus[log.source] === undefined) {
-          lastSyncStatus[log.source] = log.status === 'error'
-        }
-      }
+      const lastSyncStatus: Partial<Record<SyncLogSource, boolean>> = {}
 
       // Find first (most recent) log for each source
       const seenSources = new Set<SyncLogSource>()
@@ -108,38 +102,49 @@ function SettingsPanel() {
         }
       }
 
-      setDataSourceInfos([
+      const infos: DataSourceInfo[] = [
         {
           source: 'screenshots',
           label: SOURCE_LABELS['screenshots'],
           enabled: screenshots.enabled,
-          lastSyncFailed: lastSyncStatus['screenshots'],
+          lastSyncFailed: lastSyncStatus['screenshots'] ?? false,
         },
         {
           source: 'imessage',
           label: SOURCE_LABELS['imessage'],
           enabled: imessage.enabled,
-          lastSyncFailed: lastSyncStatus['imessage'],
+          lastSyncFailed: lastSyncStatus['imessage'] ?? false,
         },
         {
           source: 'contacts',
           label: SOURCE_LABELS['contacts'],
           enabled: contacts.enabled,
-          lastSyncFailed: lastSyncStatus['contacts'],
+          lastSyncFailed: lastSyncStatus['contacts'] ?? false,
         },
         {
           source: 'whatsapp-sqlite',
           label: SOURCE_LABELS['whatsapp-sqlite'],
           enabled: whatsappSqlite.enabled,
-          lastSyncFailed: lastSyncStatus['whatsapp-sqlite'],
+          lastSyncFailed: lastSyncStatus['whatsapp-sqlite'] ?? false,
         },
         {
           source: 'macos-stickies',
           label: SOURCE_LABELS['macos-stickies'],
           enabled: macosStickies.enabled,
-          lastSyncFailed: lastSyncStatus['macos-stickies'],
+          lastSyncFailed: lastSyncStatus['macos-stickies'] ?? false,
         },
-      ])
+      ]
+
+      if (isWindows) {
+        infos.push({
+          source: 'win-sticky-notes',
+          label: SOURCE_LABELS['win-sticky-notes'],
+          enabled: winStickyNotes.enabled,
+          lastSyncFailed: lastSyncStatus['win-sticky-notes'] ?? false,
+        })
+      }
+
+      setDataSourceInfos(infos)
     }
 
     loadDataSources()
@@ -245,6 +250,14 @@ function SettingsPanel() {
           <MacosStickiesSyncTab
             onEnabledChange={(enabled) =>
               handleSourceEnabledChange('macos-stickies', enabled)
+            }
+            highlightSyncId={highlightSyncId}
+          />
+        )}
+        {activeTab === 'win-sticky-notes' && (
+          <WinStickyNotesSyncTab
+            onEnabledChange={(enabled) =>
+              handleSourceEnabledChange('win-sticky-notes', enabled)
             }
             highlightSyncId={highlightSyncId}
           />

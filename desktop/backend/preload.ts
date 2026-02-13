@@ -63,6 +63,14 @@ const api = {
     intervalMinutes?: number
   }) => ipcRenderer.invoke('set-macos-stickies-sync-config', config),
 
+  // Windows Sticky Notes service
+  getWinStickyNotesSyncConfig: () =>
+    ipcRenderer.invoke('get-win-sticky-notes-sync-config'),
+  setWinStickyNotesSyncConfig: (config: {
+    enabled?: boolean
+    intervalMinutes?: number
+  }) => ipcRenderer.invoke('set-win-sticky-notes-sync-config', config),
+
   // Services status
   getServicesStatus: () => ipcRenderer.invoke('get-services-status'),
   runServiceNow: (name: string) => ipcRenderer.invoke('run-service-now', name),

@@ -142,6 +142,19 @@ export function registerIpcHandlers(): void {
     },
   )
 
+  ipcMain.handle('get-win-sticky-notes-sync-config', () => {
+    return store.get('winStickyNotesSync')
+  })
+
+  ipcMain.handle(
+    'set-win-sticky-notes-sync-config',
+    (_event, config: { enabled?: boolean; intervalMinutes?: number }) => {
+      const current = store.get('winStickyNotesSync')
+      store.set('winStickyNotesSync', { ...current, ...config })
+      getService('win-sticky-notes')?.restart()
+    },
+  )
+
   ipcMain.handle('get-services-status', () => {
     return SERVICES.map((s) => ({
       name: s.name,

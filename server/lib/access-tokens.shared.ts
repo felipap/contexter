@@ -5,5 +5,6 @@ export const VALID_SCOPES = [
   "screenshots",
   "locations",
   "macos-stickies",
+  "win-sticky-notes",
 ] as const
 export type Scope = (typeof VALID_SCOPES)[number]
