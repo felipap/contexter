@@ -18,8 +18,25 @@ const SALT = 'contexter-e2e-v1' // Fixed salt for cross-platform compatibility
 
 const ENCRYPTED_PREFIX = 'enc:v1:'
 
+// Deriving a key with pbkdf2Sync runs 100k iterations of SHA-256, which blocks
+// the main thread. Since the passphrase rarely changes, we cache the result and
+// only re-derive when the passphrase is different.
+let cachedEncKey: { passphrase: string; key: Buffer } | null = null
+let cachedIndexKey: { passphrase: string; key: Buffer } | null = null
+
 function deriveKey(passphrase: string): Buffer {
-  return pbkdf2Sync(passphrase, SALT, PBKDF2_ITERATIONS, KEY_LENGTH, 'sha256')
+  if (cachedEncKey && cachedEncKey.passphrase === passphrase) {
+    return cachedEncKey.key
+  }
+  const key = pbkdf2Sync(
+    passphrase,
+    SALT,
+    PBKDF2_ITERATIONS,
+    KEY_LENGTH,
+    'sha256',
+  )
+  cachedEncKey = { passphrase, key }
+  return key
 }
 
 export function encryptText(plaintext: string, passphrase: string): string {
@@ -238,13 +255,18 @@ export function isEncryptedBuffer(buffer: Buffer): boolean {
 const INDEX_SALT = 'contexter-search-index-v1'
 
 function deriveIndexKey(passphrase: string): Buffer {
-  return pbkdf2Sync(
+  if (cachedIndexKey && cachedIndexKey.passphrase === passphrase) {
+    return cachedIndexKey.key
+  }
+  const key = pbkdf2Sync(
     passphrase,
     INDEX_SALT,
     PBKDF2_ITERATIONS,
     KEY_LENGTH,
     'sha256',
   )
+  cachedIndexKey = { passphrase, key }
+  return key
 }
 
 export function computeSearchIndex(
