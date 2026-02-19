@@ -1,5 +1,22 @@
-// Defines which columns in each table can be encrypted
-// This helps the API routes and frontend know which fields to expect encryption on
+import { z } from "zod"
+
+export const ENCRYPTED_PREFIX = "enc:v1:"
+
+export function isServerEncrypted(text: string): boolean {
+  return text.startsWith(ENCRYPTED_PREFIX)
+}
+
+export const encryptedOrEmpty = z
+  .string()
+  .refine((s) => s === "" || isServerEncrypted(s), {
+    message: "must be encrypted (missing enc:v1: prefix)",
+  })
+
+export const encryptedRequired = z
+  .string()
+  .refine((s) => isServerEncrypted(s), {
+    message: "must be encrypted (missing enc:v1: prefix)",
+  })
 
 export const SCREENSHOT_ENCRYPTED_COLUMNS = ["data"] as const
 
