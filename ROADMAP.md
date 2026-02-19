@@ -4,9 +4,14 @@
 
 - [ ] Fix onboarding flow
 - [ ] What about multiple screens?
+- [ ] Standardize the getter and setter functions.
 
 ## Later
 
+- [ ] Sleep for X minutes.
+- [ ] App is huge
+- [ ] Opt-in (out?) Sentry
+- [ ] Real-time authorization of data access by asking user directly
 - [ ] Upgrade ESLint to v9 (requires flat config migration)
 - [ ] Rate-limit access tokens
 - [ ] Install via npm
@@ -14,19 +19,19 @@
 - [ ] Wake during darkwakes via LaunchAgent
 - [ ] Whitelist or blacklist messages from particular numbers
 - [ ] Expire data after a certain time
-- [ ] Real-time authentication by asking user directly
-- [ ] Blur texts in desktop screenshots
+- [ ] Blur texts in desktop screenshots?
 - [ ] Key rotation
 
 ## Done
 
+- [x] Move to sqlite.
 - [x] Docker deployment support
 - [x] Button to delete all data from dashboard
 - [x] Read-only access tokens
 - [x] Stream WhatsApp SQLite import instead of loading all into memory
 - [x] Better request logs
 - [x] Authenticated llms.txt
-- [x] Rename project
+- [x] Rebrand project
 - [x] Horizontal layout of settings
 - [x] Improve logger (electron-log)
 - [x] Encrypt locations
