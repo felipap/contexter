@@ -2,20 +2,21 @@
 
 # Vaulty
 
-Sync your personal data to your own server. Let your AI agents read it.
+A cloud database for your data (WhatsApp, iMessage, contacts, etc.) that AIs can
+read.
 
-<!-- screenshot of dashboard here -->
-
----
-
-Your messages, contacts, and location are scattered across apps that don't talk to each other — and certainly don't talk to your AI tools. Meanwhile, the agents you use every day are flying blind about your actual life.
-
-Vaulty fixes this. It syncs data from your devices to a server you control, encrypts everything end-to-end, and exposes it through a simple API. Your agents get the personal context they need. Nobody else gets anything.
+Agents need access to your data to be useful to you. Vaulty is an E2E encrypted
+database that stores your messages, contacts, coordinates etc, and makes it
+available through a simple API for your agents to use.
 
 > [!NOTE]
-> Vaulty is early software. It works, it's encrypted, and it's being used daily — but expect rough edges.
+> Vaulty is in early stages. Please study the repo and read our [security model](./SECURITY.md) before using it for yourself.
 
-## What it syncs
+## Roadmap
+
+See [ROADMAP.md](./ROADMAP.md).
+
+## Supported sources
 
 | Source             | Description                               | Status |
 | ------------------ | ----------------------------------------- | ------ |
@@ -26,30 +27,15 @@ Vaulty fixes this. It syncs data from your devices to a server you control, encr
 | **Locations**      | GPS coordinates via iOS app               | Beta   |
 | **macOS Stickies** | Sticky notes from your desktop            | Stable |
 
-## Roadmap
-
-See [ROADMAP.md](./ROADMAP.md).
-
 ## How it works
 
-Vaulty has three pieces:
+Vaulty has three copmponents
 
 - **Desktop app** (macOS) — Reads your local data, encrypts it on your machine, and syncs it to your server on a schedule. Runs quietly in the menu bar.
 - **Server** (Next.js, deployable via Docker or Vercel) — Stores the encrypted data and exposes it through a REST API. Includes a dashboard for managing access tokens and browsing your data.
 - **iOS app** — Shares your realtime location.
 
 Data flows one way: from your devices, through encryption, to your server. The server never sees plaintext — it stores ciphertext and serves it to authorized clients.
-
-## Encryption
-
-All sensitive fields are encrypted on-device using AES-256-GCM before they leave
-your machine. The server stores only ciphertext.
-
-For search over encrypted data (e.g. finding WhatsApp messages by sender),
-Vaulty uses HMAC-based blind indexes, so the server can match queries without
-seeing the underlying.
-
-See [SECURITY.md](./SECURITY.md) for the full breakdown.
 
 ## API
 
@@ -71,11 +57,18 @@ Access tokens are scoped — you can grant an agent access to contacts but not s
 
 Since responses contain encrypted fields, you can run the included [decrypt proxy](./server/scripts/decrypt-proxy.ts) locally to transparently decrypt API responses before they reach your agent.
 
+## Encryption
+
+Most fields are encrypted on-device using AES-256-GCM before they leave
+your machine.
+
+See [SECURITY.md](./SECURITY.md) for the full breakdown.
+
 ## Getting started
 
 ### 1. Deploy the server
 
-The server is a Next.js app that can be deployed with Docker (recommended for self-hosting) or Vercel. See [server/README.md](./server/README.md) for setup instructions and environment variables.
+The server is a Next.js app that can be deployed with Docker or Vercel. See [server/README.md](./server/README.md) for setup instructions and environment variables.
 
 ### 2. Install the desktop app
 
