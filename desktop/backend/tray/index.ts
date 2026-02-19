@@ -106,7 +106,7 @@ function updateTrayMenu(): void {
     }
 
     items.push({
-      label: '  Run Now',
+      label: '  Sync Now',
       click: () => {
         service.runNow()
       },

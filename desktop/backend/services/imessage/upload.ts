@@ -64,7 +64,8 @@ export async function uploadMessages(
     },
   })
   if ('error' in res) {
-    log.error('apiRequest to /api/imessages failed:', res.error)
+    const errorStr = typeof res.error === 'string' ? res.error : JSON.stringify(res.error)
+    log.error('apiRequest to /api/imessages failed:', errorStr.slice(0, 1000))
     return { error: res.error }
   }
 
