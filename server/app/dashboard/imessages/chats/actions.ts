@@ -43,24 +43,24 @@ export async function getChats(
   const hasContactSearch = !!search.contactIndex
   const hasChatIdSearch = !!search.chatId
 
-  const [countResult] = await db.execute<{ count: number }>(sql`
-    SELECT COUNT(DISTINCT COALESCE(chat_id, contact_index))::int as count
+  const countResult = await db.all<{ count: number }>(sql`
+    SELECT COUNT(DISTINCT COALESCE(chat_id, contact_index)) as count
     FROM imessages
     WHERE user_id = ${DEFAULT_USER_ID}
       ${hasContactSearch ? sql`AND contact_index = ${search.contactIndex}` : sql``}
       ${hasChatIdSearch ? sql`AND COALESCE(chat_id, contact_index) LIKE '%' || ${search.chatId} || '%'` : sql``}
   `)
 
-  const total = countResult.count
+  const total = countResult[0]?.count ?? 0
   const hasSearch = hasContactSearch || hasChatIdSearch
 
-  const result = await db.execute<{
+  const result = await db.all<{
     chat_id: string
     text: string | null
-    date: Date | null
-    is_from_me: boolean
+    date: number | null
+    is_from_me: number
     participant_count: number
-    participants: string[]
+    participants: string
     message_count: number
   }>(sql`
     WITH ranked_messages AS (
@@ -84,7 +84,7 @@ export async function getChats(
         COALESCE(chat_id, contact_index) as effective_chat_id,
         COUNT(DISTINCT contact_index) as participant_count,
         COUNT(*) as message_count,
-        ARRAY_AGG(DISTINCT contact) as participants
+        json_group_array(DISTINCT contact) as participants
       FROM imessages
       WHERE user_id = ${DEFAULT_USER_ID}
       GROUP BY COALESCE(chat_id, contact_index)
@@ -114,14 +114,14 @@ export async function getChats(
   `)
 
   return {
-    chats: [...result].map((row) => ({
+    chats: result.map((row) => ({
       chatId: row.chat_id,
       isGroupChat: row.chat_id.startsWith("chat"),
       lastMessageText: row.text,
-      lastMessageDate: row.date,
-      lastMessageFromMe: row.is_from_me,
+      lastMessageDate: row.date ? new Date(row.date) : null,
+      lastMessageFromMe: Boolean(row.is_from_me),
       participantCount: Number(row.participant_count),
-      participants: row.participants,
+      participants: JSON.parse(row.participants) as string[],
       messageCount: Number(row.message_count),
     })),
     total,
@@ -165,7 +165,6 @@ export async function getContactLookup(): Promise<ContactLookup> {
       phoneNumbers = JSON.parse(contact.phoneNumbers)
     } catch {}
 
-    // Map emails to contact name
     for (const email of emails) {
       const normalizedEmail = email.toLowerCase().trim()
       if (normalizedEmail) {
@@ -173,7 +172,6 @@ export async function getContactLookup(): Promise<ContactLookup> {
       }
     }
 
-    // Map phone numbers to contact name (normalized)
     for (const phone of phoneNumbers) {
       const normalizedPhone = normalizePhone(phone)
       if (normalizedPhone) {
@@ -216,14 +214,13 @@ export async function getChatWithMessages(
     unauthorized()
   }
 
-  // First get the chat info
-  const chatResult = await db.execute<{
+  const chatResult = await db.all<{
     chat_id: string
     text: string | null
-    date: Date | null
-    is_from_me: boolean
+    date: number | null
+    is_from_me: number
     participant_count: number
-    participants: string[]
+    participants: string
     message_count: number
   }>(sql`
     WITH ranked_messages AS (
@@ -245,7 +242,7 @@ export async function getChatWithMessages(
         COALESCE(chat_id, contact_index) as effective_chat_id,
         COUNT(DISTINCT contact_index) as participant_count,
         COUNT(*) as message_count,
-        ARRAY_AGG(DISTINCT contact) as participants
+        json_group_array(DISTINCT contact) as participants
       FROM imessages
       WHERE user_id = ${DEFAULT_USER_ID}
       GROUP BY COALESCE(chat_id, contact_index)
@@ -265,20 +262,19 @@ export async function getChatWithMessages(
     LIMIT 1
   `)
 
-  const chatRow = [...chatResult][0]
+  const chatRow = chatResult[0]
   if (!chatRow) {
     return null
   }
 
-  // Get messages for this chat
-  const messagesResult = await db.execute<{
+  const messagesResult = await db.all<{
     id: string
     guid: string
     text: string | null
     contact: string
-    date: Date | null
-    is_from_me: boolean
-    has_attachments: boolean
+    date: number | null
+    is_from_me: number
+    has_attachments: number
   }>(sql`
     SELECT
       id,
@@ -299,19 +295,19 @@ export async function getChatWithMessages(
     chatId: chatRow.chat_id,
     isGroupChat: chatRow.chat_id.startsWith("chat"),
     lastMessageText: chatRow.text,
-    lastMessageDate: chatRow.date,
-    lastMessageFromMe: chatRow.is_from_me,
+    lastMessageDate: chatRow.date ? new Date(chatRow.date) : null,
+    lastMessageFromMe: Boolean(chatRow.is_from_me),
     participantCount: Number(chatRow.participant_count),
-    participants: chatRow.participants,
+    participants: JSON.parse(chatRow.participants) as string[],
     messageCount: Number(chatRow.message_count),
-    messages: [...messagesResult].map((m) => ({
+    messages: messagesResult.map((m) => ({
       id: m.id,
       guid: m.guid,
       text: m.text,
       contact: m.contact,
-      date: m.date,
-      isFromMe: m.is_from_me,
-      hasAttachments: m.has_attachments,
+      date: m.date ? new Date(m.date) : null,
+      isFromMe: Boolean(m.is_from_me),
+      hasAttachments: Boolean(m.has_attachments),
     })),
   }
 }
@@ -325,24 +321,23 @@ export async function getChatMessages(
     unauthorized()
   }
 
-  // Get total count for this chat
-  const [countResult] = await db.execute<{ count: number }>(sql`
-    SELECT COUNT(*)::int as count
+  const countResult = await db.all<{ count: number }>(sql`
+    SELECT COUNT(*) as count
     FROM imessages
     WHERE user_id = ${DEFAULT_USER_ID}
       AND COALESCE(chat_id, contact_index) = ${chatId}
   `)
 
-  const total = countResult.count
+  const total = countResult[0]?.count ?? 0
 
-  const messagesResult = await db.execute<{
+  const messagesResult = await db.all<{
     id: string
     guid: string
     text: string | null
     contact: string
-    date: Date | null
-    is_from_me: boolean
-    has_attachments: boolean
+    date: number | null
+    is_from_me: number
+    has_attachments: number
   }>(sql`
     SELECT
       id,
@@ -360,14 +355,14 @@ export async function getChatMessages(
     OFFSET ${offset}
   `)
 
-  const messages = [...messagesResult].map((m) => ({
+  const messages = messagesResult.map((m) => ({
     id: m.id,
     guid: m.guid,
     text: m.text,
     contact: m.contact,
-    date: m.date,
-    isFromMe: m.is_from_me,
-    hasAttachments: m.has_attachments,
+    date: m.date ? new Date(m.date) : null,
+    isFromMe: Boolean(m.is_from_me),
+    hasAttachments: Boolean(m.has_attachments),
   }))
 
   return {

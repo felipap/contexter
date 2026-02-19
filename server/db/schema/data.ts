@@ -1,25 +1,21 @@
 import {
-  boolean,
   index,
   integer,
-  jsonb,
-  pgTable,
+  sqliteTable,
   text,
-  timestamp,
   unique,
-  uuid,
-} from "drizzle-orm/pg-core"
+} from "drizzle-orm/sqlite-core"
 
 // Encrypted: data
-export const Screenshots = pgTable("screenshots", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+export const Screenshots = sqliteTable("screenshots", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
   // encrypted
   data: text("data").notNull(),
   width: integer("width").notNull(),
   height: integer("height").notNull(),
   sizeBytes: integer("size_bytes").notNull(),
-  capturedAt: timestamp("captured_at").defaultNow().notNull(),
+  capturedAt: integer("captured_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
 })
 
 export type NewScreenshot = typeof Screenshots.$inferInsert
@@ -31,14 +27,14 @@ export type Screenshot = typeof Screenshots.$inferSelect
 //
 
 // Encrypted: text, subject, contact, chatName
-export const iMessages = pgTable(
+export const iMessages = sqliteTable(
   "imessages",
   {
-    id: uuid("id").defaultRandom().primaryKey(),
+    id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
     userId: text("user_id").notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
+    createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
     deviceId: text("device_id").notNull(),
-    syncTime: timestamp("sync_time").notNull(),
+    syncTime: integer("sync_time", { mode: "timestamp" }).notNull(),
     //
     messageId: integer("message_id").notNull(),
     guid: text("guid").notNull().unique(),
@@ -50,12 +46,12 @@ export const iMessages = pgTable(
     contactIndex: text("contact_index"),
     // encrypted
     subject: text("subject"),
-    date: timestamp("date"),
-    isFromMe: boolean("is_from_me").notNull(),
-    isRead: boolean("is_read").notNull(),
-    isSent: boolean("is_sent").notNull(),
-    isDelivered: boolean("is_delivered").notNull(),
-    hasAttachments: boolean("has_attachments").notNull(),
+    date: integer("date", { mode: "timestamp" }),
+    isFromMe: integer("is_from_me", { mode: "boolean" }).notNull(),
+    isRead: integer("is_read", { mode: "boolean" }).notNull(),
+    isSent: integer("is_sent", { mode: "boolean" }).notNull(),
+    isDelivered: integer("is_delivered", { mode: "boolean" }).notNull(),
+    hasAttachments: integer("has_attachments", { mode: "boolean" }).notNull(),
     service: text("service").notNull(),
     chatId: text("chat_id"),
     chatName: text("chat_name"),
@@ -76,11 +72,11 @@ export type Message = typeof iMessages.$inferSelect
 //
 
 // Encrypted: dataBase64
-export const iMessageAttachments = pgTable("imessage_attachments", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+export const iMessageAttachments = sqliteTable("imessage_attachments", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
   deviceId: text("device_id").notNull(),
-  syncTime: timestamp("sync_time").notNull(),
+  syncTime: integer("sync_time", { mode: "timestamp" }).notNull(),
   userId: text("user_id").notNull(),
   //
   messageGuid: text("message_guid").notNull(),
@@ -88,7 +84,7 @@ export const iMessageAttachments = pgTable("imessage_attachments", {
   filename: text("filename").notNull(),
   mimeType: text("mime_type").notNull(),
   size: integer("size"),
-  isImage: boolean("is_image"),
+  isImage: integer("is_image", { mode: "boolean" }),
   // encrypted
   dataBase64: text("data_base64"),
 })
@@ -102,17 +98,17 @@ export type IMessageAttachment = typeof iMessageAttachments.$inferSelect
 //
 
 // Encrypted: firstName, lastName, organization, emails, phoneNumbers
-export const AppleContacts = pgTable(
+export const AppleContacts = sqliteTable(
   "apple_contacts",
   {
-    id: uuid("id").defaultRandom().primaryKey(),
+    id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
     userId: text("user_id").notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+    updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
     deviceId: text("device_id").notNull(),
-    syncTime: timestamp("sync_time").notNull(),
+    syncTime: integer("sync_time", { mode: "timestamp" }).notNull(),
     //
-    contactId: text("contact_id").notNull(), // The unique ID from the contacts database
+    contactId: text("contact_id").notNull(),
     // encrypted
     firstName: text("first_name").notNull(),
     // encrypted
@@ -127,18 +123,14 @@ export const AppleContacts = pgTable(
     emails: text("emails").notNull(),
     // encrypted, JSON array
     phoneNumbers: text("phone_numbers").notNull(),
-    // HMAC blind indexes for phone search (one per phone number)
-    phoneNumbersIndex: text("phone_numbers_index").array(),
+    // HMAC blind indexes for phone search (one per phone number), stored as JSON array
+    phoneNumbersIndex: text("phone_numbers_index", { mode: "json" }).$type<string[] | null>(),
   },
   (table) => [
     unique("contacts_user_contact_unique").on(table.userId, table.contactId),
     index("contacts_user_id_idx").on(table.userId),
     index("contacts_first_name_index_idx").on(table.firstNameIndex),
     index("contacts_last_name_index_idx").on(table.lastNameIndex),
-    index("contacts_phone_numbers_index_idx").using(
-      "gin",
-      table.phoneNumbersIndex
-    ),
   ]
 )
 
@@ -155,18 +147,18 @@ export type LocationMetadata = {
 }
 
 // Encrypted: latitude, longitude
-export const Locations = pgTable(
+export const Locations = sqliteTable(
   "locations",
   {
     id: text("id").primaryKey(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    timestamp: timestamp("timestamp").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+    timestamp: integer("timestamp", { mode: "timestamp" }).notNull(),
     // encrypted
     latitude: text("latitude").notNull(),
     // encrypted
     longitude: text("longitude").notNull(),
     accuracy: integer("accuracy"),
-    metadata: jsonb("metadata").$type<LocationMetadata>(),
+    metadata: text("metadata", { mode: "json" }).$type<LocationMetadata>(),
   },
   (table) => [index("locations_timestamp_idx").on(table.timestamp)]
 )
@@ -180,13 +172,13 @@ export type Location = typeof Locations.$inferSelect
 //
 
 // Encrypted: text, chatName, senderName, senderPhoneNumber
-export const WhatsappMessages = pgTable(
+export const WhatsappMessages = sqliteTable(
   "whatsapp_messages",
   {
-    id: uuid("id").defaultRandom().primaryKey(),
+    id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
     userId: text("user_id").notNull(),
-    syncTime: timestamp("sync_time").notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
+    syncTime: integer("sync_time", { mode: "timestamp" }).notNull(),
+    createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
     deviceId: text("device_id").notNull(),
     //
     messageId: text("message_id").notNull().unique(),
@@ -207,9 +199,9 @@ export const WhatsappMessages = pgTable(
     senderPhoneNumber: text("sender_phone_number"),
     // HMAC blind index
     senderPhoneNumberIndex: text("sender_phone_number_index"),
-    timestamp: timestamp("timestamp").notNull(),
-    isFromMe: boolean("is_from_me").notNull(),
-    isGroupChat: boolean("is_group_chat").notNull(),
+    timestamp: integer("timestamp", { mode: "timestamp" }).notNull(),
+    isFromMe: integer("is_from_me", { mode: "boolean" }).notNull(),
+    isGroupChat: integer("is_group_chat", { mode: "boolean" }).notNull(),
   },
   (table) => [
     index("whatsapp_messages_chat_id_idx").on(table.chatId),
@@ -232,31 +224,31 @@ export type WhatsappMessage = typeof WhatsappMessages.$inferSelect
 //
 
 // Encrypted: text
-export const MacosStickies = pgTable("macos_stickies", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+export const MacosStickies = sqliteTable("macos_stickies", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
   deviceId: text("device_id").notNull(),
   // encrypted
   stickyId: text("sticky_id").notNull().unique(),
   text: text("text").notNull(),
-  syncTime: timestamp("sync_time").notNull(),
+  syncTime: integer("sync_time", { mode: "timestamp" }).notNull(),
 })
 
 export type NewMacosSticky = typeof MacosStickies.$inferInsert
 export type MacosSticky = typeof MacosStickies.$inferSelect
 
 // Encrypted: text
-export const WinStickyNotes = pgTable("win_sticky_notes", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+export const WinStickyNotes = sqliteTable("win_sticky_notes", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
   deviceId: text("device_id").notNull(),
   //
   stickyId: text("sticky_id").notNull().unique(),
   // encrypted
   text: text("text").notNull(),
-  syncTime: timestamp("sync_time").notNull(),
+  syncTime: integer("sync_time", { mode: "timestamp" }).notNull(),
 })
 
 export type NewWinStickyNote = typeof WinStickyNotes.$inferInsert

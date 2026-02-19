@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url)
   const sender = searchParams.get("sender") || ""
-  const senderPhoneNumberIndex = searchParams.get("senderPhoneNumberIndex") // HMAC blind index for encrypted sender_phone_number
+  const senderPhoneNumberIndex = searchParams.get("senderPhoneNumberIndex")
   const limitParam = searchParams.get("limit") || "20"
   const offsetParam = searchParams.get("offset")
 
@@ -44,7 +44,6 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  // Use same normalization as desktop when building phone index (see search-normalize.ts)
   const normalizedSender = normalizePhoneForSearch(sender).replace(/\D/g, "")
 
   if (normalizedSender.length === 0 && !senderPhoneNumberIndex) {
@@ -100,7 +99,6 @@ interface Chat {
   messageCount: number
 }
 
-// Search by HMAC blind index on senderPhoneNumberIndex (exact match on encrypted field)
 async function searchChatsByPhoneIndex(
   senderPhoneNumberIndex: string,
   limit: number,
@@ -109,25 +107,25 @@ async function searchChatsByPhoneIndex(
 ): Promise<{ chats: Chat[]; total: number }> {
   const tsFilter = cutoff ? sql`AND timestamp >= ${cutoff}` : sql``
 
-  const [countResult] = await db.execute<{ count: number }>(sql`
-    SELECT COUNT(DISTINCT chat_id)::int as count
+  const countResult = await db.all<{ count: number }>(sql`
+    SELECT COUNT(DISTINCT chat_id) as count
     FROM whatsapp_messages
     WHERE user_id = ${DEFAULT_USER_ID}
       AND sender_phone_number_index = ${senderPhoneNumberIndex}
       ${tsFilter}
   `)
 
-  const total = countResult.count
+  const total = countResult[0]?.count ?? 0
 
-  const result = await db.execute<{
+  const result = await db.all<{
     chat_id: string
     chat_name: string | null
     text: string | null
-    timestamp: Date | null
-    is_from_me: boolean
+    timestamp: number | null
+    is_from_me: number
     participant_count: number
-    is_group_chat: boolean
-    participants: string[]
+    is_group_chat: number
+    participants: string
     message_count: number
   }>(sql`
     WITH ranked_messages AS (
@@ -151,8 +149,8 @@ async function searchChatsByPhoneIndex(
         chat_id,
         COUNT(DISTINCT sender_jid) as participant_count,
         COUNT(*) as message_count,
-        BOOL_OR(is_group_chat) as is_group_chat,
-        ARRAY_AGG(DISTINCT sender_jid) as participants
+        MAX(is_group_chat) as is_group_chat,
+        json_group_array(DISTINCT sender_jid) as participants
       FROM whatsapp_messages
       WHERE user_id = ${DEFAULT_USER_ID}
         ${tsFilter}
@@ -183,22 +181,9 @@ async function searchChatsByPhoneIndex(
     LIMIT ${limit} OFFSET ${offset}
   `)
 
-  const chats: Chat[] = [...result].map((row) => ({
-    chatId: row.chat_id,
-    chatName: row.chat_name,
-    isGroupChat: row.is_group_chat,
-    lastMessageText: row.text,
-    lastMessageDate: row.timestamp,
-    lastMessageFromMe: row.is_from_me,
-    participantCount: Number(row.participant_count),
-    participants: row.participants,
-    messageCount: Number(row.message_count),
-  }))
-
-  return { chats, total }
+  return { chats: parseChats(result), total }
 }
 
-// Partial match on sender column (not encrypted)
 async function searchChatsBySender(
   normalizedSender: string,
   limit: number,
@@ -207,25 +192,25 @@ async function searchChatsBySender(
 ): Promise<{ chats: Chat[]; total: number }> {
   const tsFilter = cutoff ? sql`AND timestamp >= ${cutoff}` : sql``
 
-  const [countResult] = await db.execute<{ count: number }>(sql`
-    SELECT COUNT(DISTINCT chat_id)::int as count
+  const countResult = await db.all<{ count: number }>(sql`
+    SELECT COUNT(DISTINCT chat_id) as count
     FROM whatsapp_messages
     WHERE user_id = ${DEFAULT_USER_ID}
-      AND REGEXP_REPLACE(sender_jid, '[^0-9]', '', 'g') LIKE '%' || ${normalizedSender} || '%'
+      AND REPLACE(REPLACE(REPLACE(REPLACE(sender_jid, '@s.whatsapp.net', ''), '-', ''), ' ', ''), '+', '') LIKE '%' || ${normalizedSender} || '%'
       ${tsFilter}
   `)
 
-  const total = countResult.count
+  const total = countResult[0]?.count ?? 0
 
-  const result = await db.execute<{
+  const result = await db.all<{
     chat_id: string
     chat_name: string | null
     text: string | null
-    timestamp: Date | null
-    is_from_me: boolean
+    timestamp: number | null
+    is_from_me: number
     participant_count: number
-    is_group_chat: boolean
-    participants: string[]
+    is_group_chat: number
+    participants: string
     message_count: number
   }>(sql`
     WITH ranked_messages AS (
@@ -249,8 +234,8 @@ async function searchChatsBySender(
         chat_id,
         COUNT(DISTINCT sender_jid) as participant_count,
         COUNT(*) as message_count,
-        BOOL_OR(is_group_chat) as is_group_chat,
-        ARRAY_AGG(DISTINCT sender_jid) as participants
+        MAX(is_group_chat) as is_group_chat,
+        json_group_array(DISTINCT sender_jid) as participants
       FROM whatsapp_messages
       WHERE user_id = ${DEFAULT_USER_ID}
         ${tsFilter}
@@ -260,7 +245,7 @@ async function searchChatsBySender(
       SELECT DISTINCT chat_id
       FROM whatsapp_messages
       WHERE user_id = ${DEFAULT_USER_ID}
-        AND REGEXP_REPLACE(sender_jid, '[^0-9]', '', 'g') LIKE '%' || ${normalizedSender} || '%'
+        AND REPLACE(REPLACE(REPLACE(REPLACE(sender_jid, '@s.whatsapp.net', ''), '-', ''), ' ', ''), '+', '') LIKE '%' || ${normalizedSender} || '%'
         ${tsFilter}
     )
     SELECT
@@ -281,17 +266,29 @@ async function searchChatsBySender(
     LIMIT ${limit} OFFSET ${offset}
   `)
 
-  const chats: Chat[] = [...result].map((row) => ({
+  return { chats: parseChats(result), total }
+}
+
+function parseChats(rows: Array<{
+  chat_id: string
+  chat_name: string | null
+  text: string | null
+  timestamp: number | null
+  is_from_me: number
+  participant_count: number
+  is_group_chat: number
+  participants: string
+  message_count: number
+}>): Chat[] {
+  return rows.map((row) => ({
     chatId: row.chat_id,
     chatName: row.chat_name,
-    isGroupChat: row.is_group_chat,
+    isGroupChat: Boolean(row.is_group_chat),
     lastMessageText: row.text,
-    lastMessageDate: row.timestamp,
-    lastMessageFromMe: row.is_from_me,
+    lastMessageDate: row.timestamp ? new Date(row.timestamp) : null,
+    lastMessageFromMe: Boolean(row.is_from_me),
     participantCount: Number(row.participant_count),
-    participants: row.participants,
+    participants: JSON.parse(row.participants) as string[],
     messageCount: Number(row.message_count),
   }))
-
-  return { chats, total }
 }

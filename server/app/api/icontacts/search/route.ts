@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
         ? eq(AppleContacts.lastNameIndex, lastNameIndex)
         : undefined,
       phoneNumberIndex
-        ? sql`${phoneNumberIndex} = ANY(${AppleContacts.phoneNumbersIndex})`
+        ? sql`EXISTS (SELECT 1 FROM json_each(${AppleContacts.phoneNumbersIndex}) WHERE value = ${phoneNumberIndex})`
         : undefined
     ),
   ]

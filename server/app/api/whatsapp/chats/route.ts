@@ -88,15 +88,15 @@ async function getLatestChats(
     ? sql`AND timestamp >= ${cutoff}`
     : sql``
 
-  const result = await db.execute<{
+  const result = await db.all<{
     chat_id: string
     chat_name: string | null
     text: string | null
-    timestamp: Date | null
-    is_from_me: boolean
+    timestamp: number | null
+    is_from_me: number
     participant_count: number
-    is_group_chat: boolean
-    participants: string[]
+    is_group_chat: number
+    participants: string
     message_count: number
   }>(sql`
     WITH ranked_messages AS (
@@ -120,8 +120,8 @@ async function getLatestChats(
         chat_id,
         COUNT(DISTINCT sender_jid) as participant_count,
         COUNT(*) as message_count,
-        BOOL_OR(is_group_chat) as is_group_chat,
-        ARRAY_AGG(DISTINCT sender_jid) as participants
+        MAX(is_group_chat) as is_group_chat,
+        json_group_array(DISTINCT sender_jid) as participants
       FROM whatsapp_messages
       WHERE user_id = ${DEFAULT_USER_ID}
         ${tsFilter}
@@ -144,15 +144,15 @@ async function getLatestChats(
     LIMIT ${limit} OFFSET ${offset}
   `)
 
-  const chats: Chat[] = [...result].map((row) => ({
+  const chats: Chat[] = result.map((row) => ({
     chatId: row.chat_id,
     chatName: row.chat_name,
-    isGroupChat: row.is_group_chat,
+    isGroupChat: Boolean(row.is_group_chat),
     lastMessageText: row.text,
-    lastMessageDate: row.timestamp,
-    lastMessageFromMe: row.is_from_me,
+    lastMessageDate: row.timestamp ? new Date(row.timestamp) : null,
+    lastMessageFromMe: Boolean(row.is_from_me),
     participantCount: Number(row.participant_count),
-    participants: row.participants,
+    participants: JSON.parse(row.participants) as string[],
     messageCount: Number(row.message_count),
   }))
 

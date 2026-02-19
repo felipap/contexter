@@ -33,7 +33,7 @@ export async function getStickies(
   const offset = (page - 1) * pageSize
 
   const [countResult] = await db
-    .select({ count: sql<number>`count(*)::int` })
+    .select({ count: sql<number>`count(*)` })
     .from(MacosStickies)
 
   const total = countResult.count

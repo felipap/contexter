@@ -8,8 +8,9 @@ if (!DATABASE_URL) {
 export default defineConfig({
   schema: "./db/schema/index.ts",
   out: "./drizzle",
-  dialect: "postgresql",
+  dialect: "turso",
   dbCredentials: {
     url: DATABASE_URL,
+    authToken: process.env.DATABASE_AUTH_TOKEN,
   },
 })

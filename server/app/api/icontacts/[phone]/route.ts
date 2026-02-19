@@ -31,14 +31,14 @@ export async function GET(request: NextRequest) {
 
   if (phoneNumberIndex) {
     conditions.push(
-      sql`${phoneNumberIndex} = ANY(${AppleContacts.phoneNumbersIndex})`
+      sql`EXISTS (SELECT 1 FROM json_each(${AppleContacts.phoneNumbersIndex}) WHERE value = ${phoneNumberIndex})`
     )
   } else {
     const normalizedPhone = decodedPhone.replace(/\D/g, "")
     conditions.push(
       sql`EXISTS (
-        SELECT 1 FROM jsonb_array_elements_text(${AppleContacts.phoneNumbers}::jsonb) AS elem
-        WHERE regexp_replace(elem, '[^0-9]', '', 'g') = ${normalizedPhone}
+        SELECT 1 FROM json_each(${AppleContacts.phoneNumbers}) AS j
+        WHERE REPLACE(REPLACE(REPLACE(REPLACE(j.value, '-', ''), ' ', ''), '+', ''), '(', '') LIKE '%' || ${normalizedPhone} || '%'
       )`
     )
   }

@@ -47,7 +47,7 @@ export async function getWhatsappMessages(
   const offset = (page - 1) * pageSize
 
   const [countResult] = await db
-    .select({ count: sql<number>`count(*)::int` })
+    .select({ count: sql<number>`count(*)` })
     .from(WhatsappMessages)
     .where(eq(WhatsappMessages.userId, DEFAULT_USER_ID))
 

@@ -164,7 +164,7 @@ async function insertContactsInBatches(
           phoneNumbersIndex: sql`excluded.phone_numbers_index`,
           deviceId: sql`excluded.device_id`,
           syncTime: sql`excluded.sync_time`,
-          updatedAt: sql`now()`,
+          updatedAt: new Date(),
         },
       })
       .returning()

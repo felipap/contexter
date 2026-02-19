@@ -63,13 +63,13 @@ export async function getContacts(
           ? eq(AppleContacts.lastNameIndex, lastNameIndex)
           : undefined,
         hasPhoneSearch
-          ? sql`${phoneNumberIndex} = ANY(${AppleContacts.phoneNumbersIndex})`
+          ? sql`EXISTS (SELECT 1 FROM json_each(${AppleContacts.phoneNumbersIndex}) WHERE value = ${phoneNumberIndex})`
           : undefined
       )
     : undefined
 
   const [countResult] = await db
-    .select({ count: sql<number>`count(*)::int` })
+    .select({ count: sql<number>`count(*)` })
     .from(AppleContacts)
     .where(searchCondition)
 

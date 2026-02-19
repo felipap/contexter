@@ -18,11 +18,12 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 # Placeholder env vars so Next.js build can collect page data.
 # Real values are provided at runtime via docker-compose.
-ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder"
+ENV DATABASE_URL="file:./data/placeholder.db"
 ENV CRON_SECRET="build-placeholder"
 ENV DASHBOARD_SECRET="build-placeholder"
 ENV API_WRITE_SECRET="build-placeholder"
 
+RUN mkdir -p data
 RUN npm run build
 
 # --- Runtime ---
@@ -47,6 +48,8 @@ COPY --from=builder /app/drizzle.config.ts ./drizzle.config.ts
 COPY --from=builder /app/db ./db
 
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
+
+RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
 
 EXPOSE 3000
 

@@ -1,12 +1,10 @@
 import {
-  bigint,
   index,
   integer,
-  pgTable,
+  sqliteTable,
   text,
-  timestamp,
-  uuid,
-} from "drizzle-orm/pg-core"
+  uniqueIndex,
+} from "drizzle-orm/sqlite-core"
 
 export * from "./data"
 
@@ -17,17 +15,17 @@ export const DEFAULT_USER_ID = "default"
 //
 //
 
-export const AccessTokens = pgTable("access_tokens", {
-  id: uuid("id").defaultRandom().primaryKey(),
+export const AccessTokens = sqliteTable("access_tokens", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   name: text("name").notNull(),
   tokenHash: text("token_hash").notNull().unique(),
-  tokenPrefix: text("token_prefix").notNull(), // e.g. "ctx_a1b2c3d4" for display
-  scopes: text("scopes").array().notNull().default([]),
-  dataWindowMs: bigint("data_window_ms", { mode: "number" }), // null = unlimited, ms lookback window
-  expiresAt: timestamp("expires_at"),
-  lastUsedAt: timestamp("last_used_at"),
-  revokedAt: timestamp("revoked_at"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  tokenPrefix: text("token_prefix").notNull(),
+  scopes: text("scopes", { mode: "json" }).$type<string[]>().notNull().default([]),
+  dataWindowMs: integer("data_window_ms"),
+  expiresAt: integer("expires_at", { mode: "timestamp" }),
+  lastUsedAt: integer("last_used_at", { mode: "timestamp" }),
+  revokedAt: integer("revoked_at", { mode: "timestamp" }),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
 })
 
 export type NewAccessToken = typeof AccessTokens.$inferInsert
@@ -38,19 +36,19 @@ export type AccessToken = typeof AccessTokens.$inferSelect
 //
 //
 
-export const WriteLogs = pgTable(
+export const WriteLogs = sqliteTable(
   "write_logs",
   {
-    id: uuid("id").defaultRandom().primaryKey(),
-    type: text("type").notNull(), // 'screenshot' | 'imessage' | 'attachment'
+    id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+    type: text("type").notNull(),
     description: text("description").notNull(),
     count: integer("count").notNull().default(1),
-    metadata: text("metadata"), // JSON string for extra info
-    accessTokenId: uuid("access_token_id").references(() => AccessTokens.id, {
+    metadata: text("metadata"),
+    accessTokenId: text("access_token_id").references(() => AccessTokens.id, {
       onDelete: "set null",
     }),
     tokenPrefix: text("token_prefix"),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
+    createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
   },
   (table) => [index("write_logs_created_at_idx").on(table.createdAt)]
 )
@@ -63,19 +61,19 @@ export type WriteLog = typeof WriteLogs.$inferSelect
 //
 //
 
-export const ReadLogs = pgTable(
+export const ReadLogs = sqliteTable(
   "read_logs",
   {
-    id: uuid("id").defaultRandom().primaryKey(),
-    type: text("type").notNull(), // 'screenshot' | 'imessage' | 'chat' | 'contact' | 'stats'
+    id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+    type: text("type").notNull(),
     description: text("description").notNull(),
-    count: integer("count"), // number of items returned
-    metadata: text("metadata"), // JSON string for extra info
-    accessTokenId: uuid("access_token_id").references(() => AccessTokens.id, {
+    count: integer("count"),
+    metadata: text("metadata"),
+    accessTokenId: text("access_token_id").references(() => AccessTokens.id, {
       onDelete: "set null",
     }),
     tokenPrefix: text("token_prefix"),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
+    createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
   },
   (table) => [index("read_logs_created_at_idx").on(table.createdAt)]
 )
@@ -88,14 +86,14 @@ export type ReadLog = typeof ReadLogs.$inferSelect
 //
 //
 
-export const LoginAttempts = pgTable(
+export const LoginAttempts = sqliteTable(
   "login_attempts",
   {
-    id: uuid("id").defaultRandom().primaryKey(),
+    id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
     ip: text("ip").notNull(),
-    attemptedAt: timestamp("attempted_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    attemptedAt: integer("attempted_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
   },
   (table) => [
     index("login_attempts_ip_idx").on(table.ip),

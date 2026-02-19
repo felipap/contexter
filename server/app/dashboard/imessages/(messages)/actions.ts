@@ -112,7 +112,7 @@ export async function getMessages(
   const offset = (page - 1) * pageSize
 
   const [countResult] = await db
-    .select({ count: sql<number>`count(*)::int` })
+    .select({ count: sql<number>`count(*)` })
     .from(iMessages)
     .where(eq(iMessages.userId, DEFAULT_USER_ID))
 

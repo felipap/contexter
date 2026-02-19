@@ -34,7 +34,7 @@ export async function getScreenshots(
   const offset = (page - 1) * pageSize
 
   const [countResult] = await db
-    .select({ count: sql<number>`count(*)::int` })
+    .select({ count: sql<number>`count(*)` })
     .from(Screenshots)
 
   const total = countResult.count

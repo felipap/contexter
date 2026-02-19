@@ -59,14 +59,14 @@ async function getChatDetails(
   const isGroup = isGroupChat(chatId)
   const dateFilter = cutoff ? sql`AND date >= ${cutoff}` : sql``
 
-  const result = await db.execute<{
+  const result = await db.all<{
     chat_id: string
     text: string | null
-    date: Date | null
-    is_read: boolean
-    is_from_me: boolean
+    date: number | null
+    is_read: number
+    is_from_me: number
     participant_count: number
-    participants: string[]
+    participants: string
     message_count: number
   }>(sql`
     WITH chat_messages AS (
@@ -89,7 +89,7 @@ async function getChatDetails(
       SELECT
         COUNT(DISTINCT contact_index) as participant_count,
         COUNT(*) as message_count,
-        ARRAY_AGG(DISTINCT contact) as participants
+        json_group_array(DISTINCT contact) as participants
       FROM imessages
       WHERE user_id = ${DEFAULT_USER_ID}
         AND (
@@ -111,7 +111,7 @@ async function getChatDetails(
     WHERE cm.rn = 1
   `)
 
-  const row = [...result][0]
+  const row = result[0]
   if (!row) {
     return null
   }
@@ -120,11 +120,11 @@ async function getChatDetails(
     chatId: row.chat_id,
     isGroupChat: isGroup,
     lastMessageText: row.text,
-    lastMessageDate: row.date,
-    lastMessageRead: row.is_read,
-    lastMessageFromMe: row.is_from_me,
+    lastMessageDate: row.date ? new Date(row.date) : null,
+    lastMessageRead: Boolean(row.is_read),
+    lastMessageFromMe: Boolean(row.is_from_me),
     participantCount: Number(row.participant_count),
-    participants: row.participants,
+    participants: JSON.parse(row.participants) as string[],
     messageCount: Number(row.message_count),
   }
 }

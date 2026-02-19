@@ -15,13 +15,6 @@ export async function GET(request: NextRequest) {
   const limitParam = searchParams.get("limit") || "20"
   const offsetParam = searchParams.get("offset")
 
-  // if (!limitParam) {
-  //   return Response.json(
-  //     { error: "limit query parameter is required" },
-  //     { status: 400 }
-  //   )
-  // }
-
   const limit = parseInt(limitParam, 10)
   const offset = offsetParam ? parseInt(offsetParam, 10) : 0
 
@@ -87,7 +80,6 @@ interface Chat {
 }
 
 function isGroupChat(chatId: string): boolean {
-  // Group chats typically start with "chat" followed by numbers
   return chatId.startsWith("chat")
 }
 
@@ -100,14 +92,14 @@ async function getLatestChats(
     ? sql`AND date >= ${cutoff}`
     : sql``
 
-  const result = await db.execute<{
+  const result = await db.all<{
     chat_id: string
     text: string | null
-    date: Date | null
-    is_read: boolean
-    is_from_me: boolean
+    date: number | null
+    is_read: number
+    is_from_me: number
     participant_count: number
-    participants: string[]
+    participants: string
     message_count: number
   }>(sql`
     WITH ranked_messages AS (
@@ -133,7 +125,7 @@ async function getLatestChats(
         COALESCE(chat_id, contact_index) as effective_chat_id,
         COUNT(DISTINCT contact_index) as participant_count,
         COUNT(*) as message_count,
-        ARRAY_AGG(DISTINCT contact) as participants
+        json_group_array(DISTINCT contact) as participants
       FROM imessages
       WHERE user_id = ${DEFAULT_USER_ID}
         ${dateFilter}
@@ -155,15 +147,15 @@ async function getLatestChats(
     LIMIT ${limit} OFFSET ${offset}
   `)
 
-  const chats: Chat[] = [...result].map((row) => ({
+  const chats: Chat[] = result.map((row) => ({
     chatId: row.chat_id,
     isGroupChat: isGroupChat(row.chat_id),
     lastMessageText: row.text,
-    lastMessageDate: row.date,
-    lastMessageRead: row.is_read,
-    lastMessageFromMe: row.is_from_me,
+    lastMessageDate: row.date ? new Date(row.date) : null,
+    lastMessageRead: Boolean(row.is_read),
+    lastMessageFromMe: Boolean(row.is_from_me),
     participantCount: Number(row.participant_count),
-    participants: row.participants,
+    participants: JSON.parse(row.participants) as string[],
     messageCount: Number(row.message_count),
   }))
 

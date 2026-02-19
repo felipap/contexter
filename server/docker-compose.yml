@@ -1,31 +1,11 @@
 services:
-  db:
-    image: postgres:16-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: vaulty
-      POSTGRES_PASSWORD: vaulty
-      POSTGRES_DB: vaulty
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U vaulty"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
   app:
     build: .
     restart: unless-stopped
     ports:
       - "3030:3000"
-    depends_on:
-      db:
-        condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://vaulty:vaulty@db:5432/vaulty
+      DATABASE_URL: file:/app/data/vaulty.db
       DASHBOARD_SECRET: ${DASHBOARD_SECRET}
       API_WRITE_SECRET: ${API_WRITE_SECRET}
       CRON_SECRET: ${CRON_SECRET}
@@ -40,6 +20,8 @@ services:
       LOCATION_RETENTION_HOURS: ${LOCATION_RETENTION_HOURS:-0}
       STICKIES_RETENTION_HOURS: ${STICKIES_RETENTION_HOURS:-0}
       LOG_RETENTION_HOURS: ${LOG_RETENTION_HOURS:-0}
+    volumes:
+      - dbdata:/app/data
 
   cron:
     image: alpine:3
@@ -57,4 +39,4 @@ services:
         crond -f -l 2
 
 volumes:
-  pgdata:
+  dbdata:

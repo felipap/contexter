@@ -34,7 +34,7 @@ export async function getLocations(
   const offset = (page - 1) * pageSize
 
   const [countResult] = await db
-    .select({ count: sql<number>`count(*)::int` })
+    .select({ count: sql<number>`count(*)` })
     .from(Locations)
 
   const total = countResult.count

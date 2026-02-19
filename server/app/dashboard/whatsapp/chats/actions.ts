@@ -64,31 +64,31 @@ export async function getWhatsappChats(
     hasChatNameSearch
 
   const filterClauses = sql`
-    ${hasJidSearch ? sql`AND REGEXP_REPLACE(sender_jid, '[^0-9]', '', 'g') LIKE '%' || ${normalizedJid} || '%'` : sql``}
+    ${hasJidSearch ? sql`AND REPLACE(REPLACE(REPLACE(REPLACE(sender_jid, '@s.whatsapp.net', ''), '-', ''), ' ', ''), '+', '') LIKE '%' || ${normalizedJid} || '%'` : sql``}
     ${hasChatIdSearch ? sql`AND chat_id = ${chatId}` : sql``}
     ${hasPhoneSearch ? sql`AND sender_phone_number_index = ${phoneIndex}` : sql``}
     ${hasSenderNameSearch ? sql`AND sender_name_index = ${senderNameIndex}` : sql``}
     ${hasChatNameSearch ? sql`AND chat_name_index = ${chatNameIndex}` : sql``}
   `
 
-  const [countResult] = await db.execute<{ count: number }>(sql`
-    SELECT COUNT(DISTINCT chat_id)::int as count
+  const countResult = await db.all<{ count: number }>(sql`
+    SELECT COUNT(DISTINCT chat_id) as count
     FROM whatsapp_messages
     WHERE user_id = ${DEFAULT_USER_ID}
       ${filterClauses}
   `)
 
-  const total = countResult.count
+  const total = countResult[0]?.count ?? 0
 
-  const result = await db.execute<{
+  const result = await db.all<{
     chat_id: string
     chat_name: string | null
     text: string | null
-    timestamp: Date | null
-    is_from_me: boolean
+    timestamp: number | null
+    is_from_me: number
     participant_count: number
-    is_group_chat: boolean
-    participants: string[]
+    is_group_chat: number
+    participants: string
     message_count: number
   }>(sql`
     WITH ranked_messages AS (
@@ -112,8 +112,8 @@ export async function getWhatsappChats(
         chat_id,
         COUNT(DISTINCT sender_jid) as participant_count,
         COUNT(*) as message_count,
-        BOOL_OR(is_group_chat) as is_group_chat,
-        ARRAY_AGG(DISTINCT sender_jid) as participants
+        MAX(is_group_chat) as is_group_chat,
+        json_group_array(DISTINCT sender_jid) as participants
       FROM whatsapp_messages
       WHERE user_id = ${DEFAULT_USER_ID}
       GROUP BY chat_id
@@ -144,15 +144,15 @@ export async function getWhatsappChats(
   `)
 
   return {
-    chats: [...result].map((row) => ({
+    chats: result.map((row) => ({
       chatId: row.chat_id,
       chatName: row.chat_name,
       lastMessageText: row.text,
-      lastMessageDate: row.timestamp,
-      lastMessageFromMe: row.is_from_me,
-      isGroupChat: row.is_group_chat,
+      lastMessageDate: row.timestamp ? new Date(row.timestamp) : null,
+      lastMessageFromMe: Boolean(row.is_from_me),
+      isGroupChat: Boolean(row.is_group_chat),
       participantCount: Number(row.participant_count),
-      participants: row.participants,
+      participants: JSON.parse(row.participants) as string[],
       messageCount: Number(row.message_count),
     })),
     total,
@@ -188,16 +188,15 @@ export async function getWhatsappChatWithMessages(
     unauthorized()
   }
 
-  // First get the chat info
-  const chatResult = await db.execute<{
+  const chatResult = await db.all<{
     chat_id: string
     chat_name: string | null
     text: string | null
-    timestamp: Date | null
-    is_from_me: boolean
+    timestamp: number | null
+    is_from_me: number
     participant_count: number
-    is_group_chat: boolean
-    participants: string[]
+    is_group_chat: number
+    participants: string
     message_count: number
   }>(sql`
     WITH ranked_messages AS (
@@ -219,8 +218,8 @@ export async function getWhatsappChatWithMessages(
         chat_id,
         COUNT(DISTINCT sender_jid) as participant_count,
         COUNT(*) as message_count,
-        BOOL_OR(is_group_chat) as is_group_chat,
-        ARRAY_AGG(DISTINCT sender_jid) as participants
+        MAX(is_group_chat) as is_group_chat,
+        json_group_array(DISTINCT sender_jid) as participants
       FROM whatsapp_messages
       WHERE user_id = ${DEFAULT_USER_ID}
       GROUP BY chat_id
@@ -242,19 +241,18 @@ export async function getWhatsappChatWithMessages(
     LIMIT 1
   `)
 
-  const chatRow = [...chatResult][0]
+  const chatRow = chatResult[0]
   if (!chatRow) {
     return null
   }
 
-  // Get messages for this chat
-  const messagesResult = await db.execute<{
+  const messagesResult = await db.all<{
     id: string
     text: string | null
     sender_jid: string | null
     sender_name: string | null
-    timestamp: Date
-    is_from_me: boolean
+    timestamp: number
+    is_from_me: number
   }>(sql`
     SELECT
       id,
@@ -273,20 +271,20 @@ export async function getWhatsappChatWithMessages(
   return {
     chatId: chatRow.chat_id,
     chatName: chatRow.chat_name,
-    isGroupChat: chatRow.is_group_chat,
+    isGroupChat: Boolean(chatRow.is_group_chat),
     lastMessageText: chatRow.text,
-    lastMessageDate: chatRow.timestamp,
-    lastMessageFromMe: chatRow.is_from_me,
+    lastMessageDate: chatRow.timestamp ? new Date(chatRow.timestamp) : null,
+    lastMessageFromMe: Boolean(chatRow.is_from_me),
     participantCount: Number(chatRow.participant_count),
-    participants: chatRow.participants,
+    participants: JSON.parse(chatRow.participants) as string[],
     messageCount: Number(chatRow.message_count),
-    messages: [...messagesResult].map((m) => ({
+    messages: messagesResult.map((m) => ({
       id: m.id,
       text: m.text,
       senderJid: m.sender_jid,
       senderName: m.sender_name,
-      timestamp: m.timestamp,
-      isFromMe: m.is_from_me,
+      timestamp: new Date(m.timestamp),
+      isFromMe: Boolean(m.is_from_me),
     })),
   }
 }
@@ -300,23 +298,22 @@ export async function getWhatsappChatMessages(
     unauthorized()
   }
 
-  // Get total count for this chat
-  const [countResult] = await db.execute<{ count: number }>(sql`
-    SELECT COUNT(*)::int as count
+  const countResult = await db.all<{ count: number }>(sql`
+    SELECT COUNT(*) as count
     FROM whatsapp_messages
     WHERE user_id = ${DEFAULT_USER_ID}
       AND chat_id = ${chatId}
   `)
 
-  const total = countResult.count
+  const total = countResult[0]?.count ?? 0
 
-  const messagesResult = await db.execute<{
+  const messagesResult = await db.all<{
     id: string
     text: string | null
     sender_jid: string | null
     sender_name: string | null
-    timestamp: Date
-    is_from_me: boolean
+    timestamp: number
+    is_from_me: number
   }>(sql`
     SELECT
       id,
@@ -333,13 +330,13 @@ export async function getWhatsappChatMessages(
     OFFSET ${offset}
   `)
 
-  const messages = [...messagesResult].map((m) => ({
+  const messages = messagesResult.map((m) => ({
     id: m.id,
     text: m.text,
     senderJid: m.sender_jid,
     senderName: m.sender_name,
-    timestamp: m.timestamp,
-    isFromMe: m.is_from_me,
+    timestamp: new Date(m.timestamp),
+    isFromMe: Boolean(m.is_from_me),
   }))
 
   return {

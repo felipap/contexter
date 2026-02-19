@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
           text: sql`excluded.text`,
           deviceId: sql`excluded.device_id`,
           syncTime: sql`excluded.sync_time`,
-          updatedAt: sql`now()`,
+          updatedAt: new Date(),
         },
       })
       .returning()

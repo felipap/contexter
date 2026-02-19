@@ -29,39 +29,39 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 
   const [screenshotStats] = await db
     .select({
-      count: sql<number>`count(*)::int`,
-      totalBytes: sql<number>`coalesce(sum(${Screenshots.sizeBytes}), 0)::int`,
+      count: sql<number>`count(*)`,
+      totalBytes: sql<number>`coalesce(sum(${Screenshots.sizeBytes}), 0)`,
     })
     .from(Screenshots)
 
   const [messageStats] = await db
     .select({
-      count: sql<number>`count(*)::int`,
+      count: sql<number>`count(*)`,
     })
     .from(iMessages)
     .where(eq(iMessages.userId, DEFAULT_USER_ID))
 
-  const [chatStats] = await db.execute<{ count: number }>(sql`
-    SELECT COUNT(DISTINCT COALESCE(chat_id, contact_index))::int as count
+  const chatStats = await db.all<{ count: number }>(sql`
+    SELECT COUNT(DISTINCT COALESCE(chat_id, contact_index)) as count
     FROM imessages
     WHERE user_id = ${DEFAULT_USER_ID}
   `)
 
-  const [contactStats] = await db.execute<{ count: number }>(sql`
-    SELECT COUNT(DISTINCT contact_index)::int as count
+  const contactStats = await db.all<{ count: number }>(sql`
+    SELECT COUNT(DISTINCT contact_index) as count
     FROM imessages
     WHERE user_id = ${DEFAULT_USER_ID}
   `)
 
   const [locationStats] = await db
     .select({
-      count: sql<number>`count(*)::int`,
+      count: sql<number>`count(*)`,
     })
     .from(Locations)
 
   const [stickiesStats] = await db
     .select({
-      count: sql<number>`count(*)::int`,
+      count: sql<number>`count(*)`,
     })
     .from(MacosStickies)
 
@@ -69,8 +69,8 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     totalScreenshots: screenshotStats.count,
     totalStorageBytes: screenshotStats.totalBytes,
     totalMessages: messageStats.count,
-    totalChats: chatStats.count,
-    totalContacts: contactStats.count,
+    totalChats: chatStats[0]?.count ?? 0,
+    totalContacts: contactStats[0]?.count ?? 0,
     totalLocations: locationStats.count,
     totalStickies: stickiesStats.count,
   }
