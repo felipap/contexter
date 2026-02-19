@@ -2,10 +2,9 @@ import { db } from "@/db"
 import { DEFAULT_USER_ID, iMessages } from "@/db/schema"
 import { logRead } from "@/lib/activity-log"
 import { getDataWindowCutoff, requireReadAuth } from "@/lib/api-auth"
+import { parsePagination } from "@/lib/pagination"
 import { and, eq, gte } from "drizzle-orm"
 import { NextRequest } from "next/server"
-
-const MAX_LIMIT = 50
 
 export async function GET(request: NextRequest) {
   const auth = await requireReadAuth(request, "imessages")
@@ -16,34 +15,14 @@ export async function GET(request: NextRequest) {
   console.log("GET /api/imessages")
 
   const { searchParams } = new URL(request.url)
-  const limitParam = searchParams.get("limit") || "20"
-  const offsetParam = searchParams.get("offset")
+  const pagination = parsePagination(searchParams)
+  if (!pagination.ok) {
+    return pagination.response
+  }
+  const { limit, offset } = pagination.params
+
   const afterParam = searchParams.get("after")
   const contactIndexParam = searchParams.get("contactIndex")
-
-  const limit = parseInt(limitParam, 10)
-  const offset = offsetParam ? parseInt(offsetParam, 10) : 0
-
-  if (isNaN(limit) || limit < 1) {
-    return Response.json(
-      { error: "limit must be a positive integer" },
-      { status: 400 }
-    )
-  }
-
-  if (limit > MAX_LIMIT) {
-    return Response.json(
-      { error: `limit must not exceed ${MAX_LIMIT}` },
-      { status: 400 }
-    )
-  }
-
-  if (isNaN(offset) || offset < 0) {
-    return Response.json(
-      { error: "offset must be a non-negative integer" },
-      { status: 400 }
-    )
-  }
 
   const conditions = [eq(iMessages.userId, DEFAULT_USER_ID)]
 

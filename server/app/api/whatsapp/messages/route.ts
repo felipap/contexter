@@ -3,6 +3,7 @@ import { DEFAULT_USER_ID, WhatsappMessages } from "@/db/schema"
 import { logRead, logWrite } from "@/lib/activity-log"
 import { getDataWindowCutoff, requireReadAuth } from "@/lib/api-auth"
 import { WHATSAPP_ENCRYPTED_COLUMNS } from "@/lib/encryption-schema"
+import { parsePagination } from "@/lib/pagination"
 import { and, eq, gte } from "drizzle-orm"
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
@@ -54,8 +55,6 @@ const PostSchema = z.object({
   messageCount: z.number(),
 })
 
-const MAX_LIMIT = 50
-
 export async function GET(request: NextRequest) {
   const auth = await requireReadAuth(request, "whatsapp")
   if (!auth.authorized) {
@@ -65,34 +64,14 @@ export async function GET(request: NextRequest) {
   console.log("GET /api/whatsapp/messages")
 
   const { searchParams } = new URL(request.url)
-  const limitParam = searchParams.get("limit") || "20"
-  const offsetParam = searchParams.get("offset")
+  const pagination = parsePagination(searchParams)
+  if (!pagination.ok) {
+    return pagination.response
+  }
+  const { limit, offset } = pagination.params
+
   const afterParam = searchParams.get("after")
   const chatIdParam = searchParams.get("chatId")
-
-  const limit = parseInt(limitParam, 10)
-  const offset = offsetParam ? parseInt(offsetParam, 10) : 0
-
-  if (isNaN(limit) || limit < 1) {
-    return Response.json(
-      { error: "limit must be a positive integer" },
-      { status: 400 }
-    )
-  }
-
-  if (limit > MAX_LIMIT) {
-    return Response.json(
-      { error: `limit must not exceed ${MAX_LIMIT}` },
-      { status: 400 }
-    )
-  }
-
-  if (isNaN(offset) || offset < 0) {
-    return Response.json(
-      { error: "offset must be a non-negative integer" },
-      { status: 400 }
-    )
-  }
 
   const conditions = [eq(WhatsappMessages.userId, DEFAULT_USER_ID)]
 
