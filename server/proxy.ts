@@ -29,6 +29,17 @@ if (!API_WRITE_IP_WHITELIST) {
   console.warn("API_WRITE_IP_WHITELIST is not set")
 }
 
+const TRUSTED_PROXY = process.env.TRUSTED_PROXY === "true" || process.env.TRUSTED_PROXY === "1"
+const hasAnyIpWhitelist = !!(DASHBOARD_IP_WHITELIST || API_READ_IP_WHITELIST || API_WRITE_IP_WHITELIST)
+if (hasAnyIpWhitelist && !TRUSTED_PROXY) {
+  console.warn(
+    "⚠️  IP whitelists are configured but TRUSTED_PROXY is not enabled. " +
+    "IP detection from forwarded headers is disabled, so whitelisting will " +
+    "only work on Vercel (via request.ip). Set TRUSTED_PROXY=true if you're " +
+    "behind a reverse proxy that sets X-Real-IP / X-Forwarded-For."
+  )
+}
+
 const API_WRITE_SECRET = process.env.API_WRITE_SECRET || ""
 if (!API_WRITE_SECRET) {
   throw Error("API_WRITE_SECRET is not set")

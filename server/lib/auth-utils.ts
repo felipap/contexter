@@ -28,11 +28,7 @@ export function secureCompare(a: string, b: string): boolean {
   return timingSafeEqual(bufA, bufB)
 }
 
-//
-//
-//
-//
-// Get IP from request
+const TRUSTED_PROXY = process.env.TRUSTED_PROXY === "true" || process.env.TRUSTED_PROXY === "1"
 
 export function getClientIp(request: NextRequest): string | null {
   // @ts-expect-error - request.ip exists on Vercel but not in types
@@ -41,10 +37,15 @@ export function getClientIp(request: NextRequest): string | null {
     return ip
   }
 
-  // Check common headers for real IP (when behind proxy/load balancer) https://vercel.com/docs/headers/request-headers#x-vercel-forwarded-for
+  // Forwarded headers are trivially spoofable by clients. Only trust them when
+  // behind a reverse proxy that overwrites these headers (nginx, Caddy,
+  // Cloudflare, etc). On Vercel, request.ip above is used instead.
+  if (!TRUSTED_PROXY) {
+    return null
+  }
+
   const forwardedFor = request.headers.get("x-vercel-forwarded-for")
   if (forwardedFor) {
-    // x-vercel-forwarded-for can contain multiple IPs, the first is the client
     return forwardedFor.split(",")[0].trim()
   }
 
@@ -53,13 +54,11 @@ export function getClientIp(request: NextRequest): string | null {
     return realIp.trim()
   }
 
-  // Cloudflare
   const cfConnectingIp = request.headers.get("cf-connecting-ip")
   if (cfConnectingIp) {
     return cfConnectingIp.trim()
   }
 
-  // Fallback - this might not work in all environments
   const remoteAddr = request.headers.get("remote-addr")
   if (remoteAddr) {
     return remoteAddr.trim()
