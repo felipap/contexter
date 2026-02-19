@@ -50,17 +50,6 @@ export async function getMessage(
 
   const message = await db.query.iMessages.findFirst({
     where: eq(iMessages.id, id),
-    columns: {
-      id: true,
-      guid: true,
-      text: true,
-      contact: true,
-      date: true,
-      syncTime: true,
-      isFromMe: true,
-      hasAttachments: true,
-      service: true,
-    },
   })
 
   if (!message) {
@@ -69,14 +58,6 @@ export async function getMessage(
 
   const attachments = await db.query.iMessageAttachments.findMany({
     where: eq(iMessageAttachments.messageGuid, message.guid),
-    columns: {
-      id: true,
-      filename: true,
-      mimeType: true,
-      size: true,
-      isImage: true,
-      dataBase64: true,
-    },
   })
 
   return {
@@ -126,17 +107,6 @@ export async function getMessages(
     orderBy: desc(orderByColumn),
     limit: pageSize,
     offset,
-    columns: {
-      id: true,
-      guid: true,
-      text: true,
-      contact: true,
-      date: true,
-      syncTime: true,
-      isFromMe: true,
-      hasAttachments: true,
-      service: true,
-    },
   })
 
   return {

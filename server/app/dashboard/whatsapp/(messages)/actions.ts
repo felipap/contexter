@@ -63,18 +63,6 @@ export async function getWhatsappMessages(
     orderBy: desc(orderByColumn),
     limit: pageSize,
     offset,
-    columns: {
-      id: true,
-      messageId: true,
-      chatId: true,
-      chatName: true,
-      text: true,
-      senderJid: true,
-      senderName: true,
-      timestamp: true,
-      syncTime: true,
-      isFromMe: true,
-    },
   })
 
   return {

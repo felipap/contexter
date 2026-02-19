@@ -43,13 +43,7 @@ export async function getScreenshots(
     orderBy: desc(Screenshots.capturedAt),
     limit: pageSize,
     offset,
-    columns: {
-      id: true,
-      width: true,
-      height: true,
-      sizeBytes: true,
-      capturedAt: true,
-    },
+    columns: { data: false },
   })
 
   return {

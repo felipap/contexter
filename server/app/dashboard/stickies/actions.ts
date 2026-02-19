@@ -42,13 +42,6 @@ export async function getStickies(
     orderBy: desc(MacosStickies.updatedAt),
     limit: pageSize,
     offset,
-    columns: {
-      id: true,
-      stickyId: true,
-      text: true,
-      syncTime: true,
-      updatedAt: true,
-    },
   })
 
   const stickies: StickyNote[] = results.map((row) => ({
