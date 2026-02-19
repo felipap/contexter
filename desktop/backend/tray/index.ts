@@ -7,12 +7,13 @@ import {
   nativeImage,
 } from 'electron'
 import path from 'path'
-import { SERVICES, Service } from '../services'
+import { SERVICES, Service, startAllServices, stopAllServices } from '../services'
 import { getEncryptionKey, store } from '../store'
 import { showMainWindow } from '../windows/settings'
 
 let tray: Tray | null = null
 let updateInterval: NodeJS.Timeout | null = null
+let sleepTimer: NodeJS.Timeout | null = null
 
 const SERVICE_LABELS: Record<string, string> = {
   screenshots: 'Screenshots',
@@ -41,6 +42,85 @@ function formatTimeUntilNextRun(ms: number): string {
     return `${hours}h ${minutes}m`
   }
   return `${minutes}m ${seconds}s`
+}
+
+function getSleepUntil(): Date | null {
+  const stored = store.get('sleepUntil')
+  if (!stored) {
+    return null
+  }
+  return new Date(stored)
+}
+
+function isSleeping(): boolean {
+  const sleepUntil = getSleepUntil()
+  return sleepUntil !== null && sleepUntil > new Date()
+}
+
+function scheduleSleepWakeUp(ms: number): void {
+  if (sleepTimer) {
+    clearTimeout(sleepTimer)
+  }
+  sleepTimer = setTimeout(() => {
+    wakeUp()
+  }, ms)
+}
+
+function sleepFor(ms: number): void {
+  wakeUp()
+  store.set('sleepUntil', new Date(Date.now() + ms).toISOString())
+  stopAllServices()
+  setTrayIcon('tray-paused.png')
+  scheduleSleepWakeUp(ms)
+  updateTrayMenu()
+}
+
+function sleepUntilTomorrow(): void {
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  tomorrow.setHours(8, 0, 0, 0)
+  const ms = tomorrow.getTime() - Date.now()
+  sleepFor(ms)
+}
+
+function wakeUp(): void {
+  if (sleepTimer) {
+    clearTimeout(sleepTimer)
+    sleepTimer = null
+  }
+  if (store.get('sleepUntil')) {
+    store.set('sleepUntil', null)
+    setTrayIcon('tray-default.png')
+    startAllServices()
+    updateTrayMenu()
+  }
+}
+
+function restoreSleepState(): void {
+  const sleepUntil = getSleepUntil()
+  if (!sleepUntil) {
+    return
+  }
+  const remaining = sleepUntil.getTime() - Date.now()
+  if (remaining <= 0) {
+    store.set('sleepUntil', null)
+    return
+  }
+  stopAllServices()
+  setTrayIcon('tray-paused.png')
+  scheduleSleepWakeUp(remaining)
+}
+
+function formatSleepRemaining(): string {
+  const sleepUntil = getSleepUntil()
+  if (!sleepUntil) {
+    return ''
+  }
+  const ms = sleepUntil.getTime() - Date.now()
+  if (ms <= 0) {
+    return ''
+  }
+  return formatTimeUntilNextRun(ms)
 }
 
 function createTrayIcon(): Tray {
@@ -128,7 +208,18 @@ function updateTrayMenu(): void {
   const encryptionKey = getEncryptionKey()
   const canOpenDashboard = Boolean(serverUrl && encryptionKey)
 
+  const sleeping = isSleeping()
+
   const contextMenu = Menu.buildFromTemplate([
+    ...(sleeping
+      ? [
+          {
+            label: `Vaulty Sleeping — ${formatSleepRemaining()} left (click to wake)`,
+            click: () => wakeUp(),
+          },
+          { type: 'separator' as const },
+        ]
+      : []),
     ...serviceMenuItems,
     { type: 'separator' },
     {
@@ -145,6 +236,21 @@ function updateTrayMenu(): void {
         }
       },
     },
+    ...(!sleeping
+      ? [
+          {
+            label: 'Sleep for...',
+            submenu: [
+              { label: '5 minutes', click: () => sleepFor(5 * 60 * 1000) },
+              { label: '10 minutes', click: () => sleepFor(10 * 60 * 1000) },
+              { label: '30 minutes', click: () => sleepFor(30 * 60 * 1000) },
+              { label: '1 hour', click: () => sleepFor(60 * 60 * 1000) },
+              { label: 'Until tomorrow', click: () => sleepUntilTomorrow() },
+            ],
+          },
+        ]
+      : []),
+    { type: 'separator' },
     {
       label: 'Settings',
       accelerator: 'CmdOrCtrl+,',
@@ -178,6 +284,7 @@ function stopTrayUpdates(): void {
 
 export function initTray(): Tray {
   const tray = createTrayIcon()
+  restoreSleepState()
   startTrayUpdates()
   return tray
 }

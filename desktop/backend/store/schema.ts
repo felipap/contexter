@@ -57,6 +57,7 @@ export type StoreSchema = {
     intervalMinutes: number
     nextSyncAfter: string | null
   }
+  sleepUntil: string | null
   syncLogs: SyncLog[]
 }
 
@@ -100,5 +101,6 @@ export const DEFAULT_STATE: StoreSchema = {
     intervalMinutes: 60,
     nextSyncAfter: null,
   },
+  sleepUntil: null,
   syncLogs: [],
 }
