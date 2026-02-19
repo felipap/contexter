@@ -5,6 +5,7 @@ import { NextRequest } from "next/server"
 import { logRead } from "@/lib/activity-log"
 import { getDataWindowCutoff, requireReadAuth } from "@/lib/api-auth"
 import { parsePagination } from "@/lib/pagination"
+import { type Chat, type ChatRow, parseChats } from "../types"
 
 export async function GET(request: NextRequest) {
   const auth = await requireReadAuth(request, "whatsapp")
@@ -45,18 +46,6 @@ export async function GET(request: NextRequest) {
   })
 }
 
-interface Chat {
-  chatId: string
-  chatName: string | null
-  isGroupChat: boolean
-  lastMessageText: string | null
-  lastMessageDate: Date | null
-  lastMessageFromMe: boolean
-  participantCount: number
-  participants: string[]
-  messageCount: number
-}
-
 async function getLatestChats(
   limit: number,
   offset: number,
@@ -66,17 +55,7 @@ async function getLatestChats(
     ? sql`AND timestamp >= ${cutoff}`
     : sql``
 
-  const result = await db.all<{
-    chat_id: string
-    chat_name: string | null
-    text: string | null
-    timestamp: number | null
-    is_from_me: number
-    participant_count: number
-    is_group_chat: number
-    participants: string
-    message_count: number
-  }>(sql`
+  const result = await db.all<ChatRow>(sql`
     WITH ranked_messages AS (
       SELECT
         chat_id,
@@ -122,17 +101,5 @@ async function getLatestChats(
     LIMIT ${limit} OFFSET ${offset}
   `)
 
-  const chats: Chat[] = result.map((row) => ({
-    chatId: row.chat_id,
-    chatName: row.chat_name,
-    isGroupChat: Boolean(row.is_group_chat),
-    lastMessageText: row.text,
-    lastMessageDate: row.timestamp ? new Date(row.timestamp) : null,
-    lastMessageFromMe: Boolean(row.is_from_me),
-    participantCount: Number(row.participant_count),
-    participants: JSON.parse(row.participants) as string[],
-    messageCount: Number(row.message_count),
-  }))
-
-  return { chats }
+  return { chats: parseChats(result) }
 }

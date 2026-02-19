@@ -6,6 +6,11 @@ import {
 import { db } from "@/db"
 import { AppleContacts, DEFAULT_USER_ID } from "@/db/schema"
 import { logWrite } from "@/lib/activity-log"
+import {
+  CONTACT_ENCRYPTED_COLUMNS,
+  encryptedOrEmpty,
+  encryptedRequired,
+} from "@/lib/encryption-schema"
 import { sql } from "drizzle-orm"
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
@@ -14,13 +19,13 @@ const MAX_CONTACTS = 100
 
 const ContactSchema = z.object({
   id: z.string(),
-  firstName: z.string().min(1),
-  lastName: z.string().nullable(),
+  firstName: encryptedRequired,
+  lastName: encryptedOrEmpty.nullable(),
   firstNameIndex: z.string().nullable().optional(),
   lastNameIndex: z.string().nullable().optional(),
-  organization: z.string().nullable(),
-  emails: z.array(z.string()),
-  phoneNumbers: z.array(z.string()),
+  organization: encryptedOrEmpty.nullable(),
+  emails: z.array(encryptedRequired),
+  phoneNumbers: z.array(encryptedRequired),
   phoneNumbersIndex: z.array(z.string()).nullable().optional(),
 })
 
@@ -105,9 +110,13 @@ export async function POST(request: NextRequest) {
   if (insertedCount > 0 || updatedCount > 0) {
     await logWrite({
       type: "contact",
-      description: `Synced contacts from ${deviceId}`,
+      description: `Synced encrypted contacts from ${deviceId}`,
       count: insertedCount + updatedCount,
-      metadata: { updatedCount },
+      metadata: {
+        updatedCount,
+        encrypted: true,
+        encryptedColumns: CONTACT_ENCRYPTED_COLUMNS,
+      },
     })
   }
 

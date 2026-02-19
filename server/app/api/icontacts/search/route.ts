@@ -50,18 +50,6 @@ export async function GET(request: NextRequest) {
     where: and(...whereConditions),
     orderBy: asc(AppleContacts.updatedAt),
     limit,
-    columns: {
-      id: true,
-      contactId: true,
-      firstName: true,
-      lastName: true,
-      organization: true,
-      emails: true,
-      phoneNumbers: true,
-      syncTime: true,
-      createdAt: true,
-      updatedAt: true,
-    },
   })
 
   const parsed = contacts.map((c) => ({

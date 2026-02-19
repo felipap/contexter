@@ -4,27 +4,14 @@ import { logWrite } from "@/lib/activity-log"
 import {
   ATTACHMENT_ENCRYPTED_COLUMNS,
   IMESSAGE_ENCRYPTED_COLUMNS,
+  encryptedOrEmpty,
+  encryptedRequired,
 } from "@/lib/encryption-schema"
+import { truncateForLog } from "@/lib/logger"
 import { sql } from "drizzle-orm"
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
 import { SyncSuccessResponse, SyncErrorResponse, formatZodError } from "@/app/api/types"
-
-const ENCRYPTED_PREFIX = "enc:v1:"
-
-function isEncrypted(text: string): boolean {
-  return text.startsWith(ENCRYPTED_PREFIX)
-}
-
-const encryptedOrEmpty = z.string().refine((s) => s === "" || isEncrypted(s), {
-  message: "must be encrypted (missing enc:v1: prefix)",
-})
-
-const encryptedContact = z
-  .string()
-  .refine((s) => isEncrypted(s), {
-    message: "contact must be encrypted (missing enc:v1: prefix)",
-  })
 
 const AttachmentSchema = z.object({
   id: z.string(),
@@ -41,7 +28,7 @@ const MessageSchema = z.object({
   id: z.union([z.number(), z.string()]),
   guid: z.string(),
   text: encryptedOrEmpty.nullable(),
-  contact: encryptedContact,
+  contact: encryptedRequired,
   contactIndex: z.string().optional(),
   subject: encryptedOrEmpty.nullable(),
   date: z.string().nullable(),
@@ -64,24 +51,6 @@ const PostSchema = z.object({
   deviceId: z.string(),
   messageCount: z.number(),
 })
-
-function truncateForLog(obj: unknown): unknown {
-  if (typeof obj !== "object" || obj === null) {
-    return obj
-  }
-
-  const result: Record<string, unknown> = {}
-  for (const [key, value] of Object.entries(obj)) {
-    if (key === "dataBase64" && typeof value === "string") {
-      result[key] = `[base64 ${value.length} chars]`
-    } else if (key === "attachments" && Array.isArray(value)) {
-      result[key] = value.map((att) => truncateForLog(att))
-    } else {
-      result[key] = value
-    }
-  }
-  return result
-}
 
 function validateMessages(messages: unknown[]) {
   const validMessages: ValidatedMessage[] = []

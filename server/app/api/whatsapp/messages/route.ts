@@ -2,22 +2,16 @@ import { db } from "@/db"
 import { DEFAULT_USER_ID, WhatsappMessages } from "@/db/schema"
 import { logRead, logWrite } from "@/lib/activity-log"
 import { getDataWindowCutoff, requireReadAuth } from "@/lib/api-auth"
-import { WHATSAPP_ENCRYPTED_COLUMNS } from "@/lib/encryption-schema"
+import {
+  WHATSAPP_ENCRYPTED_COLUMNS,
+  encryptedOrEmpty,
+} from "@/lib/encryption-schema"
+import { truncateForLog } from "@/lib/logger"
 import { parsePagination } from "@/lib/pagination"
 import { and, eq, gte } from "drizzle-orm"
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
 import { SyncSuccessResponse, SyncErrorResponse, formatZodError } from "@/app/api/types"
-
-const ENCRYPTED_PREFIX = "enc:v1:"
-
-function isEncrypted(text: string): boolean {
-  return text.startsWith(ENCRYPTED_PREFIX)
-}
-
-const encryptedOrEmpty = z.string().refine((s) => s === "" || isEncrypted(s), {
-  message: "must be encrypted (missing enc:v1: prefix)",
-})
 
 // TODO: implement attachment syncing
 // const AttachmentSchema = z.object({
@@ -191,24 +185,6 @@ export async function POST(request: NextRequest) {
     rejectedCount: rejectedMessages.length,
     skippedCount,
   })
-}
-
-function truncateForLog(obj: unknown): unknown {
-  if (typeof obj !== "object" || obj === null) {
-    return obj
-  }
-
-  const result: Record<string, unknown> = {}
-  for (const [key, value] of Object.entries(obj)) {
-    if (key === "dataBase64" && typeof value === "string") {
-      result[key] = `[base64 ${value.length} chars]`
-    } else if (key === "attachments" && Array.isArray(value)) {
-      result[key] = value.map((att) => truncateForLog(att))
-    } else {
-      result[key] = value
-    }
-  }
-  return result
 }
 
 function validateMessages(messages: unknown[]) {
