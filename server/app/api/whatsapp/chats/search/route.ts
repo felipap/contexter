@@ -6,7 +6,7 @@ import { parsePagination } from "@/lib/pagination"
 import { normalizePhoneForSearch } from "@/lib/search-normalize"
 import { type SQL, sql } from "drizzle-orm"
 import { NextRequest } from "next/server"
-import { type Chat, type ChatRow, parseChats } from "../types"
+import { type Chat, type ChatRow, parseChats } from "../../types"
 
 export async function GET(request: NextRequest) {
   const auth = await requireReadAuth(request, "whatsapp")
