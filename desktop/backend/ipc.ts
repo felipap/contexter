@@ -24,6 +24,8 @@ const CONFIG_KEY_TO_SERVICE: Record<ServiceConfigKey, string> = {
   whatsappSqlite: 'whatsapp-sqlite',
   macosStickiesSync: 'macos-stickies',
   winStickyNotesSync: 'win-sticky-notes',
+  appleNotesSync: 'apple-notes',
+  appleRemindersSync: 'apple-reminders',
 }
 
 export function registerIpcHandlers(): void {

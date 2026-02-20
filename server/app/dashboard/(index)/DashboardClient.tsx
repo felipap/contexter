@@ -69,6 +69,11 @@ export function DashboardClient() {
             href="/dashboard/locations"
           />
           <StatCard
+            label="Reminders"
+            value={stats.totalReminders.toLocaleString()}
+            href={"/dashboard/reminders" as Route}
+          />
+          <StatCard
             label="Stickies"
             value={stats.totalStickies.toLocaleString()}
             href="/dashboard/stickies"

@@ -1,4 +1,6 @@
 import {
+  AppleNotesIcon,
+  AppleRemindersIcon,
   ContactsIcon,
   IMessageIcon,
   ScreenCaptureIcon,
@@ -34,6 +36,8 @@ const SYNC_SOURCE_ICONS: Record<
   'whatsapp-sqlite': WhatsappIcon,
   'macos-stickies': StickiesIcon,
   'win-sticky-notes': WinStickiesIcon,
+  'apple-notes': AppleNotesIcon,
+  'apple-reminders': AppleRemindersIcon,
 }
 
 function SidebarButton({

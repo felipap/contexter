@@ -6,6 +6,7 @@ import {
   IMessageIcon,
   LayoutDashboardIcon,
   MapPinIcon,
+  ReminderIcon,
   ScreenshotIcon,
   SettingsIcon,
   StickyNoteIcon,
@@ -54,6 +55,11 @@ const NAV_ITEMS: Array<{
     href: "/dashboard/locations",
     label: "Locations",
     icon: <MapPinIcon size={13} />,
+  },
+  {
+    href: "/dashboard/reminders",
+    label: "Reminders",
+    icon: <ReminderIcon size={13} />,
   },
   {
     href: "/dashboard/stickies",

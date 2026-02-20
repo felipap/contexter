@@ -1,6 +1,7 @@
 import { db } from "@/db"
 import {
   AppleContacts,
+  AppleReminders,
   iMessageAttachments,
   iMessages,
   Locations,
@@ -48,6 +49,10 @@ export const LOCATION_RETENTION_HOURS = hoursFromEnv(
 )
 export const STICKIES_RETENTION_HOURS = hoursFromEnv(
   "STICKIES_RETENTION_HOURS",
+  0
+)
+export const REMINDERS_RETENTION_HOURS = hoursFromEnv(
+  "REMINDERS_RETENTION_HOURS",
   0
 )
 export const LOG_RETENTION_HOURS = hoursFromEnv("LOG_RETENTION_HOURS", 0)
@@ -189,6 +194,25 @@ export async function GET(request: Request) {
   } else {
     results.stickies = "disabled"
     logger.log("stickies: disabled")
+  }
+
+  if (REMINDERS_RETENTION_HOURS > 0) {
+    const cutoff = cutoffFromHours(REMINDERS_RETENTION_HOURS)
+    const deleted = await db
+      .delete(AppleReminders)
+      .where(lt(AppleReminders.createdAt, cutoff))
+      .returning({ id: AppleReminders.id })
+    results.reminders = {
+      deletedCount: deleted.length,
+      retentionHours: REMINDERS_RETENTION_HOURS,
+      cutoffTime: cutoff.toISOString(),
+    }
+    logger.log(
+      `reminders: deleted ${deleted.length} (retention: ${REMINDERS_RETENTION_HOURS}h, cutoff: ${cutoff.toISOString()})`
+    )
+  } else {
+    results.reminders = "disabled"
+    logger.log("reminders: disabled")
   }
 
   if (LOG_RETENTION_HOURS > 0) {

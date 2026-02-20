@@ -253,3 +253,61 @@ export const WinStickyNotes = sqliteTable("win_sticky_notes", {
 
 export type NewWinStickyNote = typeof WinStickyNotes.$inferInsert
 export type WinStickyNote = typeof WinStickyNotes.$inferSelect
+
+//
+//
+//
+//
+
+// Encrypted: title, body
+export const AppleNotes = sqliteTable("apple_notes", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+  deviceId: text("device_id").notNull(),
+  // encrypted
+  noteId: integer("note_id").notNull().unique(),
+  title: text("title").notNull(),
+  body: text("body").notNull(),
+  folderName: text("folder_name"),
+  accountName: text("account_name"),
+  isPinned: integer("is_pinned", { mode: "boolean" }).notNull().default(false),
+  noteCreatedAt: text("note_created_at").notNull(),
+  noteModifiedAt: text("note_modified_at").notNull(),
+  syncTime: integer("sync_time", { mode: "timestamp" }).notNull(),
+})
+
+export type NewAppleNote = typeof AppleNotes.$inferInsert
+export type AppleNote = typeof AppleNotes.$inferSelect
+
+//
+//
+//
+//
+
+// Encrypted: title, notes, listName
+export const AppleReminders = sqliteTable("apple_reminders", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+  deviceId: text("device_id").notNull(),
+  //
+  reminderId: text("reminder_id").notNull().unique(),
+  // encrypted
+  title: text("title").notNull(),
+  // encrypted
+  notes: text("notes"),
+  // encrypted
+  listName: text("list_name"),
+  completed: integer("completed", { mode: "boolean" }).notNull().default(false),
+  flagged: integer("flagged", { mode: "boolean" }).notNull().default(false),
+  priority: integer("priority").notNull().default(0),
+  dueDate: integer("due_date", { mode: "timestamp" }),
+  completionDate: integer("completion_date", { mode: "timestamp" }),
+  reminderCreatedAt: integer("reminder_created_at", { mode: "timestamp" }),
+  reminderModifiedAt: integer("reminder_modified_at", { mode: "timestamp" }),
+  syncTime: integer("sync_time", { mode: "timestamp" }).notNull(),
+})
+
+export type NewAppleReminder = typeof AppleReminders.$inferInsert
+export type AppleReminderRow = typeof AppleReminders.$inferSelect

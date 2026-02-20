@@ -1,6 +1,6 @@
 const LLMS_TXT = `# Vaulty API
 
-> Personal data sync API for contacts, iMessages, WhatsApp messages, screenshots, and locations. All message content and attachments are end-to-end encrypted.
+> Personal data sync API for contacts, iMessages, WhatsApp messages, Apple Reminders, screenshots, and locations. All message content and attachments are end-to-end encrypted.
 
 ## Encryption
 
@@ -26,6 +26,10 @@ const LLMS_TXT = `# Vaulty API
 ### WhatsApp
 - GET /api/whatsapp-messages - List messages (params: limit, offset, after, chatId)
 - POST /api/whatsapp-messages - Sync encrypted messages from device
+
+### Apple Reminders
+- GET /api/apple-reminders - List all reminders
+- POST /api/apple-reminders - Sync reminders from device
 
 ### Screenshots
 - POST /api/screenshots - Upload encrypted screenshot (multipart/form-data)

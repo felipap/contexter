@@ -5,6 +5,8 @@ export type SyncLogSource =
   | 'whatsapp-sqlite'
   | 'macos-stickies'
   | 'win-sticky-notes'
+  | 'apple-notes'
+  | 'apple-reminders'
 
 export const SOURCE_LABELS: Record<SyncLogSource, string> = {
   screenshots: 'Screen Capture',
@@ -13,6 +15,8 @@ export const SOURCE_LABELS: Record<SyncLogSource, string> = {
   'whatsapp-sqlite': 'WhatsApp',
   'macos-stickies': 'macOS Stickies',
   'win-sticky-notes': 'Windows Sticky Notes',
+  'apple-notes': 'Apple Notes',
+  'apple-reminders': 'Apple Reminders',
 }
 
 export interface SyncLog {
@@ -45,6 +49,8 @@ export type ServiceConfigMap = {
   whatsappSqlite: WhatsappSqliteConfig
   macosStickiesSync: ServiceConfig
   winStickyNotesSync: ServiceConfig
+  appleNotesSync: ServiceConfig
+  appleRemindersSync: ServiceConfig
 }
 
 export type ServiceConfigKey = keyof ServiceConfigMap

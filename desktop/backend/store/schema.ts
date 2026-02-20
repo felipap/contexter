@@ -7,6 +7,8 @@ export type SyncLogSource =
   | 'whatsapp-sqlite'
   | 'macos-stickies'
   | 'win-sticky-notes'
+  | 'apple-reminders'
+  | 'apple-notes'
 
 export type SyncLog = {
   id: string
@@ -57,6 +59,16 @@ export type StoreSchema = {
     intervalMinutes: number
     nextSyncAfter: string | null
   }
+  appleNotesSync: {
+    enabled: boolean
+    intervalMinutes: number
+    nextSyncAfter: string | null
+  }
+  appleRemindersSync: {
+    enabled: boolean
+    intervalMinutes: number
+    nextSyncAfter: string | null
+  }
   sleepUntil: string | null
   syncLogs: SyncLog[]
 }
@@ -97,6 +109,16 @@ export const DEFAULT_STATE: StoreSchema = {
     nextSyncAfter: null,
   },
   winStickyNotesSync: {
+    enabled: false,
+    intervalMinutes: 60,
+    nextSyncAfter: null,
+  },
+  appleNotesSync: {
+    enabled: false,
+    intervalMinutes: 60,
+    nextSyncAfter: null,
+  },
+  appleRemindersSync: {
     enabled: false,
     intervalMinutes: 60,
     nextSyncAfter: null,
