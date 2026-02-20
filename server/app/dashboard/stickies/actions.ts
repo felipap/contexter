@@ -2,7 +2,7 @@
 
 import { isAuthenticated } from "@/lib/admin-auth"
 import { db } from "@/db"
-import { MacosStickies } from "@/db/schema"
+import { MacosStickies, WinStickyNotes } from "@/db/schema"
 import { desc, sql } from "drizzle-orm"
 import { unauthorized } from "next/navigation"
 
@@ -22,7 +22,7 @@ export type StickiesPage = {
   totalPages: number
 }
 
-export async function getStickies(
+export async function getMacosStickies(
   page: number = 1,
   pageSize: number = 30
 ): Promise<StickiesPage> {
@@ -59,4 +59,71 @@ export async function getStickies(
     pageSize,
     totalPages: Math.ceil(total / pageSize),
   }
+}
+
+export async function getWinStickies(
+  page: number = 1,
+  pageSize: number = 30
+): Promise<StickiesPage> {
+  if (!(await isAuthenticated())) {
+    unauthorized()
+  }
+
+  const offset = (page - 1) * pageSize
+
+  const [countResult] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(WinStickyNotes)
+
+  const total = countResult.count
+
+  const results = await db.query.WinStickyNotes.findMany({
+    orderBy: desc(WinStickyNotes.updatedAt),
+    limit: pageSize,
+    offset,
+  })
+
+  const stickies: StickyNote[] = results.map((row) => ({
+    id: row.id,
+    stickyId: row.stickyId,
+    text: row.text,
+    syncTime: row.syncTime,
+    updatedAt: row.updatedAt,
+  }))
+
+  return {
+    stickies,
+    total,
+    page,
+    pageSize,
+    totalPages: Math.ceil(total / pageSize),
+  }
+}
+
+export async function deleteAllMacosStickies(): Promise<{ deleted: number }> {
+  if (!(await isAuthenticated())) {
+    unauthorized()
+  }
+
+  const result = await db.delete(MacosStickies).returning({ id: MacosStickies.id })
+  return { deleted: result.length }
+}
+
+export async function deleteAllWinStickies(): Promise<{ deleted: number }> {
+  if (!(await isAuthenticated())) {
+    unauthorized()
+  }
+
+  const result = await db.delete(WinStickyNotes).returning({ id: WinStickyNotes.id })
+  return { deleted: result.length }
+}
+
+export async function deleteAllStickies(): Promise<{ deleted: number }> {
+  if (!(await isAuthenticated())) {
+    unauthorized()
+  }
+
+  const macResult = await db.delete(MacosStickies).returning({ id: MacosStickies.id })
+  const winResult = await db.delete(WinStickyNotes).returning({ id: WinStickyNotes.id })
+  return { deleted: macResult.length + winResult.length }
 }

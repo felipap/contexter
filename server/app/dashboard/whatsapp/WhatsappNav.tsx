@@ -1,7 +1,6 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { DeleteAllButton } from "@/ui/DeleteAllButton"
 import { NavTabs } from "@/ui/NavTabs"
 import { PageHeader } from "@/ui/PageHeader"
 import { deleteAllWhatsappMessages } from "./(messages)/actions"
@@ -21,12 +20,11 @@ export function WhatsappNav() {
 
   return (
     <>
-      <PageHeader title="WhatsApp">
-        <DeleteAllButton
-          confirmMessage="Delete all WhatsApp data? This will permanently delete all WhatsApp messages from the database."
-          onDelete={handleDeleteAll}
-        />
-      </PageHeader>
+      <PageHeader
+        title="WhatsApp"
+        onDeleteAll={handleDeleteAll}
+        deleteConfirmMessage="Delete all WhatsApp data? This will permanently delete all WhatsApp messages from the database."
+      />
 
       <NavTabs tabs={subTabs} rootHref="/dashboard/whatsapp" />
     </>

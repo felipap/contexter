@@ -8,6 +8,7 @@ import {
   Locations,
   MacosStickies,
   Screenshots,
+  WinStickyNotes,
 } from "@/db/schema"
 import { isAuthenticated } from "@/lib/admin-auth"
 import { eq, sql } from "drizzle-orm"
@@ -20,7 +21,8 @@ export type DashboardStats = {
   totalChats: number
   totalContacts: number
   totalLocations: number
-  totalStickies: number
+  totalMacosStickies: number
+  totalWinStickies: number
   totalReminders: number
 }
 
@@ -61,11 +63,17 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     })
     .from(Locations)
 
-  const [stickiesStats] = await db
+  const [macosStickiesStats] = await db
     .select({
       count: sql<number>`count(*)`,
     })
     .from(MacosStickies)
+
+  const [winStickiesStats] = await db
+    .select({
+      count: sql<number>`count(*)`,
+    })
+    .from(WinStickyNotes)
 
   const [remindersStats] = await db
     .select({
@@ -80,7 +88,8 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     totalChats: chatStats[0]?.count ?? 0,
     totalContacts: contactStats[0]?.count ?? 0,
     totalLocations: locationStats.count,
-    totalStickies: stickiesStats.count,
+    totalMacosStickies: macosStickiesStats.count,
+    totalWinStickies: winStickiesStats.count,
     totalReminders: remindersStats.count,
   }
 }

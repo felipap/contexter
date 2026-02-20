@@ -1,17 +1,33 @@
+import { DeleteAllButton } from "@/ui/DeleteAllButton"
+
 type Props = {
   title: string
   subtitle?: React.ReactNode
+  onDeleteAll: () => void | Promise<void>
+  deleteConfirmMessage: string
   children?: React.ReactNode
 }
 
-export function PageHeader({ title, subtitle, children }: Props) {
+export function PageHeader({
+  title,
+  subtitle,
+  onDeleteAll,
+  deleteConfirmMessage,
+  children,
+}: Props) {
   return (
     <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 className="heading-page">{title}</h1>
         {subtitle}
       </div>
-      {children && <div className="flex items-center gap-4">{children}</div>}
+      <div className="flex items-center gap-4">
+        {children}
+        <DeleteAllButton
+          confirmMessage={deleteConfirmMessage}
+          onDelete={onDeleteAll}
+        />
+      </div>
     </div>
   )
 }

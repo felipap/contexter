@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { getReminders, type ReminderItem } from "./actions"
+import { useRouter } from "next/navigation"
+import { getReminders, deleteAllReminders, type ReminderItem } from "./actions"
 import { Pagination } from "@/ui/Pagination"
 import { maybeDecrypt } from "@/lib/encryption"
 import {
@@ -15,6 +16,7 @@ import { twMerge } from "tailwind-merge"
 type Filter = "all" | "incomplete" | "completed"
 
 export default function Page() {
+  const router = useRouter()
   const [reminders, setReminders] = useState<ReminderItem[]>([])
   const [decrypted, setDecrypted] = useState<
     Record<string, { title: string | null; notes: string | null; listName: string | null }>
@@ -47,6 +49,11 @@ export default function Page() {
     }
     load()
   }, [page, filter])
+
+  async function handleDeleteAll() {
+    await deleteAllReminders()
+    router.refresh()
+  }
 
   function handleFilterChange(newFilter: Filter) {
     setFilter(newFilter)
@@ -84,7 +91,11 @@ export default function Page() {
 
   return (
     <div>
-      <PageHeader title="Reminders">
+      <PageHeader
+        title="Apple Reminders"
+        onDeleteAll={handleDeleteAll}
+        deleteConfirmMessage="Delete all reminders? This will permanently delete all Apple Reminders from the database."
+      >
         {total > 0 && <PageCount total={total} />}
       </PageHeader>
       <FilterTabs filter={filter} onFilterChange={handleFilterChange} />

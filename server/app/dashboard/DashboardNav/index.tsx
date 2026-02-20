@@ -58,7 +58,7 @@ const NAV_ITEMS: Array<{
   },
   {
     href: "/dashboard/reminders",
-    label: "Reminders",
+    label: "Apple Reminders",
     icon: <ReminderIcon size={13} />,
   },
   {

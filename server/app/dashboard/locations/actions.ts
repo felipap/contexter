@@ -62,3 +62,12 @@ export async function getLocations(
     totalPages: Math.ceil(total / pageSize),
   }
 }
+
+export async function deleteAllLocations(): Promise<{ deleted: number }> {
+  if (!(await isAuthenticated())) {
+    unauthorized()
+  }
+
+  const result = await db.delete(Locations).returning({ id: Locations.id })
+  return { deleted: result.length }
+}

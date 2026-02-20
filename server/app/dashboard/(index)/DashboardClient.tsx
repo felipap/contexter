@@ -69,14 +69,19 @@ export function DashboardClient() {
             href="/dashboard/locations"
           />
           <StatCard
-            label="Reminders"
+            label="Apple Reminders"
             value={stats.totalReminders.toLocaleString()}
             href={"/dashboard/reminders" as Route}
           />
           <StatCard
-            label="Stickies"
-            value={stats.totalStickies.toLocaleString()}
+            label="macOS Stickies"
+            value={stats.totalMacosStickies.toLocaleString()}
             href="/dashboard/stickies"
+          />
+          <StatCard
+            label="Windows Stickies"
+            value={stats.totalWinStickies.toLocaleString()}
+            href="/dashboard/stickies/windows"
           />
         </div>
       </div>

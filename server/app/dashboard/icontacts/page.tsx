@@ -11,7 +11,6 @@ import {
 } from "./actions"
 import { DemoBlur } from "@/ui/DemoBlur"
 import { Pagination } from "@/ui/Pagination"
-import { DeleteAllButton } from "@/ui/DeleteAllButton"
 import { SearchIcon } from "@/ui/icons"
 import {
   PageHeader,
@@ -138,7 +137,11 @@ export default function Page() {
 
   return (
     <div>
-      <PageHeader title="Contacts">
+      <PageHeader
+        title="Contacts"
+        onDeleteAll={handleDeleteAll}
+        deleteConfirmMessage="Delete all contacts? This will permanently remove all contacts from the database."
+      >
         {(total > 0 || debouncedQuery) && (
           <>
             <div className="relative">
@@ -155,10 +158,6 @@ export default function Page() {
               />
             </div>
             <PageCount total={total} filtered={!!debouncedQuery} />
-            <DeleteAllButton
-              confirmMessage="Delete all contacts? This will permanently remove all contacts from the database."
-              onDelete={handleDeleteAll}
-            />
           </>
         )}
       </PageHeader>

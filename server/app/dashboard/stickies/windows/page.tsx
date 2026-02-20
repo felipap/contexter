@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { getMacosStickies, type StickyNote } from "./actions"
+import { getWinStickies, type StickyNote } from "../actions"
 import { Pagination } from "@/ui/Pagination"
 import { maybeDecrypt } from "@/lib/encryption"
 import { PageCount, EmptyState, LoadingState } from "@/ui/PageHeader"
@@ -19,7 +19,7 @@ export default function Page() {
   useEffect(() => {
     async function load() {
       setLoading(true)
-      const data = await getMacosStickies(page)
+      const data = await getWinStickies(page)
       setStickies(data.stickies)
       setTotalPages(data.totalPages)
       setTotal(data.total)
@@ -40,7 +40,7 @@ export default function Page() {
   }
 
   if (stickies.length === 0) {
-    return <EmptyState message="No macOS stickies yet." />
+    return <EmptyState message="No Windows stickies yet." />
   }
 
   return (

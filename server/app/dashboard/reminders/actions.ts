@@ -86,3 +86,12 @@ export async function getReminders(
     totalPages: Math.ceil(total / pageSize),
   }
 }
+
+export async function deleteAllReminders(): Promise<{ deleted: number }> {
+  if (!(await isAuthenticated())) {
+    unauthorized()
+  }
+
+  const result = await db.delete(AppleReminders).returning({ id: AppleReminders.id })
+  return { deleted: result.length }
+}

@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
-import { getLocations, type Location } from "./actions"
+import { useRouter } from "next/navigation"
+import { getLocations, deleteAllLocations, type Location } from "./actions"
 import { Pagination } from "@/ui/Pagination"
 import { MapPinIcon, LockIcon } from "@/ui/icons"
 import {
@@ -19,11 +20,17 @@ export type DecryptedLocation = Location & {
 }
 
 export default function Page() {
+  const router = useRouter()
   const [locations, setLocations] = useState<DecryptedLocation[]>([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
+
+  async function handleDeleteAll() {
+    await deleteAllLocations()
+    router.refresh()
+  }
 
   const decryptLocations = useCallback(
     async (locs: Location[]): Promise<DecryptedLocation[]> => {
@@ -123,7 +130,11 @@ export default function Page() {
 
   return (
     <div>
-      <PageHeader title="Locations">
+      <PageHeader
+        title="Locations"
+        onDeleteAll={handleDeleteAll}
+        deleteConfirmMessage="Delete all locations? This will permanently delete all location data from the database."
+      >
         {total > 0 && <PageCount total={total} />}
       </PageHeader>
 
@@ -142,9 +153,7 @@ function LocationRow({ location }: { location: DecryptedLocation }) {
   return (
     <tr className="bg-white transition-colors hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900">
       <td className="px-4 py-3">
-        <span className="text-contrast">
-          {formatDate(location.timestamp)}
-        </span>
+        <span className="text-contrast">{formatDate(location.timestamp)}</span>
         <span className="ml-2 text-secondary">
           {formatTime(location.timestamp)}
         </span>
@@ -168,9 +177,7 @@ function LocationRow({ location }: { location: DecryptedLocation }) {
       </td>
       <td className="px-4 py-3">
         {location.accuracy !== null ? (
-          <span className="text-secondary">
-            ±{location.accuracy}m
-          </span>
+          <span className="text-secondary">±{location.accuracy}m</span>
         ) : (
           <span className="text-secondary">—</span>
         )}
