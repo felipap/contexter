@@ -10,6 +10,10 @@ const SCOPE_LABELS: Record<string, string> = {
   whatsapp: "WhatsApp",
   screenshots: "Screenshots",
   locations: "Locations",
+  "macos-stickies": "macOS Stickies",
+  "win-sticky-notes": "Windows Stickies",
+  "apple-notes": "Apple Notes",
+  "apple-reminders": "Apple Reminders",
 }
 
 const inputClassName =

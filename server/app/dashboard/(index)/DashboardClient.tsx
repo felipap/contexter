@@ -69,6 +69,11 @@ export function DashboardClient() {
             href="/dashboard/locations"
           />
           <StatCard
+            label="Apple Notes"
+            value={stats.totalAppleNotes.toLocaleString()}
+            href={"/dashboard/apple-notes" as Route}
+          />
+          <StatCard
             label="Apple Reminders"
             value={stats.totalReminders.toLocaleString()}
             href={"/dashboard/reminders" as Route}

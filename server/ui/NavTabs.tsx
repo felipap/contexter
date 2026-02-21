@@ -19,7 +19,7 @@ export function NavTabs({ tabs, rootHref }: Props) {
   const pathname = usePathname()
 
   return (
-    <div className="mb-6 flex gap-2">
+    <div className="mb-6 flex gap-2 overflow-x-auto">
       {tabs.map((tab) => {
         const isActive =
           tab.href === rootHref
@@ -31,8 +31,14 @@ export function NavTabs({ tabs, rootHref }: Props) {
             key={tab.href}
             asChild
             variant={isActive ? "default" : "secondary"}
+            className="text-nowrap"
           >
-            <Link href={tab.href as Route}>{tab.label}</Link>
+            <Link
+              href={tab.href as Route}
+              className="text-nowrap whitespace-nowrap"
+            >
+              {tab.label}
+            </Link>
           </Button>
         )
       })}

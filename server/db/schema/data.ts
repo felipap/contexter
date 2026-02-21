@@ -265,9 +265,10 @@ export const AppleNotes = sqliteTable("apple_notes", {
   createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
   deviceId: text("device_id").notNull(),
-  // encrypted
   noteId: integer("note_id").notNull().unique(),
+  // encrypted
   title: text("title").notNull(),
+  // encrypted
   body: text("body").notNull(),
   folderName: text("folder_name"),
   accountName: text("account_name"),

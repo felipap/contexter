@@ -10,6 +10,7 @@ import { WhatsappSqliteSyncTab } from './sync-tabs/whatsapp-sqlite'
 import { MacosStickiesSyncTab } from './sync-tabs/macos-stickies'
 import { AppleNotesSyncTab } from './sync-tabs/apple-notes'
 import { WinStickyNotesSyncTab } from './sync-tabs/win-sticky-notes'
+import { AppleRemindersSyncTab } from './sync-tabs/apple-reminders'
 import { SyncLogSource, SOURCE_LABELS } from '../electron'
 
 const isMac = window.electron.platform === 'darwin'
@@ -72,6 +73,7 @@ function SettingsPanel() {
         whatsappSqlite,
         macosStickies,
         appleNotes,
+        appleReminders,
         winStickyNotes,
         syncLogs,
       ] = await Promise.all([
@@ -81,6 +83,7 @@ function SettingsPanel() {
         window.electron.getServiceConfig('whatsappSqlite'),
         window.electron.getServiceConfig('macosStickiesSync'),
         window.electron.getServiceConfig('appleNotesSync'),
+        window.electron.getServiceConfig('appleRemindersSync'),
         window.electron.getServiceConfig('winStickyNotesSync'),
         window.electron.getSyncLogs(),
       ])
@@ -137,6 +140,12 @@ function SettingsPanel() {
             label: SOURCE_LABELS['apple-notes'],
             enabled: appleNotes.enabled,
             lastSyncFailed: lastSyncStatus['apple-notes'] ?? false,
+          },
+          {
+            source: 'apple-reminders',
+            label: SOURCE_LABELS['apple-reminders'],
+            enabled: appleReminders.enabled,
+            lastSyncFailed: lastSyncStatus['apple-reminders'] ?? false,
           },
         )
       }
@@ -264,6 +273,14 @@ function SettingsPanel() {
           <AppleNotesSyncTab
             onEnabledChange={(enabled) =>
               handleSourceEnabledChange('apple-notes', enabled)
+            }
+            highlightSyncId={highlightSyncId}
+          />
+        )}
+        {activeTab === 'apple-reminders' && (
+          <AppleRemindersSyncTab
+            onEnabledChange={(enabled) =>
+              handleSourceEnabledChange('apple-reminders', enabled)
             }
             highlightSyncId={highlightSyncId}
           />

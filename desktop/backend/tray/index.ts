@@ -7,7 +7,12 @@ import {
   nativeImage,
 } from 'electron'
 import path from 'path'
-import { SERVICES, Service, startAllServices, stopAllServices } from '../services'
+import {
+  SERVICES,
+  Service,
+  startAllServices,
+  stopAllServices,
+} from '../services'
 import { getEncryptionKey, store } from '../store'
 import { showMainWindow } from '../windows/settings'
 
@@ -195,13 +200,36 @@ function updateTrayMenu(): void {
     return items
   }
 
+  const MAX_TRAY_SERVICES = 5
+  const visibleServices = SERVICES.slice(0, MAX_TRAY_SERVICES)
+  const hiddenServices = SERVICES.slice(MAX_TRAY_SERVICES)
+
   const serviceMenuItems: MenuItemConstructorOptions[] = []
 
-  for (const service of SERVICES) {
+  for (const service of visibleServices) {
     if (serviceMenuItems.length > 0) {
       serviceMenuItems.push({ type: 'separator' })
     }
     serviceMenuItems.push(...buildServiceMenuItems(service))
+  }
+
+  if (hiddenServices.length > 0) {
+    const enabledCount = hiddenServices.filter((s) => s.isEnabled()).length
+    const disabledCount = hiddenServices.length - enabledCount
+
+    const parts: string[] = []
+    if (enabledCount > 0) {
+      parts.push(`${enabledCount} active`)
+    }
+    if (disabledCount > 0) {
+      parts.push(`${disabledCount} inactive`)
+    }
+
+    serviceMenuItems.push({ type: 'separator' })
+    serviceMenuItems.push({
+      label: `${hiddenServices.length} more syncs (${parts.join(', ')})`,
+      click: () => showMainWindow(),
+    })
   }
 
   const serverUrl = store.get('serverUrl')

@@ -2,6 +2,7 @@
 
 import { Button } from "@/ui/Button"
 import {
+  AppleNoteIcon,
   ContactIcon,
   IMessageIcon,
   LayoutDashboardIcon,
@@ -57,6 +58,11 @@ const NAV_ITEMS: Array<{
     icon: <MapPinIcon size={13} />,
   },
   {
+    href: "/dashboard/apple-notes",
+    label: "Apple Notes",
+    icon: <AppleNoteIcon size={13} />,
+  },
+  {
     href: "/dashboard/reminders",
     label: "Apple Reminders",
     icon: <ReminderIcon size={13} />,
@@ -105,7 +111,7 @@ export function DashboardNav() {
             </form>
           </div>
         </div>
-        <nav className="-mb-px flex gap-1.5 lg:-ml-2">
+        <nav className="-mb-px flex gap-1.5 lg:-ml-2 overflow-x-auto -mx-5 px-5">
           {NAV_ITEMS.map((item) => {
             const isActive =
               item.href === "/dashboard"
@@ -117,7 +123,7 @@ export function DashboardNav() {
                 key={item.href}
                 href={item.href as Route}
                 className={twMerge(
-                  "flex  items-center gap-1.5 track-20 rounded-sm px-2 py-1 text-[13px] transition-colors mb-2",
+                  "flex  items-center shrink-0 gap-1.5 track-20 rounded-sm px-2 py-1 text-[13px] transition-colors mb-2",
                   isActive
                     ? "bg-neutral-100 text-contrast dark:bg-neutral-800"
                     : "text-secondary hover:bg-neutral-50 hover:text-contrast dark:hover:bg-neutral-900"

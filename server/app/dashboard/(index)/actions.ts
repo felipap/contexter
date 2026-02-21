@@ -2,6 +2,7 @@
 
 import { db } from "@/db"
 import {
+  AppleNotes,
   AppleReminders,
   DEFAULT_USER_ID,
   iMessages,
@@ -23,6 +24,7 @@ export type DashboardStats = {
   totalLocations: number
   totalMacosStickies: number
   totalWinStickies: number
+  totalAppleNotes: number
   totalReminders: number
 }
 
@@ -75,6 +77,12 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     })
     .from(WinStickyNotes)
 
+  const [appleNotesStats] = await db
+    .select({
+      count: sql<number>`count(*)`,
+    })
+    .from(AppleNotes)
+
   const [remindersStats] = await db
     .select({
       count: sql<number>`count(*)`,
@@ -88,6 +96,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     totalChats: chatStats[0]?.count ?? 0,
     totalContacts: contactStats[0]?.count ?? 0,
     totalLocations: locationStats.count,
+    totalAppleNotes: appleNotesStats.count,
     totalMacosStickies: macosStickiesStats.count,
     totalWinStickies: winStickiesStats.count,
     totalReminders: remindersStats.count,

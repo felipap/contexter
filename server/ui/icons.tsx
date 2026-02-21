@@ -500,6 +500,10 @@ export function WhatsappIcon({ size = 14, className }: Props) {
   return <TbBrandWhatsapp size={size} className={className} />
 }
 
+export function AppleNoteIcon({ size = 14, className }: Props) {
+  return <TbNote size={size} className={className} />
+}
+
 export function ReminderIcon({ size = 14, className }: Props) {
   return (
     <svg
