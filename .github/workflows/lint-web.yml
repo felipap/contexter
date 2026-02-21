@@ -1,17 +1,17 @@
-name: 'Web: lint and type-check'
+name: 'Server: lint and type-check'
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'web/**'
+      - 'server/**'
       - '.github/**'
   pull_request:
     branches:
       - main
     paths:
-      - 'web/**'
+      - 'server/**'
 
 jobs:
   build:
@@ -28,13 +28,13 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        working-directory: web
+        working-directory: server
         run: npm ci
 
       - name: Type check
-        working-directory: web
+        working-directory: server
         run: npm run ts-check
 
       - name: Lint
-        working-directory: web
+        working-directory: server
         run: npm run lint

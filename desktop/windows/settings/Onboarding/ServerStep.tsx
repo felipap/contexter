@@ -67,7 +67,7 @@ export function ServerStep({ onNext, onBack }: Props) {
             type="button"
             onClick={() =>
               window.electron.openUrl(
-                'https://github.com/felipap/vaulty/blob/main/web/README.md',
+                'https://github.com/felipap/vaulty/blob/main/server/README.md',
               )
             }
             className="inline-flex items-center gap-0.5 underline underline-offset-2 hover:text-contrast transition-colors"
