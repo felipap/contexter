@@ -76,12 +76,12 @@ export function DashboardClient() {
           <StatCard
             label="macOS Stickies"
             value={stats.totalMacosStickies.toLocaleString()}
-            href="/dashboard/stickies"
+            href="/dashboard/mac-stickies"
           />
           <StatCard
             label="Windows Stickies"
             value={stats.totalWinStickies.toLocaleString()}
-            href="/dashboard/stickies/windows"
+            href="/dashboard/win-stickies"
           />
         </div>
       </div>

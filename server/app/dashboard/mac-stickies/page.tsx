@@ -1,12 +1,14 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { getMacosStickies, type StickyNote } from "./actions"
+import { useRouter } from "next/navigation"
+import { getMacosStickies, deleteAllMacosStickies, type StickyNote } from "./actions"
 import { Pagination } from "@/ui/Pagination"
 import { maybeDecrypt } from "@/lib/encryption"
-import { PageCount, EmptyState, LoadingState } from "@/ui/PageHeader"
+import { PageHeader, PageCount, EmptyState, LoadingState } from "@/ui/PageHeader"
 
 export default function Page() {
+  const router = useRouter()
   const [stickies, setStickies] = useState<StickyNote[]>([])
   const [decryptedTexts, setDecryptedTexts] = useState<
     Record<string, string | null>
@@ -35,16 +37,44 @@ export default function Page() {
     load()
   }, [page])
 
+  async function handleDeleteAll() {
+    await deleteAllMacosStickies()
+    router.refresh()
+  }
+
   if (loading) {
-    return <LoadingState />
+    return (
+      <>
+        <PageHeader
+          title="macOS Stickies"
+          onDeleteAll={handleDeleteAll}
+          deleteConfirmMessage="Delete all macOS stickies? This cannot be undone."
+        />
+        <LoadingState />
+      </>
+    )
   }
 
   if (stickies.length === 0) {
-    return <EmptyState message="No macOS stickies yet." />
+    return (
+      <>
+        <PageHeader
+          title="macOS Stickies"
+          onDeleteAll={handleDeleteAll}
+          deleteConfirmMessage="Delete all macOS stickies? This cannot be undone."
+        />
+        <EmptyState message="No macOS stickies yet." />
+      </>
+    )
   }
 
   return (
     <>
+      <PageHeader
+        title="macOS Stickies"
+        onDeleteAll={handleDeleteAll}
+        deleteConfirmMessage="Delete all macOS stickies? This cannot be undone."
+      />
       <PageCount total={total} />
       <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {stickies.map((sticky) => (

@@ -62,8 +62,13 @@ const NAV_ITEMS: Array<{
     icon: <ReminderIcon size={13} />,
   },
   {
-    href: "/dashboard/stickies",
-    label: "Stickies",
+    href: "/dashboard/mac-stickies",
+    label: "macOS Stickies",
+    icon: <StickyNoteIcon size={11} />,
+  },
+  {
+    href: "/dashboard/win-stickies",
+    label: "Win Stickies",
     icon: <StickyNoteIcon size={11} />,
   },
 ]
