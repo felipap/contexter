@@ -1,5 +1,5 @@
 import { apiRequest } from '../../lib/contexter-api'
-import { computeSearchIndex, encryptText } from '../../lib/encryption'
+import { computeSearchIndex } from '../../lib/encryption'
 import {
   normalizeStringForSearch,
   normalizePhoneForSearch,
@@ -7,46 +7,30 @@ import {
 import { getDeviceId, getEncryptionKey } from '../../store'
 import { log } from './index'
 import type { WhatsAppMessage } from './types'
+import { encryptFields } from '../upload-utils'
 
-type EncryptedWhatsAppMessage = WhatsAppMessage & {
+const ENCRYPTED_FIELDS = ['text', 'chatName', 'senderName', 'senderPhoneNumber'] as const
+
+type WhatsAppMessageWithIndexes = WhatsAppMessage & {
   chatNameIndex?: string
   senderNameIndex?: string
   senderPhoneNumberIndex?: string
 }
 
-function encryptMessages(
+function addSearchIndexes(
   messages: WhatsAppMessage[],
   encryptionKey: string,
-): EncryptedWhatsAppMessage[] {
+): WhatsAppMessageWithIndexes[] {
   return messages.map((msg) => ({
     ...msg,
-    text: msg.text ? encryptText(msg.text, encryptionKey) : msg.text,
-    chatName: msg.chatName
-      ? encryptText(msg.chatName, encryptionKey)
-      : msg.chatName,
     chatNameIndex: msg.chatName
-      ? computeSearchIndex(
-          normalizeStringForSearch(msg.chatName),
-          encryptionKey,
-        )
+      ? computeSearchIndex(normalizeStringForSearch(msg.chatName), encryptionKey)
       : undefined,
-    senderName: msg.senderName
-      ? encryptText(msg.senderName, encryptionKey)
-      : msg.senderName,
     senderNameIndex: msg.senderName
-      ? computeSearchIndex(
-          normalizeStringForSearch(msg.senderName),
-          encryptionKey,
-        )
+      ? computeSearchIndex(normalizeStringForSearch(msg.senderName), encryptionKey)
       : undefined,
-    senderPhoneNumber: msg.senderPhoneNumber
-      ? encryptText(msg.senderPhoneNumber, encryptionKey)
-      : msg.senderPhoneNumber,
     senderPhoneNumberIndex: msg.senderPhoneNumber
-      ? computeSearchIndex(
-          normalizePhoneForSearch(msg.senderPhoneNumber),
-          encryptionKey,
-        )
+      ? computeSearchIndex(normalizePhoneForSearch(msg.senderPhoneNumber), encryptionKey)
       : undefined,
   }))
 }
@@ -63,12 +47,14 @@ export async function uploadWhatsAppMessages(
   if (!encryptionKey) {
     return { error: 'Encryption key not set' }
   }
-  const messagesToUpload = encryptMessages(messages, encryptionKey)
+
+  const withIndexes = addSearchIndexes(messages, encryptionKey)
+  const encrypted = encryptFields(withIndexes, ENCRYPTED_FIELDS, encryptionKey)
 
   const res = await apiRequest({
     path: '/api/whatsapp/messages',
     body: {
-      messages: messagesToUpload,
+      messages: encrypted,
       source,
       syncTime: new Date().toISOString(),
       deviceId: getDeviceId(),

@@ -1,9 +1,7 @@
 import { createLogger } from '../lib/logger'
-import { apiRequest } from '../lib/contexter-api'
-import { encryptText } from '../lib/encryption'
-import { getEncryptionKey } from '../store'
-import { fetchStickies, type Sticky } from '../sources/stickies'
+import { fetchStickies } from '../sources/stickies'
 import { createScheduledService, type SyncResult } from './scheduler'
+import { encryptAndUpload } from './upload-utils'
 
 const log = createLogger('macos-stickies')
 
@@ -13,27 +11,7 @@ function yieldToEventLoop(): Promise<void> {
   })
 }
 
-function encryptStickies(stickies: Sticky[], encryptionKey: string): Sticky[] {
-  return stickies.map((s) => ({
-    id: s.id,
-    text: encryptText(s.text, encryptionKey),
-  }))
-}
-
-async function uploadStickies(stickies: Sticky[]): Promise<void> {
-  const encryptionKey = getEncryptionKey()
-  if (!encryptionKey) {
-    log.error('Encryption key not set, skipping upload')
-    return
-  }
-
-  const encrypted = encryptStickies(stickies, encryptionKey)
-  await apiRequest({
-    path: '/api/macos-stickies',
-    body: { stickies: encrypted },
-  })
-  log.info(`Uploaded ${stickies.length} macOS stickies`)
-}
+const FIELD_CONFIG = { encryptedFields: ['text'] } as const
 
 async function syncAndUpload(): Promise<SyncResult> {
   log.info('Syncing...')
@@ -48,7 +26,17 @@ async function syncAndUpload(): Promise<SyncResult> {
   log.info(`Fetched ${stickies.length} macOS stickies`)
   await yieldToEventLoop()
 
-  await uploadStickies(stickies)
+  const uploaded = await encryptAndUpload({
+    items: stickies,
+    config: FIELD_CONFIG,
+    apiPath: '/api/macos-stickies',
+    bodyKey: 'stickies',
+  })
+  if (!uploaded) {
+    log.error('Encryption key not set, skipping upload')
+    return { success: false }
+  }
+  log.info(`Uploaded ${stickies.length} macOS stickies`)
   return { success: true }
 }
 

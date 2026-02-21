@@ -41,52 +41,52 @@ export function DashboardClient() {
           <StatCard
             label="Screenshots"
             value={stats.totalScreenshots.toLocaleString()}
-            href="/dashboard/screenshots"
+            href="/dashboard/syncs/screenshots"
           />
           <StatCard
             label="Storage"
             value={formatBytes(stats.totalStorageBytes)}
-            href="/dashboard/screenshots"
+            href="/dashboard/syncs/screenshots"
           />
           <StatCard
             label="iMessages"
             value={stats.totalMessages.toLocaleString()}
-            href="/dashboard/imessages"
+            href="/dashboard/syncs/imessages"
           />
           <StatCard
             label="Chats"
             value={stats.totalChats.toLocaleString()}
-            href="/dashboard/imessages"
+            href="/dashboard/syncs/imessages"
           />
           <StatCard
             label="Contacts"
             value={stats.totalContacts.toLocaleString()}
-            href={"/dashboard/icontacts" as Route}
+            href={"/dashboard/syncs/icontacts" as Route}
           />
           <StatCard
             label="Locations"
             value={stats.totalLocations.toLocaleString()}
-            href="/dashboard/locations"
+            href="/dashboard/syncs/locations"
           />
           <StatCard
             label="Apple Notes"
             value={stats.totalAppleNotes.toLocaleString()}
-            href={"/dashboard/apple-notes" as Route}
+            href={"/dashboard/syncs/apple-notes" as Route}
           />
           <StatCard
             label="Apple Reminders"
             value={stats.totalReminders.toLocaleString()}
-            href={"/dashboard/reminders" as Route}
+            href={"/dashboard/syncs/reminders" as Route}
           />
           <StatCard
             label="macOS Stickies"
             value={stats.totalMacosStickies.toLocaleString()}
-            href="/dashboard/mac-stickies"
+            href="/dashboard/syncs/mac-stickies"
           />
           <StatCard
             label="Windows Stickies"
             value={stats.totalWinStickies.toLocaleString()}
-            href="/dashboard/win-stickies"
+            href="/dashboard/syncs/win-stickies"
           />
         </div>
       </div>

@@ -1,9 +1,7 @@
 import { createLogger } from '../lib/logger'
-import { apiRequest } from '../lib/contexter-api'
-import { encryptText } from '../lib/encryption'
-import { getEncryptionKey } from '../store'
-import { fetchWinStickyNotes, type WinStickyNote } from '../sources/win-sticky-notes'
+import { fetchWinStickyNotes } from '../sources/win-sticky-notes'
 import { createScheduledService, type SyncResult } from './scheduler'
+import { encryptAndUpload } from './upload-utils'
 
 const log = createLogger('win-sticky-notes')
 
@@ -13,27 +11,7 @@ function yieldToEventLoop(): Promise<void> {
   })
 }
 
-function encryptStickyNotes(notes: WinStickyNote[], encryptionKey: string): WinStickyNote[] {
-  return notes.map((n) => ({
-    id: n.id,
-    text: encryptText(n.text, encryptionKey),
-  }))
-}
-
-async function uploadStickyNotes(notes: WinStickyNote[]): Promise<void> {
-  const encryptionKey = getEncryptionKey()
-  if (!encryptionKey) {
-    log.error('Encryption key not set, skipping upload')
-    return
-  }
-
-  const encrypted = encryptStickyNotes(notes, encryptionKey)
-  await apiRequest({
-    path: '/api/win-sticky-notes',
-    body: { stickies: encrypted },
-  })
-  log.info(`Uploaded ${notes.length} Windows sticky notes`)
-}
+const FIELD_CONFIG = { encryptedFields: ['text'] } as const
 
 async function syncAndUpload(): Promise<SyncResult> {
   log.info('Syncing...')
@@ -48,7 +26,17 @@ async function syncAndUpload(): Promise<SyncResult> {
   log.info(`Fetched ${notes.length} Windows sticky notes`)
   await yieldToEventLoop()
 
-  await uploadStickyNotes(notes)
+  const uploaded = await encryptAndUpload({
+    items: notes,
+    config: FIELD_CONFIG,
+    apiPath: '/api/win-sticky-notes',
+    bodyKey: 'stickies',
+  })
+  if (!uploaded) {
+    log.error('Encryption key not set, skipping upload')
+    return { success: false }
+  }
+  log.info(`Uploaded ${notes.length} Windows sticky notes`)
   return { success: true }
 }
 

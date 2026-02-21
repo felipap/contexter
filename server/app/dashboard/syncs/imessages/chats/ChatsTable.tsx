@@ -163,7 +163,7 @@ export function ChatsTable({
       <DataTable
         table={table}
         getRowHref={(row) =>
-          `/dashboard/imessages/chats/${encodeURIComponent(row.original.chatId)}`
+          `/dashboard/syncs/imessages/chats/${encodeURIComponent(row.original.chatId)}`
         }
         tableClassName="table-fixed"
         getTdClassName={() => "overflow-hidden"}

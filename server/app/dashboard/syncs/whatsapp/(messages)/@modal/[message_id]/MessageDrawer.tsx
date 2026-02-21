@@ -15,7 +15,7 @@ type Props = {
 
 export function MessageDrawer({ message }: Props) {
   const chatHref =
-    `/dashboard/whatsapp/chats/${encodeURIComponent(message.chatId)}` as Route
+    `/dashboard/syncs/whatsapp/chats/${encodeURIComponent(message.chatId)}` as Route
 
   return (
     <Drawer title="Message Details">

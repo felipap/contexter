@@ -131,7 +131,7 @@ export function ChatsTable({ chats, page, totalPages, onPageChange }: Props) {
       <DataTable
         table={table}
         getRowHref={(row) =>
-          `/dashboard/whatsapp/chats/${encodeURIComponent(row.original.chatId)}`
+          `/dashboard/syncs/whatsapp/chats/${encodeURIComponent(row.original.chatId)}`
         }
         tableClassName="table-fixed"
         getTdClassName={() => "overflow-hidden"}

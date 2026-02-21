@@ -6,24 +6,24 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table"
+import { WhatsappIcon } from "@/ui/icons"
 import { DataTable } from "@/ui/DataTable"
+import { Decrypted } from "@/ui/Decrypted"
 import { DemoBlur } from "@/ui/DemoBlur"
 import { DateCell as SharedDateCell } from "@/ui/DateCell"
 import { DirectionBadge } from "@/ui/DirectionBadge"
 import { MessageCell as SharedMessageCell } from "@/ui/MessageCell"
 import { Pagination } from "@/ui/Pagination"
-import { type Message, type SortBy } from "./actions"
-import { type ContactLookup } from "../chats/actions"
-import { ContactAvatar } from "@/ui/ContactAvatar"
+import { type WhatsappMessage, type SortBy } from "./actions"
 
-export type DecryptedMessage = Message & {
+export type DecryptedMessage = WhatsappMessage & {
   decryptedText: string | null
-  decryptedContact: string
+  decryptedChatName: string | null
+  decryptedSenderName: string | null
 }
 
 type Props = {
   messages: DecryptedMessage[]
-  contactLookup: ContactLookup
   page: number
   totalPages: number
   onPageChange: (page: number) => void
@@ -34,7 +34,6 @@ const columnHelper = createColumnHelper<DecryptedMessage>()
 
 export function MessagesTable({
   messages,
-  contactLookup,
   page,
   totalPages,
   onPageChange,
@@ -47,29 +46,51 @@ export function MessagesTable({
         size: 100,
         cell: (info) => <DirectionBadge isFromMe={info.getValue()} />,
       }),
-      columnHelper.display({
-        id: "contact",
-        header: "Contacts",
+      columnHelper.accessor("chatId", {
+        header: "Chat",
         size: 180,
-        cell: ({ row }) => {
-          const contact = row.original.decryptedContact
-          const resolvedName = resolveContactName(contact, contactLookup)
-          const hasContactName = resolvedName !== formatContact(contact)
+        cell: (info) => {
+          const { chatName, chatId } = info.row.original
 
           return (
             <div className="flex items-center gap-2">
-              <ContactAvatar name={resolvedName} id={contact} />
-              <DemoBlur>
-                <div className="flex flex-col">
-                  <span className="text-sm">{resolvedName}</span>
-                  {hasContactName && (
-                    <span className="text-xs text-secondary">
-                      {formatContact(contact)}
-                    </span>
-                  )}
-                </div>
-              </DemoBlur>
+              <WhatsappIcon />
+              <div className="flex min-w-0 flex-col">
+                <span className="truncate text-sm">
+                  <Decrypted>{chatName}</Decrypted>
+                </span>
+                <span className="truncate text-xs text-secondary">
+                  {chatId}
+                </span>
+              </div>
             </div>
+          )
+        },
+      }),
+      columnHelper.accessor("senderJid", {
+        header: "Sender",
+        size: 140,
+        cell: (info) => {
+          const senderJid = info.getValue()
+          const { senderName, isFromMe } = info.row.original
+
+          if (isFromMe) {
+            return <span className="text-sm text-secondary">You</span>
+          }
+
+          return (
+            <DemoBlur>
+              <div className="flex min-w-0 flex-col">
+                <span className="truncate text-sm">
+                  <Decrypted>{senderName}</Decrypted>
+                </span>
+                {senderJid && (
+                  <span className="truncate text-xs text-secondary">
+                    {senderJid}
+                  </span>
+                )}
+              </div>
+            </DemoBlur>
           )
         },
       }),
@@ -79,14 +100,16 @@ export function MessagesTable({
         size: 320,
         cell: (info) => <SharedMessageCell message={info.row.original} />,
       }),
-      columnHelper.accessor(sortBy === "syncTime" ? "syncTime" : "date", {
+      columnHelper.accessor(sortBy === "syncTime" ? "syncTime" : "timestamp", {
         id: "dateColumn",
         header: sortBy === "syncTime" ? "Received" : "Message Date",
         size: 200,
         cell: (info) => {
           const msg = info.row.original
-          const primaryDate = sortBy === "syncTime" ? msg.syncTime : msg.date
-          const secondaryDate = sortBy === "syncTime" ? msg.date : msg.syncTime
+          const primaryDate =
+            sortBy === "syncTime" ? msg.syncTime : msg.timestamp
+          const secondaryDate =
+            sortBy === "syncTime" ? msg.timestamp : msg.syncTime
           const secondaryLabel = sortBy === "syncTime" ? "sent" : "received"
           return (
             <SharedDateCell
@@ -98,7 +121,7 @@ export function MessagesTable({
         },
       }),
     ],
-    [sortBy, contactLookup]
+    [sortBy]
   )
 
   const table = useReactTable({
@@ -112,7 +135,7 @@ export function MessagesTable({
     <>
       <DataTable
         table={table}
-        getRowHref={(row) => `/dashboard/imessages/${row.id}`}
+        getRowHref={(row) => `/dashboard/syncs/whatsapp/${row.id}`}
         tableClassName="table-fixed"
         getTdClassName={() => "overflow-hidden"}
         getTdStyle={(cell) => ({
@@ -128,42 +151,4 @@ export function MessagesTable({
       />
     </>
   )
-}
-
-function resolveContactName(
-  contact: string,
-  contactLookup: ContactLookup
-): string {
-  // Try lookup by email (lowercase)
-  if (contact.includes("@")) {
-    const name = contactLookup[contact.toLowerCase().trim()]
-    if (name) {
-      return name
-    }
-    return contact
-  }
-
-  // Try lookup by normalized phone number
-  const normalizedPhone = contact.replace(/\D/g, "")
-  const name = contactLookup[normalizedPhone]
-  if (name) {
-    return name
-  }
-
-  // Fall back to formatted contact
-  return formatContact(contact)
-}
-
-function formatContact(contact: string): string {
-  if (contact.includes("@")) {
-    return contact
-  }
-  if (contact.startsWith("+")) {
-    const digits = contact.slice(1)
-    if (digits.length === 11 && digits.startsWith("1")) {
-      return `+1 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`
-    }
-    return contact
-  }
-  return contact
 }

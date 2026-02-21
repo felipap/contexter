@@ -6,8 +6,8 @@ import { PageHeader } from "@/ui/PageHeader"
 import { deleteAllWhatsappMessages } from "./(messages)/actions"
 
 const subTabs = [
-  { href: "/dashboard/whatsapp", label: "Messages" },
-  { href: "/dashboard/whatsapp/chats", label: "Chats" },
+  { href: "/dashboard/syncs/whatsapp", label: "Messages" },
+  { href: "/dashboard/syncs/whatsapp/chats", label: "Chats" },
 ] as const
 
 export function WhatsappNav() {
@@ -26,7 +26,7 @@ export function WhatsappNav() {
         deleteConfirmMessage="Delete all WhatsApp data? This will permanently delete all WhatsApp messages from the database."
       />
 
-      <NavTabs tabs={subTabs} rootHref="/dashboard/whatsapp" />
+      <NavTabs tabs={subTabs} rootHref="/dashboard/syncs/whatsapp" />
     </>
   )
 }

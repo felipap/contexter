@@ -1,9 +1,12 @@
 import { apiRequest } from '../../lib/contexter-api'
-import { encryptText } from '../../lib/encryption'
 import { getDeviceId, getEncryptionKey } from '../../store'
 import type { AppleReminder } from '../../sources/apple-reminders'
+import { encryptFields } from '../upload-utils'
 
-type EncryptedReminder = {
+const ENCRYPTED_FIELDS = ['title', 'notes', 'listName'] as const
+const UPLOAD_BATCH_SIZE = 100
+
+type SerializedReminder = {
   id: string
   title: string
   notes: string | null
@@ -17,15 +20,12 @@ type EncryptedReminder = {
   lastModifiedDate: string | null
 }
 
-function encryptReminders(
-  reminders: AppleReminder[],
-  encryptionKey: string,
-): EncryptedReminder[] {
+function serializeReminders(reminders: AppleReminder[]): SerializedReminder[] {
   return reminders.map((r) => ({
     id: r.id,
-    title: encryptText(r.title, encryptionKey),
-    notes: r.notes ? encryptText(r.notes, encryptionKey) : null,
-    listName: r.listName ? encryptText(r.listName, encryptionKey) : null,
+    title: r.title,
+    notes: r.notes,
+    listName: r.listName,
     completed: r.completed,
     flagged: r.flagged,
     priority: r.priority,
@@ -35,8 +35,6 @@ function encryptReminders(
     lastModifiedDate: r.lastModifiedDate?.toISOString() ?? null,
   }))
 }
-
-const UPLOAD_BATCH_SIZE = 100
 
 export async function uploadReminders(
   reminders: AppleReminder[],
@@ -50,7 +48,8 @@ export async function uploadReminders(
     return
   }
 
-  const encrypted = encryptReminders(reminders, encryptionKey)
+  const serialized = serializeReminders(reminders)
+  const encrypted = encryptFields(serialized, ENCRYPTED_FIELDS, encryptionKey)
   const syncTime = new Date().toISOString()
   const deviceId = getDeviceId()
 

@@ -6,8 +6,8 @@ import { PageHeader } from "@/ui/PageHeader"
 import { deleteAllIMessages } from "./(messages)/actions"
 
 const subTabs = [
-  { href: "/dashboard/imessages", label: "Messages" },
-  { href: "/dashboard/imessages/chats", label: "Chats" },
+  { href: "/dashboard/syncs/imessages", label: "Messages" },
+  { href: "/dashboard/syncs/imessages/chats", label: "Chats" },
 ] as const
 
 export function IMessagesNav() {
@@ -26,7 +26,7 @@ export function IMessagesNav() {
         deleteConfirmMessage="Delete all iMessages data? This will permanently delete all iMessages and attachments from the database."
       />
 
-      <NavTabs tabs={subTabs} rootHref="/dashboard/imessages" />
+      <NavTabs tabs={subTabs} rootHref="/dashboard/syncs/imessages" />
     </>
   )
 }
