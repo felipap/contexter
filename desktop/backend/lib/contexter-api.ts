@@ -67,11 +67,13 @@ export async function apiRequest<T = unknown>({
 
   if (!response.ok) {
     const text = await response.text()
+    const truncated =
+      text.length > 300 ? text.slice(0, 300) + '… (truncated)' : text
     console.log(
       'apiRequest to',
       url,
       'failed:',
-      text,
+      truncated,
       'status:',
       response.status,
     )

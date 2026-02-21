@@ -200,7 +200,7 @@ function updateTrayMenu(): void {
     return items
   }
 
-  const MAX_TRAY_SERVICES = 5
+  const MAX_TRAY_SERVICES = 10
   const visibleServices = SERVICES.slice(0, MAX_TRAY_SERVICES)
   const hiddenServices = SERVICES.slice(MAX_TRAY_SERVICES)
 

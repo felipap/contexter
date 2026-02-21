@@ -2,6 +2,7 @@ import {
   SyncErrorResponse,
   SyncSuccessResponse,
   formatZodError,
+  summarizeZodError,
 } from "@/app/api/types"
 import { db } from "@/db"
 import { AppleContacts, DEFAULT_USER_ID } from "@/db/schema"
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
 
   const parsed = PostSchema.safeParse(json)
   if (!parsed.success) {
-    console.warn("Invalid request body", { error: parsed.error })
+    console.warn("Invalid request body:", summarizeZodError(parsed.error))
     return NextResponse.json<SyncErrorResponse>(
       { error: formatZodError(parsed.error) },
       { status: 400 }

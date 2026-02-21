@@ -11,7 +11,7 @@ import { parsePagination } from "@/lib/pagination"
 import { and, eq, gte } from "drizzle-orm"
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
-import { SyncSuccessResponse, SyncErrorResponse, formatZodError } from "@/app/api/types"
+import { SyncSuccessResponse, SyncErrorResponse, formatZodError, summarizeZodError } from "@/app/api/types"
 
 // TODO: implement attachment syncing
 // const AttachmentSchema = z.object({
@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
 
   const parsed = PostSchema.safeParse(json)
   if (!parsed.success) {
-    console.warn("Invalid request body", { error: parsed.error })
+    console.warn("Invalid request body:", summarizeZodError(parsed.error))
     return NextResponse.json<SyncErrorResponse>(
       { error: formatZodError(parsed.error) },
       { status: 400 }

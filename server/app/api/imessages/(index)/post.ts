@@ -11,7 +11,7 @@ import { truncateForLog } from "@/lib/logger"
 import { sql } from "drizzle-orm"
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
-import { SyncSuccessResponse, SyncErrorResponse, formatZodError } from "@/app/api/types"
+import { SyncSuccessResponse, SyncErrorResponse, formatZodError, summarizeZodError } from "@/app/api/types"
 
 const AttachmentSchema = z.object({
   id: z.string(),
@@ -279,7 +279,7 @@ export async function POST(request: NextRequest) {
 
   const parsed = PostSchema.safeParse(json)
   if (!parsed.success) {
-    console.warn("Invalid request body", { error: parsed.error })
+    console.warn("Invalid request body:", summarizeZodError(parsed.error))
     return NextResponse.json<SyncErrorResponse>(
       { error: formatZodError(parsed.error) },
       { status: 400 }

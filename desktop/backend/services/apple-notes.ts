@@ -1,5 +1,7 @@
 import { createLogger } from '../lib/logger'
 import { apiRequest } from '../lib/contexter-api'
+import { encryptText } from '../lib/encryption'
+import { getEncryptionKey } from '../store'
 import { fetchNotes, type AppleNote } from '../sources/apple-notes'
 import { createScheduledService, type SyncResult } from './scheduler'
 
@@ -11,10 +13,25 @@ function yieldToEventLoop(): Promise<void> {
   })
 }
 
+function encryptNotes(notes: AppleNote[], encryptionKey: string): AppleNote[] {
+  return notes.map((n) => ({
+    ...n,
+    title: encryptText(n.title, encryptionKey),
+    body: encryptText(n.body, encryptionKey),
+  }))
+}
+
 async function uploadNotes(notes: AppleNote[]): Promise<void> {
+  const encryptionKey = getEncryptionKey()
+  if (!encryptionKey) {
+    log.error('Encryption key not set, skipping upload')
+    return
+  }
+
+  const encrypted = encryptNotes(notes, encryptionKey)
   await apiRequest({
     path: '/api/apple-notes',
-    body: { notes },
+    body: { notes: encrypted },
   })
   log.info(`Uploaded ${notes.length} Apple Notes`)
 }
